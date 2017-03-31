@@ -58,7 +58,7 @@ if 'LOG_FILE_NAME' in globals():
     # Setup the logger
     logging.basicConfig( filename=LOG_FILE_NAME, format='%(asctime)s %(message)s', level=logging.DEBUG )
 
-    def print_debug(level, msg) :
+    def log(level, msg) :
 
         global print_debug_lastTime
         currentTime = datetime.datetime.now().microsecond
@@ -75,7 +75,7 @@ if 'LOG_FILE_NAME' in globals():
 
 else:
 
-    def print_debug(level, msg) :
+    def log(level, msg) :
 
         global print_debug_lastTime
         currentTime = datetime.datetime.now().microsecond
