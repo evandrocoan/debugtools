@@ -38,14 +38,11 @@ if 'LOG_FILE_NAME' in globals():
 startTime = datetime.datetime.now()
 print_debug_lastTime = startTime.microsecond
 
-# Enable editor debug messages: (bitwise)
+# Enable debug messages: (bitwise)
 #
 # 0  - Disabled debugging.
 # 1  - Errors messages.
-# 2  - Outputs when it starts a file parsing.
-# 4  - General messages.
-# 63 - All debugging levels at the same time.
-g_debug_level = 63
+g_debug_level = 0
 
 
 
