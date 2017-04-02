@@ -26,17 +26,19 @@
 import datetime
 import os
 
-# Uncomment this to save the debugging to a file.
-# LOG_FILE_NAME = os.path.abspath('DebugTools.log')
-
 
 # Debugging
 if 'LOG_FILE_NAME' in globals():
     del LOG_FILE_NAME
 
+
+# Uncomment this to save the debugging to a file.
 # LOG_FILE_NAME = os.path.abspath('DebugTools.log')
+
+
 startTime = datetime.datetime.now()
 print_debug_lastTime = startTime.microsecond
+
 
 # Enable debug messages: (bitwise)
 #
