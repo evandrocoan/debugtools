@@ -24,6 +24,7 @@
 
 
 import datetime
+import logging
 import os
 
 
@@ -33,7 +34,7 @@ if 'LOG_FILE_NAME' in globals():
 
 
 # Uncomment this to save the debugging to a file.
-# LOG_FILE_NAME = os.path.abspath('DebugTools.log')
+# LOG_FILE_NAME = os.path.abspath('D:/User/Downloads/tree.txt')
 
 
 startTime = datetime.datetime.now()
