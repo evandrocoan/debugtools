@@ -58,7 +58,7 @@ if 'LOG_FILE_NAME' in globals():
     # Setup the logger
     logging.basicConfig( filename=LOG_FILE_NAME, format='%(asctime)s %(message)s', level=logging.DEBUG )
 
-    def log(level, msg) :
+    def log(level, *msg) :
 
         global print_debug_lastTime
         currentTime = datetime.datetime.now().microsecond
@@ -66,16 +66,17 @@ if 'LOG_FILE_NAME' in globals():
         # You can access global variables without the global keyword.
         if g_debug_level & level != 0:
 
+            # https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
             logging.debug( "[DEBUG] " \
                     + str( currentTime ) \
                     + "%7d " % ( currentTime - print_debug_lastTime ) \
-                    + msg )
+                    + "".join([str( m ) for m in msg]) )
 
             print_debug_lastTime = currentTime
 
 else:
 
-    def log(level, msg) :
+    def log(level, *msg) :
 
         global print_debug_lastTime
         currentTime = datetime.datetime.now().microsecond
@@ -83,13 +84,14 @@ else:
         # You can access global variables without the global keyword.
         if g_debug_level & level != 0:
 
+            # https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
             print( "[DEBUG] " \
                     + "%02d" % datetime.datetime.now().hour + ":" \
                     + "%02d" % datetime.datetime.now().minute + ":" \
                     + "%02d" % datetime.datetime.now().second + ":" \
                     + str( currentTime ) \
                     + "%7d " % ( currentTime - print_debug_lastTime ) \
-                    + msg )
+                    + "".join([str( m ) for m in msg]) )
 
             print_debug_lastTime = currentTime
 
