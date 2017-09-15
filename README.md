@@ -28,6 +28,45 @@ To use it:
 import sys
 sys.path.insert(0,'../PythonDebugTools')
 
+# Import the debugger
+import debug_tools
+from debug_tools import log
+
+# Enable debug messages: (bitwise)
+#
+# 0   - Disabled debugging.
+# 1   - Basic logging messages.
+# 2   - AgentPlayer       class' notices.
+# 4   - StickIntelligence class' notices.
+#
+# 127 - All debugging levels at the same time.
+debug_tools.g_debug_level = 127
+
+log( 1, "Debugging" )
+log( 1, "..." )
+log( 1, "..." )
+```
+
+Or something like:
+```
+import os
+import sys
+
+def assert_path(module):
+    """
+        Import a module from a relative path
+        https://stackoverflow.com/questions/279237/import-a-module-from-a-relative-path
+    """
+    if module not in sys.path:
+        sys.path.append( module )
+
+# Import the debug tools
+assert_path( os.path.join( os.path.dirname( os.path.dirname( os.path.realpath( __file__ ) ) ), 'PythonDebugTools' ) )
+
+# Import the debugger
+import debug_tools
+from debug_tools import log
+
 # Enable debug messages: (bitwise)
 #
 # 0   - Disabled debugging.
