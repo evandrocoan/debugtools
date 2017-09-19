@@ -28,6 +28,8 @@ import logging
 import os
 
 
+debugger_name = os.path.basename( __file__ )
+
 # Debugging
 if 'LOG_FILE_NAME' in globals():
     del LOG_FILE_NAME
@@ -67,7 +69,7 @@ if 'LOG_FILE_NAME' in globals():
         if g_debug_level & level != 0:
 
             # https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
-            logging.debug( "[DEBUG] " \
+            logging.debug( "[%s] " % debugger_name \
                     + str( currentTime ) \
                     + "%7d " % ( currentTime - print_debug_lastTime ) \
                     + "".join([str( m ) for m in msg]) )
@@ -85,7 +87,7 @@ else:
         if g_debug_level & level != 0:
 
             # https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
-            print( "[DEBUG] " \
+            print( "[%s] " % debugger_name \
                     + "%02d" % datetime.datetime.now().hour + ":" \
                     + "%02d" % datetime.datetime.now().minute + ":" \
                     + "%02d" % datetime.datetime.now().second + ":" \
