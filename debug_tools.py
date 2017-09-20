@@ -25,87 +25,102 @@
 
 import datetime
 import logging
+import platform
 import os
-
-# convert to into a class member!
-# https://stackoverflow.com/questions/27930038/how-to-define-global-function-in-python
-def _log(_log_level, log_level, currentTime, lastTime, debugger_name, msg, logger) :
-
-    # You can access global variables without the global keyword.
-    if _log_level & log_level != 0:
-
-        # https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
-        print( "[%s] " % debugger_name \
-                + "%02d" % currentTime.hour + ":" \
-                + "%02d" % currentTime.minute + ":" \
-                + "%02d" % currentTime.second + ":" \
-                + str( currentTime.microsecond ) \
-                + "%7d " % ( currentTime.microsecond - lastTime.microsecond ) \
-                + "".join([str( m ) for m in msg]) )
 
 
 class Debugger():
 
-    # Enable debug messages: (bitwise)
-    #
-    # 0  - Disabled debugging.
-    # 1  - Errors messages.
-    _log_level   = 0
-
     startTime = datetime.datetime.now()
     lastTime  = startTime
 
-    def __init__(self, log_level=1, debugger_name=None, output_file=None):
-        """
-        What is a clean, pythonic way to have multiple constructors in Python?
-        https://stackoverflow.com/questions/682504/what-is-a-clean-pythonic-way-to-have-multiple-constructors-in-python
-        """
-        self._log_level  = log_level
-        self.output_file = output_file
+    logger        = None
+    output_file   = None
+    debugger_name = os.path.basename( __file__ )
 
+    def __init__(self, log_level=127, debugger_name=None, output_file=None):
+        """
+            What is a clean, pythonic way to have multiple constructors in Python?
+            https://stackoverflow.com/questions/682504/what-is-a-clean-pythonic-way-to-have-multiple-constructors-in-python
+        """
+        # Enable debug messages: (bitwise)
+        #
+        # 0  - Disabled debugging.
+        # 1  - Errors messages.
+        self._log_level = log_level
+
+        # Override a method at instance level
+        # https://stackoverflow.com/questions/394770/override-a-method-at-instance-level
         if output_file:
-            self.create_file_logger()
-
-        else:
-            self.logger = None
+            self.__set_debug_file_path( output_file )
+            self._log = self.create_file_logger()
 
         if debugger_name:
             self.debugger_name = debugger_name
 
-        else:
-            self.debugger_name = os.path.basename( __file__ )
-
     def __call__(self, log_level, *msg):
         currentTime = datetime.datetime.now()
 
-        _log( self._log_level, log_level, currentTime, self.lastTime, self.debugger_name, msg, self.logger )
+        self._log( log_level, currentTime, msg )
         self.lastTime = currentTime
 
-    def create_file_logger():
+    def _log(self, log_level, currentTime, msg):
 
-        # Clear the log file contents
-        open(self.output_file, 'w').close()
+        # You can access global variables without the global keyword.
+        if self._log_level & log_level != 0:
+
+            # https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
+            print( "[%s] " % self.debugger_name \
+                    + "%02d" % currentTime.hour + ":" \
+                    + "%02d" % currentTime.minute + ":" \
+                    + "%02d" % currentTime.second + ":" \
+                    + str( currentTime.microsecond ) \
+                    + "%7d " % ( currentTime.microsecond - self.lastTime.microsecond ) \
+                    + "".join([str( m ) for m in msg]) )
+
+    def create_file_logger(self):
         print( "Logging the DebugTools debug to the file " + self.output_file )
 
         # Setup the logger
         logging.basicConfig( filename=self.output_file, format='%(asctime)s %(message)s', level=logging.DEBUG )
 
         # https://docs.python.org/2.6/library/logging.html
-        self.logger = logging.getLogger(self.debugger_name)
+        self.logger = logging.getLogger( self.debugger_name )
 
         # How to define global function in Python?
         # https://stackoverflow.com/questions/27930038/how-to-define-global-function-in-python
-        global _log
-
-        def _log(_log_level, log_level, currentTime, lastTime, debugger_name, msg, logger):
+        def _log( log_level, currentTime, msg ):
 
             # You can access global variables without the global keyword.
-            if _log_level & log_level != 0:
+            if self._log_level & log_level != 0:
 
                 # https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
-                logger.debug( "[%s] " % debugger_name \
+                self.logger.debug( "[%s] " % self.debugger_name \
                         + str( currentTime.microsecond ) \
-                        + "%7d " % ( currentTime.microsecond - lastTime.microsecond ) \
+                        + "%7d " % ( currentTime.microsecond - self.lastTime.microsecond ) \
                         + "".join([str( m ) for m in msg]) )
+
+        return _log
+
+    def clear_log_file():
+        """
+            Clear the log file contents
+        """
+        open(self.output_file, 'w').close()
+
+    def __set_debug_file_path(self, output_file):
+        """
+            Reliably detect Windows in Python
+            https://stackoverflow.com/questions/1387222/reliably-detect-windows-in-python
+        """
+        # Convert "D:/User/Downloads/debug.txt"
+        # To "/cygwin/D/User/Downloads/debug.txt"
+        if "CYGWIN" in platform.system().upper():
+            output_file = output_file.replace( ":", "", 1 )
+            output_file = output_file.replace( "\\", "/", 1 )
+            output_file = output_file.replace( "\\\\", "/", 1 )
+
+        self.output_file = "/cygdrive/" + output_file
+        print( "PATH: " + self.output_file )
 
 
