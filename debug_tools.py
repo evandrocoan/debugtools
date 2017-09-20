@@ -52,8 +52,11 @@ class Debugger():
         # Override a method at instance level
         # https://stackoverflow.com/questions/394770/override-a-method-at-instance-level
         if output_file:
-            self.__set_debug_file_path( output_file )
+            self.setup_file_logger( output_file )
             self._log = self.create_file_logger()
+
+        else:
+            self._log = self.create_stream_logger()
 
         if debugger_name:
             self.debugger_name = debugger_name
@@ -65,20 +68,10 @@ class Debugger():
         self.lastTime = currentTime
 
     def _log(self, log_level, currentTime, msg):
+        raise NotImplementedError
 
-        # You can access global variables without the global keyword.
-        if self._log_level & log_level != 0:
-
-            # https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
-            print( "[%s] " % self.debugger_name \
-                    + "%02d" % currentTime.hour + ":" \
-                    + "%02d" % currentTime.minute + ":" \
-                    + "%02d" % currentTime.second + ":" \
-                    + str( currentTime.microsecond ) \
-                    + "%7d " % ( currentTime.microsecond - self.lastTime.microsecond ) \
-                    + "".join([str( m ) for m in msg]) )
-
-    def create_file_logger(self):
+    def setup_file_logger(self, output_file):
+        self.__set_debug_file_path( output_file )
         print( "Logging the DebugTools debug to the file " + self.output_file )
 
         # Setup the logger
@@ -87,6 +80,7 @@ class Debugger():
         # https://docs.python.org/2.6/library/logging.html
         self.logger = logging.getLogger( self.debugger_name )
 
+    def create_file_logger(self):
         # How to define global function in Python?
         # https://stackoverflow.com/questions/27930038/how-to-define-global-function-in-python
         def _log( log_level, currentTime, msg ):
@@ -102,7 +96,26 @@ class Debugger():
 
         return _log
 
-    def clear_log_file():
+    def create_stream_logger(self):
+        # How to define global function in Python?
+        # https://stackoverflow.com/questions/27930038/how-to-define-global-function-in-python
+        def _log( log_level, currentTime, msg ):
+
+            # You can access global variables without the global keyword.
+            if self._log_level & log_level != 0:
+
+                # https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
+                print( "[%s] " % self.debugger_name \
+                        + "%02d" % currentTime.hour + ":" \
+                        + "%02d" % currentTime.minute + ":" \
+                        + "%02d" % currentTime.second + ":" \
+                        + str( currentTime.microsecond ) \
+                        + "%7d " % ( currentTime.microsecond - self.lastTime.microsecond ) \
+                        + "".join([str( m ) for m in msg]) )
+
+        return _log
+
+    def clear_log_file(self):
         """
             Clear the log file contents
         """
