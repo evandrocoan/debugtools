@@ -28,8 +28,6 @@ import logging
 import os
 
 
-debugger_name = os.path.basename( __file__ )
-
 # Debugging
 if 'LOG_FILE_NAME' in globals():
     del LOG_FILE_NAME
@@ -37,18 +35,6 @@ if 'LOG_FILE_NAME' in globals():
 
 # Uncomment this to save the debugging to a file.
 # LOG_FILE_NAME = os.path.abspath('D:/User/Downloads/tree.txt')
-
-
-startTime = datetime.datetime.now()
-print_debug_lastTime = startTime.microsecond
-
-
-# Enable debug messages: (bitwise)
-#
-# 0  - Disabled debugging.
-# 1  - Errors messages.
-g_debug_level = 0
-
 
 
 if 'LOG_FILE_NAME' in globals():
@@ -60,46 +46,60 @@ if 'LOG_FILE_NAME' in globals():
     # Setup the logger
     logging.basicConfig( filename=LOG_FILE_NAME, format='%(asctime)s %(message)s', level=logging.DEBUG )
 
-    def log(level, *msg) :
-
-        global print_debug_lastTime
-        currentTime = datetime.datetime.now().microsecond
+    def _log(_level, level, currentTime, lastTime, debugger_name, msg) :
 
         # You can access global variables without the global keyword.
-        if g_debug_level & level != 0:
+        if _level & level != 0:
 
             # https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
             logging.debug( "[%s] " % debugger_name \
-                    + str( currentTime ) \
-                    + "%7d " % ( currentTime - print_debug_lastTime ) \
+                    + str( currentTime.microsecond ) \
+                    + "%7d " % ( currentTime.microsecond - lastTime.microsecond ) \
                     + "".join([str( m ) for m in msg]) )
-
-            print_debug_lastTime = currentTime
 
 else:
 
-    def log(level, *msg) :
-
-        global print_debug_lastTime
-        currentTime = datetime.datetime.now().microsecond
+    def _log(_level, level, currentTime, lastTime, debugger_name, msg) :
 
         # You can access global variables without the global keyword.
-        if g_debug_level & level != 0:
+        if _level & level != 0:
 
             # https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
             print( "[%s] " % debugger_name \
-                    + "%02d" % datetime.datetime.now().hour + ":" \
-                    + "%02d" % datetime.datetime.now().minute + ":" \
-                    + "%02d" % datetime.datetime.now().second + ":" \
-                    + str( currentTime ) \
-                    + "%7d " % ( currentTime - print_debug_lastTime ) \
+                    + "%02d" % currentTime.hour + ":" \
+                    + "%02d" % currentTime.minute + ":" \
+                    + "%02d" % currentTime.second + ":" \
+                    + str( currentTime.microsecond ) \
+                    + "%7d " % ( currentTime.microsecond - lastTime.microsecond ) \
                     + "".join([str( m ) for m in msg]) )
 
-            print_debug_lastTime = currentTime
 
 
+class Debugger():
 
+    # Enable debug messages: (bitwise)
+    #
+    # 0  - Disabled debugging.
+    # 1  - Errors messages.
+    _level   = 0
 
+    startTime = datetime.datetime.now()
+    lastTime  = startTime
 
+    def __init__(self):
+        self.debugger_name = os.path.basename( __file__ )
+
+    def __init__(self, file_name):
+        self.debugger_name = os.path.basename( file_name )
+
+    def __init__(self, log_level, file_name):
+        self._level        = log_level
+        self.debugger_name = os.path.basename( file_name )
+
+    def __call__(self, level, *msg):
+        currentTime = datetime.datetime.now()
+
+        _log( self._level, level, currentTime, self.lastTime, self.debugger_name, msg )
+        self.lastTime = currentTime
 
 
