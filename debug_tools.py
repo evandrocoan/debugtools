@@ -128,12 +128,15 @@ class Debugger():
         """
         # Convert "D:/User/Downloads/debug.txt"
         # To "/cygwin/D/User/Downloads/debug.txt"
-        if "CYGWIN" in platform.system().upper():
+        if "CYGWIN" in platform.system().upper() and os.path.isabs( output_file ):
             output_file = output_file.replace( ":", "", 1 )
             output_file = output_file.replace( "\\", "/", 1 )
             output_file = output_file.replace( "\\\\", "/", 1 )
+            self.output_file = "/cygdrive/" + output_file
 
-        self.output_file = "/cygdrive/" + output_file
-        print( "PATH: " + self.output_file )
+        else:
+            self.output_file = output_file
+
+        # print( "PATH: " + self.output_file )
 
 
