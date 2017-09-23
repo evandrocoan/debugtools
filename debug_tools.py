@@ -72,7 +72,7 @@ class Debugger():
 
     def setup_file_logger(self, output_file):
         self.__set_debug_file_path( output_file )
-        print( "Logging the DebugTools debug to the file " + self.output_file )
+        print( self.get_time_prefix( self.startTime ) + "Logging the DebugTools debug to the file " + self.output_file )
 
         # Setup the logger
         logging.basicConfig( filename=self.output_file, format='%(asctime)s %(message)s', level=logging.DEBUG )
@@ -89,10 +89,13 @@ class Debugger():
             if self._log_level & log_level != 0:
 
                 # https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
-                self.logger.debug( "[%s] " % self.debugger_name \
-                        + str( currentTime.microsecond ) \
-                        + "%7d " % ( currentTime.microsecond - self.lastTime.microsecond ) \
-                        + "".join([str( m ) for m in msg]) )
+                self.logger.debug( "".join(
+                        [
+                            "[%s] " % self.debugger_name,
+                            "%7d "  % currentTime.microsecond,
+                            "%7d "  % ( currentTime.microsecond - self.lastTime.microsecond )
+                        ]
+                        + [ str( m ) for m in msg] ) )
 
         return _log
 
@@ -105,15 +108,18 @@ class Debugger():
             if self._log_level & log_level != 0:
 
                 # https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
-                print( "[%s] " % self.debugger_name \
-                        + "%02d" % currentTime.hour + ":" \
-                        + "%02d" % currentTime.minute + ":" \
-                        + "%02d" % currentTime.second + ":" \
-                        + str( currentTime.microsecond ) \
-                        + "%7d " % ( currentTime.microsecond - self.lastTime.microsecond ) \
-                        + "".join([str( m ) for m in msg]) )
+                print( "".join(
+                        [ self.get_time_prefix( currentTime ), "%7d " % ( currentTime.microsecond - self.lastTime.microsecond ) ]
+                        + [ str( m ) for m in msg ] ) )
 
         return _log
+
+    def get_time_prefix(self, currentTime):
+        return ''.join( [ "[%s]" % self.debugger_name,
+                        " %02d"  % currentTime.hour,
+                        ":%02d" % currentTime.minute,
+                        ":%02d" % currentTime.second,
+                        " %7d " % currentTime.microsecond ] )
 
     def clear_log_file(self):
         """
