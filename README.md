@@ -29,8 +29,7 @@ import sys
 sys.path.insert(0,'../PythonDebugTools')
 
 # Import the debugger
-import debug_tools
-from debug_tools import log
+from debug_tools import Debugger
 
 # Enable debug messages: (bitwise)
 #
@@ -38,10 +37,10 @@ from debug_tools import log
 # 1   - Basic logging messages.
 # 2   - AgentPlayer       class' notices.
 # 4   - StickIntelligence class' notices.
-#
 # 127 - All debugging levels at the same time.
-debug_tools.g_debug_level = 127
+log = Debugger( 127, os.path.basename( __file__ ) )
 
+# Later, use `log._log_level = 0` to disable the debugger, or change the level.
 log( 1, "Debugging" )
 log( 1, "..." )
 log( 1, "..." )
@@ -64,8 +63,7 @@ def assert_path(module):
 assert_path( os.path.join( os.path.dirname( os.path.dirname( os.path.realpath( __file__ ) ) ), 'PythonDebugTools' ) )
 
 # Import the debugger
-import debug_tools
-from debug_tools import log
+from debug_tools import Debugger
 
 # Enable debug messages: (bitwise)
 #
@@ -75,12 +73,15 @@ from debug_tools import log
 # 4   - StickIntelligence class' notices.
 #
 # 127 - All debugging levels at the same time.
-debug_tools.g_debug_level = 127
+log = Debugger( 127, os.path.basename( __file__ ) )
 
+# Later, use `log._log_level = 0` to disable the debugger, or change the level.
 log( 1, "Debugging" )
 log( 1, "..." )
 log( 1, "..." )
+
 ```
+
 
 
 
