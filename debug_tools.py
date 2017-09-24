@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: UTF-8 -*-
 
 ####################### Licensing #######################################################
 #
@@ -22,11 +24,11 @@
 #########################################################################################
 #
 
+import os
 
 import datetime
 import logging
 import platform
-import os
 
 
 class Debugger():
@@ -72,6 +74,8 @@ class Debugger():
 
     def setup_file_logger(self, output_file):
         self.__set_debug_file_path( output_file )
+
+        print( "" )
         print( self.get_time_prefix( self.startTime ) + "Logging the DebugTools debug to the file " + self.output_file )
 
         # Setup the logger
@@ -95,7 +99,7 @@ class Debugger():
                             "%7d "  % currentTime.microsecond,
                             "%7d "  % ( currentTime.microsecond - self.lastTime.microsecond )
                         ]
-                        + [ str( m ) for m in msg] ) )
+                        + [ str( m ) for m in msg ] ) )
 
         return _log
 
@@ -125,6 +129,7 @@ class Debugger():
         """
             Clear the log file contents
         """
+        # os.remove(self.output_file)
         open(self.output_file, 'w').close()
 
     def __set_debug_file_path(self, output_file):
