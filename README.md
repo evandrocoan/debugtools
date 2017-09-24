@@ -79,9 +79,15 @@ log = Debugger( 127, os.path.basename( __file__ ) )
 log( 1, "Debugging" )
 log( 1, "..." )
 log( 1, "..." )
-
 ```
 
+If you want to reload the debug tools code on the fly, you can use this to import it:
+```
+import imp
+import debug_tools
+imp.reload( debug_tools )
+import debug_tools
+```
 
 
 
