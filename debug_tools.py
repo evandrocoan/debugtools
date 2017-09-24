@@ -129,6 +129,8 @@ class Debugger():
         """
             Clear the log file contents
         """
+        print( "Cleaning the file: " + self.output_file )
+
         # os.remove(self.output_file)
         open(self.output_file, 'w').close()
 
