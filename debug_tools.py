@@ -46,19 +46,10 @@ class Debugger():
             https://stackoverflow.com/questions/682504/what-is-a-clean-pythonic-way-to-have-multiple-constructors-in-python
         """
         # Enable debug messages: (bitwise)
-        #
         # 0  - Disabled debugging.
         # 1  - Errors messages.
         self._log_level = log_level
-
-        # Override a method at instance level
-        # https://stackoverflow.com/questions/394770/override-a-method-at-instance-level
-        if output_file:
-            self.setup_file_logger( output_file )
-            self._log = self.create_file_logger()
-
-        else:
-            self._log = self.create_stream_logger()
+        self.log_to_file( output_file )
 
         if debugger_name:
             self.debugger_name = debugger_name
@@ -69,14 +60,41 @@ class Debugger():
         self._log( log_level, currentTime, msg )
         self.lastTime = currentTime
 
+    def clear_log_file(self):
+        """
+            Clear the log file contents
+        """
+        if self.output_file:
+            print( "Cleaning the file: " + self.output_file )
+
+            # os.remove(self.output_file)
+            open(self.output_file, 'w').close()
+
+    def log_to_file(self, output_file=None):
+        """
+            Instead of output the debug to the standard output stream, send it a file on the file
+            system, which is faster for large outputs.
+
+            @param output_file   a relative or absolute path to the log file. If empty the output
+            will be sent to the standard output stream.
+        """
+        # Override a method at instance level
+        # https://stackoverflow.com/questions/394770/override-a-method-at-instance-level
+        if output_file:
+            self._setup_file_logger( output_file )
+            self._log = self._create_file_logger()
+
+        else:
+            self._log = self._create_stream_logger()
+
     def _log(self, log_level, currentTime, msg):
         raise NotImplementedError
 
-    def setup_file_logger(self, output_file):
-        self.__set_debug_file_path( output_file )
+    def _setup_file_logger(self, output_file):
+        self._set_debug_file_path( output_file )
 
         print( "" )
-        print( self.get_time_prefix( self.startTime ) + "Logging the DebugTools debug to the file " + self.output_file )
+        print( self._get_time_prefix( self.startTime ) + "Logging the DebugTools debug to the file " + self.output_file )
 
         # Setup the logger
         logging.basicConfig( filename=self.output_file, format='%(asctime)s %(message)s', level=logging.DEBUG )
@@ -84,7 +102,7 @@ class Debugger():
         # https://docs.python.org/2.6/library/logging.html
         self.logger = logging.getLogger( self.debugger_name )
 
-    def create_file_logger(self):
+    def _create_file_logger(self):
         # How to define global function in Python?
         # https://stackoverflow.com/questions/27930038/how-to-define-global-function-in-python
         def _log( log_level, currentTime, msg ):
@@ -103,7 +121,7 @@ class Debugger():
 
         return _log
 
-    def create_stream_logger(self):
+    def _create_stream_logger(self):
         # How to define global function in Python?
         # https://stackoverflow.com/questions/27930038/how-to-define-global-function-in-python
         def _log( log_level, currentTime, msg ):
@@ -113,28 +131,19 @@ class Debugger():
 
                 # https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
                 print( "".join(
-                        [ self.get_time_prefix( currentTime ), "%7d " % ( currentTime.microsecond - self.lastTime.microsecond ) ]
+                        [ self._get_time_prefix( currentTime ), "%7d " % ( currentTime.microsecond - self.lastTime.microsecond ) ]
                         + [ str( m ) for m in msg ] ) )
 
         return _log
 
-    def get_time_prefix(self, currentTime):
+    def _get_time_prefix(self, currentTime):
         return ''.join( [ "[%s]" % self.debugger_name,
                         " %02d"  % currentTime.hour,
                         ":%02d" % currentTime.minute,
                         ":%02d" % currentTime.second,
                         " %7d " % currentTime.microsecond ] )
 
-    def clear_log_file(self):
-        """
-            Clear the log file contents
-        """
-        print( "Cleaning the file: " + self.output_file )
-
-        # os.remove(self.output_file)
-        open(self.output_file, 'w').close()
-
-    def __set_debug_file_path(self, output_file):
+    def _set_debug_file_path(self, output_file):
         """
             Reliably detect Windows in Python
             https://stackoverflow.com/questions/1387222/reliably-detect-windows-in-python
