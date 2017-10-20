@@ -83,9 +83,11 @@ class Debugger():
         if output_file:
             self._setup_file_logger( output_file )
             self._log = self._create_file_logger()
+            self.is_logging_file = True
 
         else:
             self._log = self._create_stream_logger()
+            self.is_logging_file = False
 
     def _log(self, log_level, currentTime, msg):
         raise NotImplementedError
@@ -160,5 +162,13 @@ class Debugger():
             self.output_file = output_file
 
         # print( "PATH: " + self.output_file )
+
+    def insert_empty_line(self):
+
+        if self.is_logging_file:
+            self.logger.debug( "" )
+
+        else:
+            print( "" )
 
 
