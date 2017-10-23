@@ -63,7 +63,7 @@ def assert_path(module):
 assert_path( os.path.join( os.path.dirname( os.path.dirname( os.path.realpath( __file__ ) ) ), 'PythonDebugTools' ) )
 
 # Import the debugger
-from debug_tools import Debugger
+from PythonDebugTools.debug_tools import Debugger
 
 # Enable debug messages: (bitwise)
 #
