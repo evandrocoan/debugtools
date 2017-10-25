@@ -90,7 +90,7 @@ class Debugger():
             self._log = self._create_stream_logger()
             self.is_logging_file = False
 
-    def clean(log_level, output):
+    def clean(self, log_level, output):
 
         if self._log_level & log_level != 0:
             message = "".join( [ str( m ) for m in output ] )
@@ -126,13 +126,14 @@ class Debugger():
 
             # You can access global variables without the global keyword.
             if self._log_level & log_level != 0:
+                deltatime_difference = currentTime - self.lastTime
 
                 # https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
                 self.logger.debug( "".join(
                         [
                             "[%s] " % self.debugger_name,
                             "%7d "  % currentTime.microsecond,
-                            "%7d "  % ( currentTime.microsecond - self.lastTime.microsecond )
+                            "%7d "  % ( deltatime_difference.microseconds )
                         ]
                         + [ str( m ) for m in msg ] ) )
 
@@ -145,10 +146,11 @@ class Debugger():
 
             # You can access global variables without the global keyword.
             if self._log_level & log_level != 0:
+                deltatime_difference = currentTime - self.lastTime
 
                 # https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
                 print( "".join(
-                        [ self._get_time_prefix( currentTime ), "%7d " % ( currentTime.microsecond - self.lastTime.microsecond ) ]
+                        [ self._get_time_prefix( currentTime ), "%7d " % ( deltatime_difference.microseconds ) ]
                         + [ str( m ) for m in msg ] ) )
 
         return _log
@@ -158,7 +160,7 @@ class Debugger():
                         " %02d"  % currentTime.hour,
                         ":%02d" % currentTime.minute,
                         ":%02d" % currentTime.second,
-                        " %7d " % currentTime.microsecond ] )
+                        ":%07d " % currentTime.microsecond ] )
 
     def _set_debug_file_path(self, output_file):
         """
