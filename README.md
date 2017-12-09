@@ -26,7 +26,7 @@ Basic logger for python on the output form:
 To use it:
 ```python
 import sys
-sys.path.insert(0,'../PythonDebugTools')
+sys.path.insert(0,'../PythonDebugTools/all')
 
 # Import the debugger
 from debug_tools import Debugger
@@ -60,10 +60,10 @@ def assert_path(module):
         sys.path.append( module )
 
 # Import the debug tools
-assert_path( os.path.join( os.path.dirname( os.path.dirname( os.path.realpath( __file__ ) ) ), 'PythonDebugTools' ) )
+assert_path( os.path.join( os.path.dirname( os.path.dirname( os.path.realpath( __file__ ) ) ), 'PythonDebugTools/all' ) )
 
 # Import the debugger
-from PythonDebugTools.debug_tools import Debugger
+from python_debug_tools import Debugger
 
 # Enable debug messages: (bitwise)
 #
