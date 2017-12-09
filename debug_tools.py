@@ -91,7 +91,9 @@ class Debugger():
             self.is_logging_file = False
 
     def clean(self, log_level, output):
-
+        """
+            Prints a message without the time prefix `[plugin_name.py] 11:13:51:0582059 `
+        """
         if self._log_level & log_level != 0:
             message = "".join( [ str( m ) for m in output ] )
 
