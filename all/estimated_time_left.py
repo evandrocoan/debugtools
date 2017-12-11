@@ -11,6 +11,15 @@ class ProgressInfo:
             return self.elapsed_time * (1/self.progress) - self.elapsed_time
         return 0
 
+def format_time(seconds):
+    hours   = int(seconds // 3600)
+    minutes = int((seconds % 3600) // 60)
+    seconds = int(seconds % 60)
+    return "%02d:%02d:%02d" % ( hours, minutes, seconds )
+
+def progress_info(progress):
+    return "{:>05.2f}%, {:s} of {:s}".format(
+            progress.progress * 100, format_time( progress.elapsed_time ), format_time( progress.time_remaining() ) )
 
 def range(n, info_frequency=0):
     i = 0
