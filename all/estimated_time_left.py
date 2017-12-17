@@ -17,9 +17,27 @@ def format_time(seconds):
     seconds = int(seconds % 60)
     return "%02d:%02d:%02d" % ( hours, minutes, seconds )
 
-def progress_info(progress):
+def progress_info(progress_info, set_progress=None):
+    if set_progress:
+        set_progress(progress_info)
+
     return "{:>05.2f}%, {:s} of {:s}".format(
-            progress.progress * 100, format_time( progress.elapsed_time ), format_time( progress.time_remaining() ) )
+            progress_info.progress * 100, format_time( progress_info.elapsed_time ), format_time( progress_info.time_remaining() ) )
+
+class CurrentUpdateProgress():
+
+    def __init__(self, prefix_text):
+        self.progress    = "00.00%, 00:05:11"
+        self.prefix_text = prefix_text
+
+    def __call__(self, progress_info):
+        self.set_progress( progress_info )
+
+    def set_progress(self, progress_info):
+        self.progress = "{:>05.2f}%, {:s}".format( progress_info.progress * 100, format_time( progress_info.time_remaining() ) )
+
+    def __str__(self):
+        return "%s (%s)" % ( self.prefix_text, self.progress )
 
 def range(n, info_frequency=0):
     i = 0
