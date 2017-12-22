@@ -103,7 +103,7 @@ class Debugger():
             else:
                 print( message )
 
-    def insert_empty_line(self, level):
+    def insert_empty_line(self, level=1):
         self.clean( level, "" )
 
     def _log(self, log_level, currentTime, msg):
