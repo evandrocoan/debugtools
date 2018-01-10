@@ -27,15 +27,14 @@
 
 import os
 
+import time
 import datetime
+
 import logging
 import platform
 
 
 class Debugger():
-
-    startTime = datetime.datetime.now()
-    lastTime  = startTime
 
     logger        = None
     output_file   = None
@@ -46,6 +45,8 @@ class Debugger():
             What is a clean, pythonic way to have multiple constructors in Python?
             https://stackoverflow.com/questions/682504/what-is-a-clean-pythonic-way-to-have-multiple-constructors-in-python
         """
+        self.lastTick = time.perf_counter()
+
         # Enable debug messages: (bitwise)
         # 0  - Disabled debugging.
         # 1  - Errors messages.
@@ -56,10 +57,10 @@ class Debugger():
             self.debugger_name = debugger_name
 
     def __call__(self, log_level, *msg):
-        currentTime = datetime.datetime.now()
+        self.currentTick = time.perf_counter()
 
-        self._log( log_level, currentTime, msg )
-        self.lastTime = currentTime
+        self._log( log_level, msg )
+        self.lastTick = self.currentTick
 
     def clear_log_file(self):
         """
@@ -106,14 +107,14 @@ class Debugger():
     def insert_empty_line(self, level=1):
         self.clean( level, "" )
 
-    def _log(self, log_level, currentTime, msg):
+    def _log(self, log_level, msg):
         raise NotImplementedError
 
     def _setup_file_logger(self, output_file):
         self._set_debug_file_path( output_file )
 
         print( "" )
-        print( self._get_time_prefix( self.startTime ) + "Logging the DebugTools debug to the file " + self.output_file )
+        print( self._get_time_prefix( datetime.datetime.now() ) + "Logging the DebugTools debug to the file " + self.output_file )
 
         # Setup the logger
         logging.basicConfig( filename=self.output_file, format='%(asctime)s %(message)s', level=logging.DEBUG )
@@ -124,18 +125,17 @@ class Debugger():
     def _create_file_logger(self):
         # How to define global function in Python?
         # https://stackoverflow.com/questions/27930038/how-to-define-global-function-in-python
-        def _log( log_level, currentTime, msg ):
+        def _log( log_level, msg ):
 
             # You can access global variables without the global keyword.
             if self._log_level & log_level != 0:
-                deltatime_difference = currentTime - self.lastTime
 
                 # https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
                 self.logger.debug( "".join(
                         [
                             "[%s] " % self.debugger_name,
-                            "%7d "  % currentTime.microsecond,
-                            "%7d "  % ( deltatime_difference.microseconds )
+                            "%7d "  % datetime.datetime.now().microsecond,
+                            "%7d "  % self.deltatime_difference()
                         ]
                         + [ str( m ) for m in msg ] ) )
 
@@ -144,18 +144,20 @@ class Debugger():
     def _create_stream_logger(self):
         # How to define global function in Python?
         # https://stackoverflow.com/questions/27930038/how-to-define-global-function-in-python
-        def _log( log_level, currentTime, msg ):
+        def _log( log_level, msg ):
 
             # You can access global variables without the global keyword.
             if self._log_level & log_level != 0:
-                deltatime_difference = currentTime - self.lastTime
 
                 # https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
                 print( "".join(
-                        [ self._get_time_prefix( currentTime ), "%7d " % ( deltatime_difference.microseconds ) ]
+                        [ self._get_time_prefix( datetime.datetime.now() ), "%.2e " % self.deltatime_difference() ]
                         + [ str( m ) for m in msg ] ) )
 
         return _log
+
+    def deltatime_difference(self):
+        return self.currentTick - self.lastTick
 
     def _get_time_prefix(self, currentTime):
         return ''.join( [ "[%s]" % self.debugger_name,
@@ -168,13 +170,16 @@ class Debugger():
         """
             Reliably detect Windows in Python
             https://stackoverflow.com/questions/1387222/reliably-detect-windows-in-python
+
+            Convert "D:/User/Downloads/debug.txt"
+            To "/cygwin/D/User/Downloads/debug.txt"
         """
-        # Convert "D:/User/Downloads/debug.txt"
-        # To "/cygwin/D/User/Downloads/debug.txt"
+
         if "CYGWIN" in platform.system().upper() and os.path.isabs( output_file ):
             output_file = output_file.replace( ":", "", 1 )
             output_file = output_file.replace( "\\", "/", 1 )
             output_file = output_file.replace( "\\\\", "/", 1 )
+
             self.output_file = "/cygdrive/" + output_file
 
         else:
