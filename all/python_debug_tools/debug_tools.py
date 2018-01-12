@@ -88,13 +88,14 @@ class Debugger(Logger):
         # Override a method at instance level
         # https://stackoverflow.com/questions/394770/override-a-method-at-instance-level
         if output_file:
+            self._is_logging_file = True
+
             self._setup_file_logger( output_file )
             self._log = self._create_file_logger()
-            self.is_logging_file = True
 
         else:
+            self._is_logging_file = False
             self._log = self._create_stream_logger()
-            self.is_logging_file = False
 
     def clean(self, debug_level, output):
         """
@@ -104,7 +105,7 @@ class Debugger(Logger):
         if self.debug_level & debug_level != 0:
             message = "".join( [ str( m ) for m in output ] )
 
-            if self.is_logging_file:
+            if self._is_logging_file:
                 self.logger.debug( message )
 
             else:
@@ -132,7 +133,7 @@ class Debugger(Logger):
 
         # How to define global function in Python?
         # https://stackoverflow.com/questions/27930038/how-to-define-global-function-in-python
-        def _log( debug_level, msg ):
+        def log( debug_level, msg ):
 
             if self.debug_level & debug_level != 0:
 
@@ -145,32 +146,33 @@ class Debugger(Logger):
                         ]
                         + [ str( m ) for m in msg ] ) )
 
-        return _log
+        return log
 
     def _create_stream_logger(self):
 
         # How to define global function in Python?
         # https://stackoverflow.com/questions/27930038/how-to-define-global-function-in-python
-        def _log( debug_level, msg ):
+        def log( debug_level, msg ):
 
             if self.debug_level & debug_level != 0:
 
                 # https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
                 print( "".join(
-                        [ self._get_time_prefix( datetime.datetime.now() ), "%.2e " % self._deltatime_difference() ]
+                        self._get_time_prefix( datetime.datetime.now() )
+                        + [ "%.2e " % self._deltatime_difference() ]
                         + [ str( m ) for m in msg ] ) )
 
-        return _log
+        return log
 
     def _deltatime_difference(self):
         return self.currentTick - self.lastTick
 
     def _get_time_prefix(self, currentTime):
-        return ''.join( [ "[%s]" % self.debugger_name,
-                        " %02d"  % currentTime.hour,
-                        ":%02d" % currentTime.minute,
-                        ":%02d" % currentTime.second,
-                        ":%07d " % currentTime.microsecond ] )
+        return [ "[%s]" % self.debugger_name,
+                " %02d" % currentTime.hour,
+                ":%02d" % currentTime.minute,
+                ":%02d" % currentTime.second,
+                ":%07d " % currentTime.microsecond ]
 
     def _set_debug_file_path(self, output_file):
         """
