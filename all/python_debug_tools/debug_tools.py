@@ -66,6 +66,7 @@ class Debugger():
         """
             Clear the log file contents
         """
+
         if self.output_file:
             print( "Cleaning the file: " + self.output_file )
 
@@ -80,6 +81,7 @@ class Debugger():
             @param output_file   a relative or absolute path to the log file. If empty the output
             will be sent to the standard output stream.
         """
+
         # Override a method at instance level
         # https://stackoverflow.com/questions/394770/override-a-method-at-instance-level
         if output_file:
@@ -95,6 +97,7 @@ class Debugger():
         """
             Prints a message without the time prefix `[plugin_name.py] 11:13:51:0582059 `
         """
+
         if self._log_level & log_level != 0:
             message = "".join( [ str( m ) for m in output ] )
 
@@ -123,11 +126,11 @@ class Debugger():
         self.logger = logging.getLogger( self.debugger_name )
 
     def _create_file_logger(self):
+
         # How to define global function in Python?
         # https://stackoverflow.com/questions/27930038/how-to-define-global-function-in-python
         def _log( log_level, msg ):
 
-            # You can access global variables without the global keyword.
             if self._log_level & log_level != 0:
 
                 # https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
@@ -135,28 +138,28 @@ class Debugger():
                         [
                             "[%s] " % self.debugger_name,
                             "%7d "  % datetime.datetime.now().microsecond,
-                            "%7d "  % self.deltatime_difference()
+                            "%7d "  % self._deltatime_difference()
                         ]
                         + [ str( m ) for m in msg ] ) )
 
         return _log
 
     def _create_stream_logger(self):
+
         # How to define global function in Python?
         # https://stackoverflow.com/questions/27930038/how-to-define-global-function-in-python
         def _log( log_level, msg ):
 
-            # You can access global variables without the global keyword.
             if self._log_level & log_level != 0:
 
                 # https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
                 print( "".join(
-                        [ self._get_time_prefix( datetime.datetime.now() ), "%.2e " % self.deltatime_difference() ]
+                        [ self._get_time_prefix( datetime.datetime.now() ), "%.2e " % self._deltatime_difference() ]
                         + [ str( m ) for m in msg ] ) )
 
         return _log
 
-    def deltatime_difference(self):
+    def _deltatime_difference(self):
         return self.currentTick - self.lastTick
 
     def _get_time_prefix(self, currentTime):
