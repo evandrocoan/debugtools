@@ -33,33 +33,36 @@ import datetime
 import logging
 import platform
 
+from logging import Logger
+from logging import Manager
 
-class Debugger():
 
-    logger        = None
-    output_file   = None
-    debugger_name = os.path.basename( __file__ )
+class Debugger(Logger):
 
-    def __init__(self, log_level=127, debugger_name=None, output_file=None):
+    logger      = None
+    output_file = None
+
+    def __init__(self, debugger_name, logging_level=None):
         """
             What is a clean, pythonic way to have multiple constructors in Python?
             https://stackoverflow.com/questions/682504/what-is-a-clean-pythonic-way-to-have-multiple-constructors-in-python
         """
+        self.debugger_name = debugger_name
+        super( Debugger, self ).__init__( self.debugger_name, logging_level or "DEBUG" )
+
+        # Initialize the first last tick as the current tick
         self.lastTick = time.perf_counter()
 
         # Enable debug messages: (bitwise)
-        # 0  - Disabled debugging.
-        # 1  - Errors messages.
-        self._log_level = log_level
-        self.log_to_file( output_file )
+        # 0 - Disabled debugging
+        # 1 - Errors messages
+        self.debug_level = 127
+        self.set_file_logger( None )
 
-        if debugger_name:
-            self.debugger_name = debugger_name
-
-    def __call__(self, log_level, *msg):
+    def __call__(self, debug_level, *msg):
         self.currentTick = time.perf_counter()
 
-        self._log( log_level, msg )
+        self._log( debug_level, msg )
         self.lastTick = self.currentTick
 
     def clear_log_file(self):
@@ -73,7 +76,7 @@ class Debugger():
             # os.remove(self.output_file)
             open(self.output_file, 'w').close()
 
-    def log_to_file(self, output_file=None):
+    def set_file_logger(self, output_file=None):
         """
             Instead of output the debug to the standard output stream, send it a file on the file
             system, which is faster for large outputs.
@@ -93,12 +96,12 @@ class Debugger():
             self._log = self._create_stream_logger()
             self.is_logging_file = False
 
-    def clean(self, log_level, output):
+    def clean(self, debug_level, output):
         """
             Prints a message without the time prefix `[plugin_name.py] 11:13:51:0582059 `
         """
 
-        if self._log_level & log_level != 0:
+        if self.debug_level & debug_level != 0:
             message = "".join( [ str( m ) for m in output ] )
 
             if self.is_logging_file:
@@ -110,7 +113,7 @@ class Debugger():
     def insert_empty_line(self, level=1):
         self.clean( level, "" )
 
-    def _log(self, log_level, msg):
+    def _log(self, debug_level, msg):
         raise NotImplementedError
 
     def _setup_file_logger(self, output_file):
@@ -129,9 +132,9 @@ class Debugger():
 
         # How to define global function in Python?
         # https://stackoverflow.com/questions/27930038/how-to-define-global-function-in-python
-        def _log( log_level, msg ):
+        def _log( debug_level, msg ):
 
-            if self._log_level & log_level != 0:
+            if self.debug_level & debug_level != 0:
 
                 # https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
                 self.logger.debug( "".join(
@@ -148,9 +151,9 @@ class Debugger():
 
         # How to define global function in Python?
         # https://stackoverflow.com/questions/27930038/how-to-define-global-function-in-python
-        def _log( log_level, msg ):
+        def _log( debug_level, msg ):
 
-            if self._log_level & log_level != 0:
+            if self.debug_level & debug_level != 0:
 
                 # https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
                 print( "".join(
@@ -190,4 +193,21 @@ class Debugger():
 
         # print( "PATH: " + self.output_file )
 
+
+# Setup the alternate debugger
+Debugger.manager = Manager( Logger.root )
+Debugger.manager.loggerClass = Debugger
+
+
+def getLogger(debug_level=127, debugger_name=None, output_file=None):
+    """
+    Return a logger with the specified name, creating it if necessary.
+
+    If no name is specified, return a new logger based on the main logger file name.
+    """
+    logger = Debugger.manager.getLogger( debugger_name if debugger_name else os.path.basename( __file__ ) )
+    logger.debug_level = debug_level
+
+    logger.set_file_logger( output_file )
+    return logger
 

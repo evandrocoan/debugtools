@@ -1,6 +1,6 @@
 
 
 from .utilities import SleepEvent
-from .debug_tools import Debugger
+from .debug_tools import getLogger
 
 

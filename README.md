@@ -26,7 +26,7 @@ Basic logger for python on the output form:
 To use it:
 ```python
 # Import the debugger
-from python_debug_tools import Debugger
+from python_debug_tools import getLogger
 
 # Enable debug messages: (bitwise)
 #
@@ -36,9 +36,9 @@ from python_debug_tools import Debugger
 # 4   - StickIntelligence class' notices.
 # 127 - All debugging levels at the same time.
 #
-log = Debugger( 127, os.path.basename( __file__ ) )
+log = getLogger( 127, os.path.basename( __file__ ) )
 
-# Later, use `log._log_level = 0` to disable the debugger, or change the level.
+# Later, use `log.log_level = 0` to disable the debugger, or change the level.
 log( 1, "Debugging" )
 log( 1, "..." )
 log( 1, "..." )
@@ -58,7 +58,7 @@ def assert_path(module):
 assert_path( os.path.join( os.path.dirname( os.path.realpath( __file__ ) ), 'PythonDebugTools/all' ) )
 
 # Import the debugger
-from python_debug_tools import Debugger
+from python_debug_tools import getLogger
 
 # Enable debug messages: (bitwise)
 #
@@ -68,9 +68,9 @@ from python_debug_tools import Debugger
 # 4   - StickIntelligence class' notices.
 # 127 - All debugging levels at the same time.
 #
-log = Debugger( 127, os.path.basename( __file__ ) )
+log = getLogger( 127, os.path.basename( __file__ ) )
 
-# Later, use `log._log_level = 0` to disable the debugger, or change the level.
+# Later, use `log.log_level = 0` to disable the debugger, or change the level.
 log( 1, "Debugging" )
 log( 1, "..." )
 log( 1, "..." )
@@ -79,10 +79,10 @@ log( 1, "..." )
 If you want to reload the debug tools code on the fly, you can use this to import it:
 ```
 import imp
-from python_debug_tools.debug_tools import Debugger
+from python_debug_tools.debug_tools import getLogger
 
 imp.reload( python_debug_tools.debug_tools )
-from python_debug_tools.debug_tools import Debugger
+from python_debug_tools.debug_tools import getLogger
 ```
 
 
