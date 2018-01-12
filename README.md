@@ -25,11 +25,8 @@ Basic logger for python on the output form:
 
 To use it:
 ```python
-import sys
-sys.path.insert(0,'../PythonDebugTools/all')
-
 # Import the debugger
-from debug_tools import Debugger
+from python_debug_tools import Debugger
 
 # Enable debug messages: (bitwise)
 #
@@ -38,6 +35,7 @@ from debug_tools import Debugger
 # 2   - AgentPlayer       class' notices.
 # 4   - StickIntelligence class' notices.
 # 127 - All debugging levels at the same time.
+#
 log = Debugger( 127, os.path.basename( __file__ ) )
 
 # Later, use `log._log_level = 0` to disable the debugger, or change the level.
@@ -47,20 +45,17 @@ log( 1, "..." )
 ```
 
 Or something like:
-```
+```python
 import os
 import sys
 
 def assert_path(module):
-    """
-        Import a module from a relative path
-        https://stackoverflow.com/questions/279237/import-a-module-from-a-relative-path
-    """
+
     if module not in sys.path:
         sys.path.append( module )
 
 # Import the debug tools
-assert_path( os.path.join( os.path.dirname( os.path.dirname( os.path.realpath( __file__ ) ) ), 'PythonDebugTools/all' ) )
+assert_path( os.path.join( os.path.dirname( os.path.realpath( __file__ ) ), 'PythonDebugTools/all' ) )
 
 # Import the debugger
 from python_debug_tools import Debugger
@@ -71,8 +66,8 @@ from python_debug_tools import Debugger
 # 1   - Basic logging messages.
 # 2   - AgentPlayer       class' notices.
 # 4   - StickIntelligence class' notices.
-#
 # 127 - All debugging levels at the same time.
+#
 log = Debugger( 127, os.path.basename( __file__ ) )
 
 # Later, use `log._log_level = 0` to disable the debugger, or change the level.
@@ -84,9 +79,10 @@ log( 1, "..." )
 If you want to reload the debug tools code on the fly, you can use this to import it:
 ```
 import imp
-import debug_tools
-imp.reload( debug_tools )
-import debug_tools
+from python_debug_tools.debug_tools import Debugger
+
+imp.reload( python_debug_tools.debug_tools )
+from python_debug_tools.debug_tools import Debugger
 ```
 
 
