@@ -86,6 +86,16 @@ class Debugger(Logger):
         self.clean( level, "" )
 
     def clean(self, debug_level, msg, *args, **kwargs):
+
+        if self.debug_level & debug_level != 0:
+            self.alternate_formatter( self.clean_formatter, debug_level, msg, *args, **kwargs )
+
+    def basic(self, debug_level, msg, *args, **kwargs):
+
+        if self.debug_level & debug_level != 0:
+            self.alternate_formatter( self.basic_formatter, debug_level, msg, *args, **kwargs )
+
+    def alternate_formatter(self, formatter, debug_level, msg, *args, **kwargs):
         """
             Prints a message without the time prefix `[plugin_name.py] 11:13:51:0582059 `
 
@@ -96,12 +106,16 @@ class Debugger(Logger):
         if self.debug_level & debug_level != 0:
 
             if self.stream_handler:
-                self.stream_handler.setFormatter( self.clean_formatter )
+                self.stream_handler.setFormatter( formatter )
 
             if self.file_handler:
-                self.file_handler.setFormatter( self.clean_formatter )
+                self.file_handler.setFormatter( formatter )
+
+            self.currentTick = time.perf_counter()
+            kwargs.update( {"extra": {"debugLevel": debug_level, "tickDifference": self.currentTick - self.lastTick}} )
 
             self.debug( msg, *args, **kwargs )
+            self.lastTick = self.currentTick
 
             if self.stream_handler:
                 self.stream_handler.setFormatter( self.full_formatter )
@@ -118,7 +132,10 @@ class Debugger(Logger):
             sys.stderr.write( "\n" + "Cleaning the file: " + self.output_file )
             open( self.output_file, 'w' ).close()
 
-    def setup_logger(self, output_file=None, mode='a', delete_other=True):
+    def invert_basic_full_formatter(self):
+        self.basic_formatter, self.full_formatter = self.full_formatter, self.basic_formatter
+
+    def setup_logger(self, output_file=None, mode='a', delete_other=True, log_date=False, log_level=False):
         """
             Instead of output the debug to the standard output stream, send it a file on the file
             system, which is faster for large outputs.
@@ -132,13 +149,23 @@ class Debugger(Logger):
             @param mode         the file write mode on the file system. It can be `a` to append to
                                 the existent file, or `w` to erase the existent file before start.
 
-            @param delete_other if se to True, it will delete all other handlers before activate the
+            @param delete_other if True, it will delete all other handlers before activate the
                                 current one, otherwise it will only activate the selected handler.
+
+            @param log_date     if True, add the the `full_formatter` the date on the format `%Y-%m-%d`.
+            @param log_level    if True, add the the `full_formatter` the current log levels.
         """
         self.clean_formatter = logging.Formatter( "", "", style="{" )
+        self.basic_formatter = logging.Formatter( "[{name}] {asctime}:{msecs:=010.6f} "
+                "{tickDifference:.2e} {message}", "%H:%M:%S", style="{" )
 
-        self.full_formatter = logging.Formatter( "[{name}] {asctime}:{msecs:=010.6f} {levelname}({debugLevel}) "
-                "{tickDifference:.2e} {funcName}:{lineno} {message}", "%Y-%m-%d, %H:%M:%S", style="{" )
+        date = "%Y-%m-%d, " if log_date else ""
+        level = "{levelname}({debugLevel}) " if log_level else ""
+
+        self.full_formatter = logging.Formatter( "[{name}] {asctime}:{msecs:=010.6f} %s"
+                "{tickDifference:.2e} {funcName}:{lineno} {message}" % ( level ),
+                "{}%H:%M:%S".format( date ),
+                style="{" )
 
         # Override a method at instance level
         # https://stackoverflow.com/questions/394770/override-a-method-at-instance-level
@@ -159,16 +186,21 @@ class Debugger(Logger):
                 self.removeHandler( self.stream_handler )
                 self.stream_handler = None
 
-        elif not self.stream_handler:
-            self.stream_handler = logging.StreamHandler()
-            self.stream_handler.setFormatter( self.full_formatter )
-            self.addHandler( self.stream_handler )
+        else:
 
-            if delete_other \
-                    and self.file_handler:
+            if self.stream_handler:
+                self.stream_handler.setFormatter( self.full_formatter )
 
-                self.removeHandler( self.file_handler )
-                self.file_handler = None
+            else:
+                self.stream_handler = logging.StreamHandler()
+                self.stream_handler.setFormatter( self.full_formatter )
+                self.addHandler( self.stream_handler )
+
+                if delete_other \
+                        and self.file_handler:
+
+                    self.removeHandler( self.file_handler )
+                    self.file_handler = None
 
     def findCaller(self, stack_info=False):
         """
