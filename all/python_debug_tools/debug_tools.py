@@ -80,6 +80,34 @@ class Debugger(Logger):
             self.debug( "%.2e %s" % ( self.currentTick - self.lastTick, msg ), *args, **kwargs )
             self.lastTick = self.currentTick
 
+    def insert_empty_line(self, level=1):
+        self.clean( level, "" )
+
+    def clean(self, debug_level, output):
+        """
+            Prints a message without the time prefix `[plugin_name.py] 11:13:51:0582059 `
+
+            How to insert newline in python logging?
+            https://stackoverflow.com/questions/20111758/how-to-insert-newline-in-python-logging
+        """
+
+        if self.debug_level & debug_level != 0:
+
+            if self.stream_handler:
+                self.stream_handler.setFormatter( self.clean_formatter )
+
+            if self.file_handler:
+                self.file_handler.setFormatter( self.clean_formatter )
+
+            message = "".join( [ str( m ) for m in output ] )
+            self.debug( message )
+
+            if self.stream_handler:
+                self.stream_handler.setFormatter( self.full_formatter )
+
+            if self.file_handler:
+                self.file_handler.setFormatter( self.full_formatter )
+
     def clear_log_file(self):
         """
             Clear the log file contents
@@ -87,7 +115,7 @@ class Debugger(Logger):
 
         if self.output_file:
             sys.stderr.write( "\n" + "Cleaning the file: " + self.output_file )
-            open(self.output_file, 'w').close()
+            open( self.output_file, 'w' ).close()
 
     def setup_logger(self, output_file=None, mode='a', delete_other=True):
         """
@@ -132,34 +160,6 @@ class Debugger(Logger):
 
                 self.removeHandler( self.file_handler )
                 self.file_handler = None
-
-    def insert_empty_line(self, level=1):
-        self.clean( level, "" )
-
-    def clean(self, debug_level, output):
-        """
-            Prints a message without the time prefix `[plugin_name.py] 11:13:51:0582059 `
-
-            How to insert newline in python logging?
-            https://stackoverflow.com/questions/20111758/how-to-insert-newline-in-python-logging
-        """
-
-        if self.debug_level & debug_level != 0:
-
-            if self.stream_handler:
-                self.stream_handler.setFormatter( self.clean_formatter )
-
-            if self.file_handler:
-                self.file_handler.setFormatter( self.clean_formatter )
-
-            message = "".join( [ str( m ) for m in output ] )
-            self.debug( message )
-
-            if self.stream_handler:
-                self.stream_handler.setFormatter( self.full_formatter )
-
-            if self.file_handler:
-                self.file_handler.setFormatter( self.full_formatter )
 
     def _get_time_prefix(self, currentTime):
         return [ "[%s]" % self.debugger_name,
