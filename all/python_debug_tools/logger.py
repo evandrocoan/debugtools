@@ -247,7 +247,7 @@ class Debugger(Logger):
         super( Debugger, self )._log( level, msg, args, exc_info, extra, stack_info )
         self.lastTick = self.currentTick
 
-    def _setup_full_formatter(self, date=False, level=False, function=True, name=True, time=True, tick=True, formatter=None):
+    def _setup_full_formatter(self, date, level, function, name, time, tick, formatter):
         """
             Single page cheat-sheet about Python string formatting pyformat.info
             https://github.com/ulope/pyformat.info
@@ -256,26 +256,26 @@ class Debugger(Logger):
         self.basic_formatter = logging.Formatter( "[{name}] {asctime}:{msecs:=010.6f} "
                 "{tickDifference:.2e} {message}", "%H:%M:%S", style="{" )
 
-        date_format = "%Y-%m-%d " if date else ""
-        date_format += "%H:%M:%S"  if time else ""
-
-        if time:
-            _time = "{asctime}:{msecs:=010.6f} " if len( date_format ) else ""
-
-        else:
-            _time = "{asctime}" if len( date_format ) else ""
-
-        name = "[{name}] "             if name else ""
-        tick = "{tickDifference:.2e} " if tick else ""
-
-        level = "{levelname}{debugLevel} " if level else ""
-        function = "{funcName}:{lineno} "  if function else ""
-
         if formatter:
             self.full_formatter = formatter
 
         else:
-            self.full_formatter = logging.Formatter( "%s%s%s%s%s{message}" % ( name, _time, tick, level, function ),
+            date_format = "%Y-%m-%d " if date else ""
+            date_format += "%H:%M:%S"  if time else ""
+
+            if time:
+                time = "{asctime}:{msecs:=010.6f} " if len( date_format ) else ""
+
+            else:
+                time = "{asctime}" if len( date_format ) else ""
+
+            name = "[{name}] "             if name else ""
+            tick = "{tickDifference:.2e} " if tick else ""
+
+            level = "{levelname}{debugLevel} " if level else ""
+            function = "{funcName}:{lineno} "  if function else ""
+
+            self.full_formatter = logging.Formatter( "%s%s%s%s%s{message}" % ( name, time, tick, level, function ),
                     date_format, style="{" )
 
     def _get_time_prefix(self, currentTime):
