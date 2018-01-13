@@ -83,7 +83,7 @@ class Debugger(Logger):
     def insert_empty_line(self, level=1):
         self.clean( level, "" )
 
-    def clean(self, debug_level, output):
+    def clean(self, debug_level, msg, *args, **kwargs):
         """
             Prints a message without the time prefix `[plugin_name.py] 11:13:51:0582059 `
 
@@ -99,8 +99,7 @@ class Debugger(Logger):
             if self.file_handler:
                 self.file_handler.setFormatter( self.clean_formatter )
 
-            message = "".join( [ str( m ) for m in output ] )
-            self.debug( message )
+            self.debug( msg, *args, **kwargs )
 
             if self.stream_handler:
                 self.stream_handler.setFormatter( self.full_formatter )
@@ -127,6 +126,12 @@ class Debugger(Logger):
 
             @param output_file  a relative or absolute path to the log file. If empty the output
                                 will be sent to the standard output stream.
+
+            @param mode         the file write mode on the file system. It can be `a` to append to
+                                the existent file, or `w` to erase the existent file before start.
+
+            @param delete_other if se to True, it will delete all other handlers before activate the
+                                current one, otherwise it will only activate the selected handler.
         """
         self.full_formatter = logging.Formatter( "[{name}] {asctime}:{msecs:=010.6f} {levelname} {message}", "%Y-%m-%d, %H:%M:%S", style="{" )
         self.clean_formatter = logging.Formatter( "", "", style="{" )
