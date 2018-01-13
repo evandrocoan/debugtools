@@ -80,6 +80,7 @@ class Debugger(Logger):
         """
 
         if self.debug_level & debug_level != 0:
+            kwargs['debug_level'] = debug_level
             self._log( DEBUG, msg, args, **kwargs )
 
     def insert_empty_line(self, level=1):
@@ -112,8 +113,8 @@ class Debugger(Logger):
             if self.file_handler:
                 self.file_handler.setFormatter( formatter )
 
-            self._debug_level = debug_level
-            self._log( DEBUG, msg, *args, **kwargs )
+            kwargs['debug_level'] = debug_level
+            self._log( DEBUG, msg, args, **kwargs )
 
             if self.stream_handler:
                 self.stream_handler.setFormatter( self.full_formatter )
@@ -158,7 +159,7 @@ class Debugger(Logger):
                 "{tickDifference:.2e} {message}", "%H:%M:%S", style="{" )
 
         date = "%Y-%m-%d, " if date else ""
-        level = "{levelname}({debugLevel}) " if level else ""
+        level = "{levelname}{debugLevel} " if level else ""
 
         self.full_formatter = logging.Formatter( "[{name}] {asctime}:{msecs:=010.6f} %s"
                 "{tickDifference:.2e} {funcName}:{lineno} {message}" % ( level ),
@@ -244,9 +245,11 @@ class Debugger(Logger):
         if self.isEnabledFor( WARNING ):
             self._log( WARNING, msg, args, **kwargs )
 
-    def _log(self, level, msg, args, exc_info=None, extra={}, stack_info=False):
+    def _log(self, level, msg, args, exc_info=None, extra={}, stack_info=False, debug_level=0):
         self.currentTick = time.perf_counter()
-        extra.update( {"debugLevel": self._debug_level, "tickDifference": self.currentTick - self.lastTick} )
+
+        debug_level = "(%d)" % debug_level if debug_level else ""
+        extra.update( {"debugLevel": debug_level, "tickDifference": self.currentTick - self.lastTick} )
 
         super( Debugger, self )._log( level, msg, args, exc_info, extra, stack_info )
         self.lastTick = self.currentTick
