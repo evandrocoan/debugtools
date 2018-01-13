@@ -36,6 +36,9 @@ import platform
 
 from logging import Logger
 from logging import Manager
+
+from logging import DEBUG
+from logging import WARNING
 from logging import _srcfile
 
 
@@ -63,7 +66,8 @@ class Debugger(Logger):
         # Enable debug messages: (bitwise)
         # 0 - Disabled debugging
         # 1 - Errors messages
-        self.debug_level = 127
+        self.debug_level  = 127
+        self._debug_level = 0
         self.setup_logger()
 
     def __call__(self, debug_level, msg, *args, **kwargs):
@@ -76,11 +80,7 @@ class Debugger(Logger):
         """
 
         if self.debug_level & debug_level != 0:
-            self.currentTick = time.perf_counter()
-            kwargs.update( {"extra": {"debugLevel": debug_level, "tickDifference": self.currentTick - self.lastTick}} )
-
-            self.debug( msg, *args, **kwargs )
-            self.lastTick = self.currentTick
+            self._log( DEBUG, msg, args, **kwargs )
 
     def insert_empty_line(self, level=1):
         self.clean( level, "" )
@@ -88,6 +88,7 @@ class Debugger(Logger):
     def clean(self, debug_level, msg, *args, **kwargs):
 
         if self.debug_level & debug_level != 0:
+            self._debug_level = debug_level
             self.alternate_formatter( self.clean_formatter, debug_level, msg, *args, **kwargs )
 
     def basic(self, debug_level, msg, *args, **kwargs):
@@ -111,11 +112,8 @@ class Debugger(Logger):
             if self.file_handler:
                 self.file_handler.setFormatter( formatter )
 
-            self.currentTick = time.perf_counter()
-            kwargs.update( {"extra": {"debugLevel": debug_level, "tickDifference": self.currentTick - self.lastTick}} )
-
-            self.debug( msg, *args, **kwargs )
-            self.lastTick = self.currentTick
+            self._debug_level = debug_level
+            self._log( DEBUG, msg, *args, **kwargs )
 
             if self.stream_handler:
                 self.stream_handler.setFormatter( self.full_formatter )
@@ -140,9 +138,6 @@ class Debugger(Logger):
             Instead of output the debug to the standard output stream, send it a file on the file
             system, which is faster for large outputs.
 
-            Single page cheat-sheet about Python string formatting pyformat.info
-            https://github.com/ulope/pyformat.info
-
             @param file_path    a relative or absolute path to the log file. If empty the output
                                 will be sent to the standard output stream.
 
@@ -152,9 +147,12 @@ class Debugger(Logger):
             @param delete       if True, it will delete all other handlers before activate the
                                 current one, otherwise it will only activate the selected handler.
 
-            @param date         if True, add the the `full_formatter` the date on the format `%Y-%m-%d`.
-            @param level        if True, add the the `full_formatter` the current log levels.
+            @param date         if True, add to the `full_formatter` the date on the format `%Y-%m-%d`.
+            @param level        if True, add to the `full_formatter` the current log levels.
         """
+
+        # Single page cheat-sheet about Python string formatting pyformat.info
+        # https://github.com/ulope/pyformat.info
         self.clean_formatter = logging.Formatter( "", "", style="{" )
         self.basic_formatter = logging.Formatter( "[{name}] {asctime}:{msecs:=010.6f} "
                 "{tickDifference:.2e} {message}", "%H:%M:%S", style="{" )
@@ -237,6 +235,21 @@ class Debugger(Logger):
             rv = (co.co_filename, f.f_lineno, co.co_name, sinfo)
             break
         return rv
+
+    def warn(self, msg, *args, **kwargs):
+        """
+            Fix second indirection created by the super().warn() method, by directly calling _log()
+        """
+
+        if self.isEnabledFor(WARNING):
+            self._log(WARNING, msg, args, **kwargs)
+
+    def _log(self, level, msg, args, exc_info=None, extra={}, stack_info=False):
+        self.currentTick = time.perf_counter()
+        extra.update( {"debugLevel": self._debug_level, "tickDifference": self.currentTick - self.lastTick} )
+
+        super( Debugger, self )._log( level, msg, args, exc_info, extra, stack_info )
+        self.lastTick = self.currentTick
 
     def _get_time_prefix(self, currentTime):
         return [ "[%s]" % self.debugger_name,
