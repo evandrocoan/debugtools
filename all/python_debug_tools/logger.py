@@ -256,11 +256,11 @@ class Debugger(Logger):
         self.basic_formatter = logging.Formatter( "[{name}] {asctime}:{msecs:=010.6f} "
                 "{tickDifference:.2e} {message}", "%H:%M:%S", style="{" )
 
-        date_format = "%Y-%m-%d, " if date else ""
+        date_format = "%Y-%m-%d " if date else ""
         date_format += "%H:%M:%S"  if time else ""
 
         if time:
-            _time = "{asctime}:{msecs:=010.6f}, " if len( date_format ) else ""
+            _time = "{asctime}:{msecs:=010.6f} " if len( date_format ) else ""
 
         else:
             _time = "{asctime}" if len( date_format ) else ""
