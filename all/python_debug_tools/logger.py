@@ -319,7 +319,30 @@ def getLogger(debug_level=127, debugger_name=None, output_file=None):
 
     If no name is specified, return a new logger based on the main logger file name.
     """
-    logger = Debugger.manager.getLogger( debugger_name if debugger_name else os.path.basename( __file__ ) )
+
+    if debugger_name:
+
+        if isinstance( debugger_name, int ):
+            debug_level, debugger_name = debugger_name, debug_level
+
+            if isinstance( debugger_name, int ):
+                raise ValueError( "The variable `debugger_name` must be an instance of string, instead of `%s`." % str( debugger_name ) )
+
+        else:
+
+            if not isinstance( debug_level, int ):
+                raise ValueError( "The variable `debugger_name` must be an instance of int, instead of `%s`." % debugger_name )
+
+    else:
+
+        if isinstance( debug_level, int ):
+            debugger_name = os.path.basename( __file__ )
+
+        else:
+            debugger_name = debug_level
+            debug_level   = 127
+
+    logger = Debugger.manager.getLogger( debugger_name )
     logger.debug_level = debug_level
 
     logger.setup_logger( output_file )
