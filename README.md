@@ -79,10 +79,10 @@ log( 1, "..." )
 If you want to reload the debug tools code on the fly, you can use this to import it:
 ```
 import imp
-from python_debug_tools.debug_tools import getLogger
+from python_debug_tools.logger import getLogger
 
-imp.reload( python_debug_tools.debug_tools )
-from python_debug_tools.debug_tools import getLogger
+imp.reload( python_debug_tools.logger )
+from python_debug_tools.logger import getLogger
 ```
 
 

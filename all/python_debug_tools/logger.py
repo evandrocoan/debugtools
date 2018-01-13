@@ -241,8 +241,8 @@ class Debugger(Logger):
             Fix second indirection created by the super().warn() method, by directly calling _log()
         """
 
-        if self.isEnabledFor(WARNING):
-            self._log(WARNING, msg, args, **kwargs)
+        if self.isEnabledFor( WARNING ):
+            self._log( WARNING, msg, args, **kwargs )
 
     def _log(self, level, msg, args, exc_info=None, extra={}, stack_info=False):
         self.currentTick = time.perf_counter()
@@ -281,7 +281,7 @@ class Debugger(Logger):
         return output_file
 
 
-# Setup the alternate debugger
+# Setup the alternate debugger, independent of the standard logging module Logger class
 Debugger.manager = Manager( Logger.root )
 Debugger.manager.loggerClass = Debugger
 
