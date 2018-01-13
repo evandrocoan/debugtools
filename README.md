@@ -4,22 +4,22 @@
 
 Basic logger for python on the output form:
 ```
-[DEBUG] 15:36:33:926000      0 Debugging
-[DEBUG] 15:36:33:926000      0 ...
-[DEBUG] 15:36:33:926000      0 ...
-[DEBUG] 15:36:33:927000   1000 Entering on main(0)
-[DEBUG] 15:36:33:927000      0 ( Player ) Creating the player: Player 0
-[DEBUG] 15:36:33:927000      0 ( Player ) Creating the player: Player 1
-[DEBUG] 15:36:33:927000      0 ( Player ) Creating the player: Player 2
-[DEBUG] 15:36:33:927000      0 ( Player ) Creating the player: Player 3
-[DEBUG] 15:36:33:927000      0 ( Player ) Creating the player: Player 4
-[DEBUG] 15:36:33:927000      0 ( StickIntelligence ) Creating the intelligence for 5 players
-[DEBUG] 15:36:33:927000      0 ( StickIntelligence ) Starting the next row of fun...
-[DEBUG] 15:36:33:927000      0 ( AgentPlayer ) I am a good boy, as long as I am playing.
-[DEBUG] 15:36:33:927000      0 ( AgentPlayer ) I am a good boy, as long as I am playing.
-[DEBUG] 15:36:33:927000      0 ( AgentPlayer ) I am a good boy, as long as I am playing.
-[DEBUG] 15:36:33:927000      0 ( AgentPlayer ) I am a good boy, as long as I am playing.
-[DEBUG] 15:36:33:927000      0 ( AgentPlayer ) I am a good boy, as long as I am playing.
+[main.py] 2018-01-12, 23:34:08:081.722975 DEBUG(1) 3.16e-04 Debugging
+[main.py] 2018-01-12, 23:34:08:082.222939 DEBUG(1) 2.80e-04 ...
+[main.py] 2018-01-12, 23:34:08:082.222939 DEBUG(1) 2.73e-04 ...
+[main.py] 2018-01-12, 23:34:08:082.722902 DEBUG(1) 2.95e-04 Entering on main(0)
+[main.py] 2018-01-12, 23:34:08:082.722902 DEBUG(1) 2.79e-04 ( Player ) Creating the player: Player 0
+[main.py] 2018-01-12, 23:34:08:083.224058 DEBUG(1) 2.80e-04 ( Player ) Creating the player: Player 1
+[main.py] 2018-01-12, 23:34:08:083.724022 DEBUG(1) 2.71e-04 ( Player ) Creating the player: Player 2
+[main.py] 2018-01-12, 23:34:08:083.724022 DEBUG(1) 3.13e-04 ( Player ) Creating the player: Player 3
+[main.py] 2018-01-12, 23:34:08:084.224939 DEBUG(1) 2.94e-04 ( Player ) Creating the player: Player 4
+[main.py] 2018-01-12, 23:34:08:084.224939 DEBUG(1) 2.81e-04 ( StickIntelligence ) Creating the intelligence for 5 players
+[main.py] 2018-01-12, 23:34:08:084.724903 DEBUG(1) 2.90e-04 ( StickIntelligence ) Starting the next row of fun...
+[main.py] 2018-01-12, 23:34:08:084.724903 DEBUG(1) 2.71e-04 ( AgentPlayer ) I am a good boy, as long as I am playing.
+[main.py] 2018-01-12, 23:34:08:085.226059 DEBUG(1) 3.29e-04 ( AgentPlayer ) I am a good boy, as long as I am playing.
+[main.py] 2018-01-12, 23:34:08:085.726023 DEBUG(1) 2.98e-04 ( AgentPlayer ) I am a good boy, as long as I am playing.
+[main.py] 2018-01-12, 23:34:08:085.726023 DEBUG(1) 2.98e-04 ( AgentPlayer ) I am a good boy, as long as I am playing.
+[main.py] 2018-01-12, 23:34:08:086.225986 DEBUG(1) 2.78e-04 ( AgentPlayer ) I am a good boy, as long as I am playing.
 ```
 
 

@@ -41,7 +41,6 @@ class Debugger(Logger):
     """
         https://docs.python.org/2.6/library/logging.html
     """
-
     logger      = None
     output_file = None
 
@@ -76,6 +75,7 @@ class Debugger(Logger):
 
         if self.debug_level & debug_level != 0:
             self.currentTick = time.perf_counter()
+            kwargs.update( {"extra": {"debugLevel": debug_level}} )
 
             self.debug( "%.2e %s" % ( self.currentTick - self.lastTick, msg ), *args, **kwargs )
             self.lastTick = self.currentTick
@@ -133,8 +133,9 @@ class Debugger(Logger):
             @param delete_other if se to True, it will delete all other handlers before activate the
                                 current one, otherwise it will only activate the selected handler.
         """
-        self.full_formatter = logging.Formatter( "[{name}] {asctime}:{msecs:=010.6f} {levelname} {message}", "%Y-%m-%d, %H:%M:%S", style="{" )
         self.clean_formatter = logging.Formatter( "", "", style="{" )
+        self.full_formatter = logging.Formatter( "[{name}] {asctime}:{msecs:=010.6f} {funcName} "
+                "{levelname}({debugLevel}) {message}", "%Y-%m-%d, %H:%M:%S", style="{" )
 
         # Override a method at instance level
         # https://stackoverflow.com/questions/394770/override-a-method-at-instance-level
