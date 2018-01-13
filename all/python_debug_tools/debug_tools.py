@@ -3,8 +3,8 @@
 
 ####################### Licensing #######################################################
 #
-#   Copyright 2017 @ Evandro Coan
-#   Simple debugger
+# Debug Tools, Logging utilities
+# Copyright (C) 2017 Evandro Coan <https://github.com/evandrocoan>
 #
 #   Originally written on:
 #   https://github.com/evandrocoan/SublimeAMXX_Editor/blob/888c6822047d84e2370348b6cf5f4ac509f77b32/AMXXEditor.py#L1741-L1804
@@ -26,6 +26,7 @@
 #
 
 import os
+import sys
 
 import time
 import datetime
@@ -35,6 +36,7 @@ import platform
 
 from logging import Logger
 from logging import Manager
+from logging import _srcfile
 
 
 class Debugger(Logger):
@@ -75,9 +77,9 @@ class Debugger(Logger):
 
         if self.debug_level & debug_level != 0:
             self.currentTick = time.perf_counter()
-            kwargs.update( {"extra": {"debugLevel": debug_level}} )
+            kwargs.update( {"extra": {"debugLevel": debug_level, "tickDifference": self.currentTick - self.lastTick}} )
 
-            self.debug( "%.2e %s" % ( self.currentTick - self.lastTick, msg ), *args, **kwargs )
+            self.debug( msg, *args, **kwargs )
             self.lastTick = self.currentTick
 
     def insert_empty_line(self, level=1):
@@ -134,8 +136,9 @@ class Debugger(Logger):
                                 current one, otherwise it will only activate the selected handler.
         """
         self.clean_formatter = logging.Formatter( "", "", style="{" )
-        self.full_formatter = logging.Formatter( "[{name}] {asctime}:{msecs:=010.6f} {funcName} "
-                "{levelname}({debugLevel}) {message}", "%Y-%m-%d, %H:%M:%S", style="{" )
+
+        self.full_formatter = logging.Formatter( "[{name}] {asctime}:{msecs:=010.6f} {levelname}({debugLevel}) "
+                "{tickDifference:.2e} {funcName}:{lineno} {message}", "%Y-%m-%d, %H:%M:%S", style="{" )
 
         # Override a method at instance level
         # https://stackoverflow.com/questions/394770/override-a-method-at-instance-level
@@ -166,6 +169,42 @@ class Debugger(Logger):
 
                 self.removeHandler( self.file_handler )
                 self.file_handler = None
+
+    def findCaller(self, stack_info=False):
+        """
+            Copied from the python 3.6 implementation, only changing the `sys._getframe(1)` to
+            `sys._getframe(3)` because due the inheritance, we need to take a higher frame to get
+            the correct function name, otherwise the result would always be `__call__`, which is the
+            internal function we use here.
+
+            Find the stack frame of the caller so that we can note the source file name, line number
+            and function name.
+        """
+        f = sys._getframe(3) if hasattr(sys, "_getframe") else None
+
+        #On some versions of IronPython, currentframe() returns None if
+        #IronPython isn't run with -X:Frames.
+        if f is not None:
+            f = f.f_back
+        rv = "(unknown file)", 0, "(unknown function)", None
+        while hasattr(f, "f_code"):
+            co = f.f_code
+            filename = os.path.normcase(co.co_filename)
+            if filename == _srcfile:
+                f = f.f_back
+                continue
+            sinfo = None
+            if stack_info:
+                sio = io.StringIO()
+                sio.write('Stack (most recent call last):\n')
+                traceback.print_stack(f, file=sio)
+                sinfo = sio.getvalue()
+                if sinfo[-1] == '\n':
+                    sinfo = sinfo[:-1]
+                sio.close()
+            rv = (co.co_filename, f.f_lineno, co.co_name, sinfo)
+            break
+        return rv
 
     def _get_time_prefix(self, currentTime):
         return [ "[%s]" % self.debugger_name,
