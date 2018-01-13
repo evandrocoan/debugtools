@@ -1,6 +1,4 @@
-
 # Python Debug Tools
-
 
 Basic logger for python on the output form:
 ```
@@ -22,8 +20,31 @@ Basic logger for python on the output form:
 [main.py] 23:34:08:086.225986 2.78e-04 ( AgentPlayer ) I am a good boy, as long as I am playing.
 ```
 
+See also the example on [tests/manual_tests.py](tests/manual_tests.py):
+```
+reloading plugin PythonDebugTools.tests.manual_tests
+reloading plugin python_debug_tools.logger
+[PythonDebugTools.tests.manual_tests] 16:31:26:638.928890 2.19e-04 <module>:13 My logging
+[PythonDebugTools.tests.manual_tests] 16:31:26:639.429092 4.90e-04 <module>:14 A warning
+[PythonDebugTools.tests.manual_tests] 16:31:26:639.930010 4.77e-04 <module>:15 A debugging
 
-To use it:
+[PythonDebugTools.tests.manual_tests] 16:31:26:640.930891 3.87e-04 DEBUG(1) Bitwise
+[PythonDebugTools.tests.manual_tests] 16:31:26:641.431093 4.62e-04 DEBUG(8) Bitwise
+[PythonDebugTools.tests.manual_tests] 16:31:26:641.431093 3.04e-04 WARNING Warn
+[PythonDebugTools.tests.manual_tests] 16:31:26:641.931057 2.96e-04 INFO Info
+[PythonDebugTools.tests.manual_tests] 16:31:26:642.431974 2.80e-04 DEBUG Debug
+
+[PythonDebugTools.tests.manual_tests] 2018-01-13 16:31:26:642.931938 2.47e-04 function_name:18 Bitwise
+[PythonDebugTools.tests.manual_tests] 2018-01-13 16:31:26:642.931938 2.88e-04 function_name:19 Bitwise
+[PythonDebugTools.tests.manual_tests] 2018-01-13 16:31:26:643.431902 3.04e-04 function_name:20 Warn
+[PythonDebugTools.tests.manual_tests] 2018-01-13 16:31:26:643.431902 2.85e-04 function_name:21 Info
+[PythonDebugTools.tests.manual_tests] 2018-01-13 16:31:26:643.933058 2.99e-04 function_name:22 Debug
+```
+
+
+___
+# Usage
+
 ```python
 # Import the debugger
 from python_debug_tools import getLogger
@@ -77,7 +98,7 @@ log( 1, "..." )
 ```
 
 If you want to reload the debug tools code on the fly, you can use this to import it:
-```
+```python
 import imp
 from python_debug_tools.logger import getLogger
 
