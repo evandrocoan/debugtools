@@ -38,6 +38,9 @@ from logging import Manager
 
 
 class Debugger(Logger):
+    """
+        https://docs.python.org/2.6/library/logging.html
+    """
 
     logger      = None
     output_file = None
@@ -50,6 +53,9 @@ class Debugger(Logger):
         self.debugger_name = debugger_name
         super( Debugger, self ).__init__( self.debugger_name, logging_level or "DEBUG" )
 
+        self.file_handler   = None
+        self.stream_handler = None
+
         # Initialize the first last tick as the current tick
         self.lastTick = time.perf_counter()
 
@@ -57,13 +63,22 @@ class Debugger(Logger):
         # 0 - Disabled debugging
         # 1 - Errors messages
         self.debug_level = 127
-        self.set_file_logger( None )
+        self.setup_logger()
 
-    def __call__(self, debug_level, *msg):
-        self.currentTick = time.perf_counter()
+    def __call__(self, debug_level, msg, *args, **kwargs):
+        """
+            How to define global function in Python?
+            https://stackoverflow.com/questions/27930038/how-to-define-global-function-in-python
 
-        self._log( debug_level, msg )
-        self.lastTick = self.currentTick
+            How to print list inside python print?
+            https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
+        """
+
+        if self.debug_level & debug_level != 0:
+            self.currentTick = time.perf_counter()
+
+            self.debug( "%.2e %s" % ( self.currentTick - self.lastTick, msg ), *args, **kwargs )
+            self.lastTick = self.currentTick
 
     def clear_log_file(self):
         """
@@ -71,101 +86,80 @@ class Debugger(Logger):
         """
 
         if self.output_file:
-            print( "Cleaning the file: " + self.output_file )
-
-            # os.remove(self.output_file)
+            sys.stderr.write( "\n" + "Cleaning the file: " + self.output_file )
             open(self.output_file, 'w').close()
 
-    def set_file_logger(self, output_file=None):
+    def setup_logger(self, output_file=None, mode='a', delete_other=True):
         """
             Instead of output the debug to the standard output stream, send it a file on the file
             system, which is faster for large outputs.
 
-            @param output_file   a relative or absolute path to the log file. If empty the output
-            will be sent to the standard output stream.
+            Single page cheat-sheet about Python string formatting pyformat.info
+            https://github.com/ulope/pyformat.info
+
+            @param output_file  a relative or absolute path to the log file. If empty the output
+                                will be sent to the standard output stream.
         """
+        self.full_formatter = logging.Formatter( "[{name}] {asctime}:{msecs:=010.6f} {levelname} {message}", "%Y-%m-%d, %H:%M:%S", style="{" )
+        self.clean_formatter = logging.Formatter( "", "", style="{" )
 
         # Override a method at instance level
         # https://stackoverflow.com/questions/394770/override-a-method-at-instance-level
         if output_file:
-            self._is_logging_file = True
+            self.output_file = self._get_debug_file_path( output_file )
+            sys.stderr.write( "\n" + self._get_time_prefix( datetime.datetime.now() ) + "Logging to the file " + self.output_file + "\n" )
 
-            self._setup_file_logger( output_file )
-            self._log = self._create_file_logger()
+            if self.file_handler:
+                self.removeHandler( self.file_handler )
 
-        else:
-            self._is_logging_file = False
-            self._log = self._create_stream_logger()
+            self.file_handler = logging.FileHandler( self.output_file, mode )
+            self.file_handler.setFormatter( self.full_formatter )
+            self.addHandler( self.file_handler )
 
-    def clean(self, debug_level, output):
-        """
-            Prints a message without the time prefix `[plugin_name.py] 11:13:51:0582059 `
-        """
+            if delete_other \
+                    and self.stream_handler:
 
-        if self.debug_level & debug_level != 0:
-            message = "".join( [ str( m ) for m in output ] )
+                self.removeHandler( self.stream_handler )
+                self.stream_handler = None
 
-            if self._is_logging_file:
-                self.logger.debug( message )
+        elif not self.stream_handler:
+            self.stream_handler = logging.StreamHandler()
+            self.stream_handler.setFormatter( self.full_formatter )
+            self.addHandler( self.stream_handler )
 
-            else:
-                print( message )
+            if delete_other \
+                    and self.file_handler:
+
+                self.removeHandler( self.file_handler )
+                self.file_handler = None
 
     def insert_empty_line(self, level=1):
         self.clean( level, "" )
 
-    def _log(self, debug_level, msg):
-        raise NotImplementedError
+    def clean(self, debug_level, output):
+        """
+            Prints a message without the time prefix `[plugin_name.py] 11:13:51:0582059 `
 
-    def _setup_file_logger(self, output_file):
-        self._set_debug_file_path( output_file )
+            How to insert newline in python logging?
+            https://stackoverflow.com/questions/20111758/how-to-insert-newline-in-python-logging
+        """
 
-        print( "" )
-        print( self._get_time_prefix( datetime.datetime.now() ) + "Logging the DebugTools debug to the file " + self.output_file )
+        if self.debug_level & debug_level != 0:
 
-        # Setup the logger
-        logging.basicConfig( filename=self.output_file, format='%(asctime)s %(message)s', level=logging.DEBUG )
+            if self.stream_handler:
+                self.stream_handler.setFormatter( self.clean_formatter )
 
-        # https://docs.python.org/2.6/library/logging.html
-        self.logger = logging.getLogger( self.debugger_name )
+            if self.file_handler:
+                self.file_handler.setFormatter( self.clean_formatter )
 
-    def _create_file_logger(self):
+            message = "".join( [ str( m ) for m in output ] )
+            self.debug( message )
 
-        # How to define global function in Python?
-        # https://stackoverflow.com/questions/27930038/how-to-define-global-function-in-python
-        def log( debug_level, msg ):
+            if self.stream_handler:
+                self.stream_handler.setFormatter( self.full_formatter )
 
-            if self.debug_level & debug_level != 0:
-
-                # https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
-                self.logger.debug( "".join(
-                        [
-                            "[%s] " % self.debugger_name,
-                            "%7d "  % datetime.datetime.now().microsecond,
-                            "%7d "  % self._deltatime_difference()
-                        ]
-                        + [ str( m ) for m in msg ] ) )
-
-        return log
-
-    def _create_stream_logger(self):
-
-        # How to define global function in Python?
-        # https://stackoverflow.com/questions/27930038/how-to-define-global-function-in-python
-        def log( debug_level, msg ):
-
-            if self.debug_level & debug_level != 0:
-
-                # https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
-                print( "".join(
-                        self._get_time_prefix( datetime.datetime.now() )
-                        + [ "%.2e " % self._deltatime_difference() ]
-                        + [ str( m ) for m in msg ] ) )
-
-        return log
-
-    def _deltatime_difference(self):
-        return self.currentTick - self.lastTick
+            if self.file_handler:
+                self.file_handler.setFormatter( self.full_formatter )
 
     def _get_time_prefix(self, currentTime):
         return [ "[%s]" % self.debugger_name,
@@ -174,7 +168,7 @@ class Debugger(Logger):
                 ":%02d" % currentTime.second,
                 ":%07d " % currentTime.microsecond ]
 
-    def _set_debug_file_path(self, output_file):
+    def _get_debug_file_path(self, output_file):
         """
             Reliably detect Windows in Python
             https://stackoverflow.com/questions/1387222/reliably-detect-windows-in-python
@@ -188,12 +182,13 @@ class Debugger(Logger):
             output_file = output_file.replace( "\\", "/", 1 )
             output_file = output_file.replace( "\\\\", "/", 1 )
 
-            self.output_file = "/cygdrive/" + output_file
+            output_file = "/cygdrive/" + output_file
 
         else:
-            self.output_file = output_file
+            output_file = output_file
 
-        # print( "PATH: " + self.output_file )
+        # print( "Debugger, _get_debug_file_path, PATH: " + output_file )
+        return output_file
 
 
 # Setup the alternate debugger
@@ -210,6 +205,6 @@ def getLogger(debug_level=127, debugger_name=None, output_file=None):
     logger = Debugger.manager.getLogger( debugger_name if debugger_name else os.path.basename( __file__ ) )
     logger.debug_level = debug_level
 
-    logger.set_file_logger( output_file )
+    logger.setup_logger( output_file )
     return logger
 
