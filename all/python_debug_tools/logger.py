@@ -134,7 +134,8 @@ class Debugger(Logger):
     def invert_basic_full_formatter(self):
         self.basic_formatter, self.full_formatter = self.full_formatter, self.basic_formatter
 
-    def setup_logger(self, file_path=None, mode='a', delete=True, date=False, level=False):
+    def setup_logger(self, file_path=None, mode='a', delete=True, date=False, level=False,
+            function=True, name=True, time=True, tick=True, formatter=None):
         """
             Instead of output the debug to the standard output stream, send it a file on the file
             system, which is faster for large outputs.
@@ -149,22 +150,14 @@ class Debugger(Logger):
                                 current one, otherwise it will only activate the selected handler.
 
             @param date         if True, add to the `full_formatter` the date on the format `%Y-%m-%d`.
-            @param level        if True, add to the `full_formatter` the current log levels.
+            @param level        if True, add to the `full_formatter` the log levels.
+            @param function     if True, add to the `full_formatter` the function name.
+            @param name         if True, add to the `full_formatter` the logger name.
+            @param time         if True, add to the `full_formatter` the time on the format `%H:%M:%S:microseconds`.
+            @param tick         if True, add to the `full_formatter` the time.perf_counter() difference from the last call.
+            @param formatter    if not None, replace this `full_formatter` by the logging.Formatter() provided.
         """
-
-        # Single page cheat-sheet about Python string formatting pyformat.info
-        # https://github.com/ulope/pyformat.info
-        self.clean_formatter = logging.Formatter( "", "", style="{" )
-        self.basic_formatter = logging.Formatter( "[{name}] {asctime}:{msecs:=010.6f} "
-                "{tickDifference:.2e} {message}", "%H:%M:%S", style="{" )
-
-        date = "%Y-%m-%d, " if date else ""
-        level = "{levelname}{debugLevel} " if level else ""
-
-        self.full_formatter = logging.Formatter( "[{name}] {asctime}:{msecs:=010.6f} %s"
-                "{tickDifference:.2e} {funcName}:{lineno} {message}" % ( level ),
-                "{}%H:%M:%S".format( date ),
-                style="{" )
+        self._setup_full_formatter(date, level, function, name, time, tick, formatter)
 
         # Override a method at instance level
         # https://stackoverflow.com/questions/394770/override-a-method-at-instance-level
@@ -253,6 +246,37 @@ class Debugger(Logger):
 
         super( Debugger, self )._log( level, msg, args, exc_info, extra, stack_info )
         self.lastTick = self.currentTick
+
+    def _setup_full_formatter(self, date=False, level=False, function=True, name=True, time=True, tick=True, formatter=None):
+        """
+            Single page cheat-sheet about Python string formatting pyformat.info
+            https://github.com/ulope/pyformat.info
+        """
+        self.clean_formatter = logging.Formatter( "", "", style="{" )
+        self.basic_formatter = logging.Formatter( "[{name}] {asctime}:{msecs:=010.6f} "
+                "{tickDifference:.2e} {message}", "%H:%M:%S", style="{" )
+
+        date_format = "%Y-%m-%d, " if date else ""
+        date_format += "%H:%M:%S"  if time else ""
+
+        if time:
+            _time = "{asctime}:{msecs:=010.6f}, " if len( date_format ) else ""
+
+        else:
+            _time = "{asctime}" if len( date_format ) else ""
+
+        name = "[{name}] "             if name else ""
+        tick = "{tickDifference:.2e} " if tick else ""
+
+        level = "{levelname}{debugLevel} " if level else ""
+        function = "{funcName}:{lineno} "  if function else ""
+
+        if formatter:
+            self.full_formatter = formatter
+
+        else:
+            self.full_formatter = logging.Formatter( "%s%s%s%s%s{message}" % ( name, _time, tick, level, function ),
+                    date_format, style="{" )
 
     def _get_time_prefix(self, currentTime):
         return [ "[%s]" % self.debugger_name,
