@@ -135,7 +135,7 @@ class Debugger(Logger):
     def invert_basic_full_formatter(self):
         self.basic_formatter, self.full_formatter = self.full_formatter, self.basic_formatter
 
-    def setup_logger(self, output_file=None, mode='a', delete_other=True, log_date=False, log_level=False):
+    def setup_logger(self, file_path=None, mode='a', delete=True, date=False, level=False):
         """
             Instead of output the debug to the standard output stream, send it a file on the file
             system, which is faster for large outputs.
@@ -143,24 +143,24 @@ class Debugger(Logger):
             Single page cheat-sheet about Python string formatting pyformat.info
             https://github.com/ulope/pyformat.info
 
-            @param output_file  a relative or absolute path to the log file. If empty the output
+            @param file_path    a relative or absolute path to the log file. If empty the output
                                 will be sent to the standard output stream.
 
             @param mode         the file write mode on the file system. It can be `a` to append to
                                 the existent file, or `w` to erase the existent file before start.
 
-            @param delete_other if True, it will delete all other handlers before activate the
+            @param delete       if True, it will delete all other handlers before activate the
                                 current one, otherwise it will only activate the selected handler.
 
-            @param log_date     if True, add the the `full_formatter` the date on the format `%Y-%m-%d`.
-            @param log_level    if True, add the the `full_formatter` the current log levels.
+            @param date         if True, add the the `full_formatter` the date on the format `%Y-%m-%d`.
+            @param level        if True, add the the `full_formatter` the current log levels.
         """
         self.clean_formatter = logging.Formatter( "", "", style="{" )
         self.basic_formatter = logging.Formatter( "[{name}] {asctime}:{msecs:=010.6f} "
                 "{tickDifference:.2e} {message}", "%H:%M:%S", style="{" )
 
-        date = "%Y-%m-%d, " if log_date else ""
-        level = "{levelname}({debugLevel}) " if log_level else ""
+        date = "%Y-%m-%d, " if date else ""
+        level = "{levelname}({debugLevel}) " if level else ""
 
         self.full_formatter = logging.Formatter( "[{name}] {asctime}:{msecs:=010.6f} %s"
                 "{tickDifference:.2e} {funcName}:{lineno} {message}" % ( level ),
@@ -169,8 +169,8 @@ class Debugger(Logger):
 
         # Override a method at instance level
         # https://stackoverflow.com/questions/394770/override-a-method-at-instance-level
-        if output_file:
-            self.output_file = self._get_debug_file_path( output_file )
+        if file_path:
+            self.output_file = self._get_debug_file_path( file_path )
             sys.stderr.write( "\n" + self._get_time_prefix( datetime.datetime.now() ) + "Logging to the file " + self.output_file + "\n" )
 
             if self.file_handler:
@@ -180,7 +180,7 @@ class Debugger(Logger):
             self.file_handler.setFormatter( self.full_formatter )
             self.addHandler( self.file_handler )
 
-            if delete_other \
+            if delete \
                     and self.stream_handler:
 
                 self.removeHandler( self.stream_handler )
@@ -196,7 +196,7 @@ class Debugger(Logger):
                 self.stream_handler.setFormatter( self.full_formatter )
                 self.addHandler( self.stream_handler )
 
-                if delete_other \
+                if delete \
                         and self.file_handler:
 
                     self.removeHandler( self.file_handler )
