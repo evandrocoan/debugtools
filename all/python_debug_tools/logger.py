@@ -68,6 +68,8 @@ class Debugger(Logger):
         # 1 - Errors messages
         self.debug_level  = 127
         self._debug_level = 0
+
+        self._frameLevel = 3
         self.setup_logger()
 
     def __call__(self, debug_level, msg, *args, **kwargs):
@@ -204,7 +206,7 @@ class Debugger(Logger):
             Find the stack frame of the caller so that we can note the source file name, line number
             and function name.
         """
-        f = sys._getframe(3) if hasattr(sys, "_getframe") else None
+        f = sys._getframe( self._frameLevel ) if hasattr(sys, "_getframe") else None
 
         #On some versions of IronPython, currentframe() returns None if
         #IronPython isn't run with -X:Frames.
