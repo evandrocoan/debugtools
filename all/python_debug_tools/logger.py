@@ -42,6 +42,17 @@ from logging import WARNING
 from logging import _srcfile
 
 
+if hasattr(sys, '_getframe'):
+    currentframe = lambda: sys._getframe(4)
+else: #pragma: no cover
+    def currentframe():
+        """Return the frame object for the caller's stack frame."""
+        try:
+            raise Exception
+        except Exception:
+            return sys.exc_info()[3].tb_frame.f_back
+
+
 class Debugger(Logger):
     """
         https://docs.python.org/2.6/library/logging.html
@@ -198,16 +209,15 @@ class Debugger(Logger):
 
     def findCaller(self, stack_info=False):
         """
-            Copied from the python 3.6 implementation, only changing the `sys._getframe(1)` to
-            `sys._getframe(3)` because due the inheritance, we need to take a higher frame to get
+            Copied from the python 3.6.3 implementation, only changing the `sys._getframe(3)` to
+            `sys._getframe(4)` because due the inheritance, we need to take a higher frame to get
             the correct function name, otherwise the result would always be `__call__`, which is the
             internal function we use here.
 
             Find the stack frame of the caller so that we can note the source file name, line number
             and function name.
         """
-        f = sys._getframe( self._frameLevel ) if hasattr(sys, "_getframe") else None
-
+        f = currentframe()
         #On some versions of IronPython, currentframe() returns None if
         #IronPython isn't run with -X:Frames.
         if f is not None:
@@ -349,4 +359,3 @@ def getLogger(debug_level=127, debugger_name=None, output_file=None):
 
     logger.setup_logger( output_file )
     return logger
-
