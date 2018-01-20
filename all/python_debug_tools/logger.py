@@ -28,7 +28,7 @@
 import os
 import sys
 
-import time
+import timeit
 import datetime
 
 import logging
@@ -40,6 +40,12 @@ from logging import Manager
 from logging import DEBUG
 from logging import WARNING
 from logging import _srcfile
+
+
+is_python2 = False
+
+if sys.version_info[0] < 3:
+    is_python2 = True
 
 
 if hasattr(sys, '_getframe'):
@@ -72,7 +78,7 @@ class Debugger(Logger):
         self.stream_handler = None
 
         # Initialize the first last tick as the current tick
-        self.lastTick = time.perf_counter()
+        self.lastTick = timeit.default_timer()
 
         # Enable debug messages: (bitwise)
         # 0 - Disabled debugging
@@ -176,7 +182,9 @@ class Debugger(Logger):
         # https://stackoverflow.com/questions/394770/override-a-method-at-instance-level
         if file_path:
             self.output_file = self._get_debug_file_path( file_path )
-            sys.stderr.write( "\n" + self._get_time_prefix( datetime.datetime.now() ) + "Logging to the file " + self.output_file + "\n" )
+
+            sys.stderr.write( "\n" + "".join( self._get_time_prefix( datetime.datetime.now() ) )
+                    + "Logging to the file " + self.output_file + "\n" )
 
             if self.file_handler:
                 self.removeHandler( self.file_handler )
@@ -251,12 +259,17 @@ class Debugger(Logger):
             self._log( WARNING, msg, args, **kwargs )
 
     def _log(self, level, msg, args, exc_info=None, extra={}, stack_info=False, debug_level=0):
-        self.currentTick = time.perf_counter()
+        self.currentTick = timeit.default_timer()
 
         debug_level = "(%d)" % debug_level if debug_level else ""
         extra.update( {"debugLevel": debug_level, "tickDifference": self.currentTick - self.lastTick} )
 
-        super( Debugger, self )._log( level, msg, args, exc_info, extra, stack_info )
+        if is_python2:
+            super( Debugger, self )._log( level, msg, args, exc_info, extra )
+
+        else:
+            super( Debugger, self )._log( level, msg, args, exc_info, extra, stack_info )
+
         self.lastTick = self.currentTick
 
     def _setup_full_formatter(self, date, level, function, name, time, tick, formatter):
@@ -264,31 +277,31 @@ class Debugger(Logger):
             Single page cheat-sheet about Python string formatting pyformat.info
             https://github.com/ulope/pyformat.info
         """
-        self.clean_formatter = logging.Formatter( "", "", style="{" )
-        self.basic_formatter = logging.Formatter( "[{name}] {asctime}:{msecs:=010.6f} "
-                "{tickDifference:.2e} {message}", "%H:%M:%S", style="{" )
+        self.clean_formatter = logging.Formatter( "", "" )
+        self.basic_formatter = logging.Formatter( "[%(name)s] %(asctime)s:%(msecs)010.6f "
+                "%(tickDifference).2e %(message)s", "%H:%M:%S" )
 
         if formatter:
             self.full_formatter = formatter
 
         else:
             date_format = "%Y-%m-%d " if date else ""
-            date_format += "%H:%M:%S"  if time else ""
+            date_format += "%H:%M:%S" if time else ""
 
             if time:
-                time = "{asctime}:{msecs:=010.6f} " if len( date_format ) else ""
+                time = "%(asctime)s:%(msecs)010.6f " if len( date_format ) else ""
 
             else:
-                time = "{asctime}" if len( date_format ) else ""
+                time = "%(asctime)s" if len( date_format ) else ""
 
-            name = "[{name}] "             if name else ""
-            tick = "{tickDifference:.2e} " if tick else ""
+            name = "[%(name)s] "           if name else ""
+            tick = "%(tickDifference).2e " if tick else ""
 
-            level = "{levelname}{debugLevel} " if level else ""
-            function = "{funcName}:{lineno} "  if function else ""
+            level = "%(levelname)s%(debugLevel)s " if level else ""
+            function = "%(funcName)s:%(lineno)d "  if function else ""
 
-            self.full_formatter = logging.Formatter( "%s%s%s%s%s{message}" % ( name, time, tick, level, function ),
-                    date_format, style="{" )
+            self.full_formatter = logging.Formatter( "{}{}{}{}{}%(message)s".format( name, time, tick, level, function ),
+                    date_format )
 
     def _get_time_prefix(self, currentTime):
         return [ "[%s]" % self.debugger_name,
@@ -304,20 +317,36 @@ class Debugger(Logger):
 
             Convert "D:/User/Downloads/debug.txt"
             To "/cygwin/D/User/Downloads/debug.txt"
+            To "/mnt/D/User/Downloads/debug.txt"
         """
+        new_output    = output_file
+        platform_info = platform.platform( True ).lower()
 
-        if "CYGWIN" in platform.system().upper() and os.path.isabs( output_file ):
-            output_file = output_file.replace( ":", "", 1 )
-            output_file = output_file.replace( "\\", "/", 1 )
-            output_file = output_file.replace( "\\\\", "/", 1 )
+        if "cygwin" in platform_info:
+            new_output = "/cygdrive/" + self._remove_windows_driver_letter( output_file )
 
-            output_file = "/cygdrive/" + output_file
+        elif "linux" in platform_info \
+                and "microsoft" in platform_info:
+
+            new_output = self._remove_windows_driver_letter( output_file )
+            new_output = "/mnt/" + new_output[0].lower() + new_output[1:]
+
+        if os.path.isabs( new_output ):
+            output_file = new_output
 
         else:
             output_file = output_file
 
-        # print( "Debugger, _get_debug_file_path, PATH: " + output_file )
+        # print( "Debugger, _get_debug_file_path, output_file:   " + output_file )
+        # print( "Debugger, _get_debug_file_path, isabs:         " + str( os.path.isabs( output_file ) ) )
+        # print( "Debugger, _get_debug_file_path, platform_info: " + platform_info )
         return output_file
+
+    @classmethod
+    def _remove_windows_driver_letter(cls, output_file):
+        output_file = output_file.replace( ":", "", 1 )
+        output_file = output_file.replace( "\\", "/", 1 )
+        return output_file.replace( "\\\\", "/", 1 )
 
 
 # Setup the alternate debugger, independent of the standard logging module Logger class

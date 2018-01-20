@@ -22,9 +22,17 @@
 #########################################################################################
 #
 
+import sys
 import threading
 
-class SleepEvent(threading.Event):
+if sys.version_info[0] < 3:
+    Event = threading._Event
+
+else:
+    Event = threading.Event
+
+
+class SleepEvent(Event):
 
     def __init__(self):
         super( SleepEvent, self ).__init__()
