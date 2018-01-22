@@ -377,12 +377,12 @@ class Debugger(Logger):
         platform_info = platform.platform( True ).lower()
 
         if "cygwin" in platform_info:
-            new_output = "/cygdrive/" + cls._remove_windows_driver_letter( output_file )
+            new_output = "/cygdrive/" + cls.remove_windows_driver_letter( output_file )
 
         elif "linux" in platform_info \
                 and "microsoft" in platform_info:
 
-            new_output = cls._remove_windows_driver_letter( output_file )
+            new_output = cls.remove_windows_driver_letter( output_file )
             new_output = "/mnt/" + new_output[0].lower() + new_output[1:]
 
         if os.path.isabs( new_output ):
@@ -397,7 +397,7 @@ class Debugger(Logger):
         return output_file
 
     @classmethod
-    def _remove_windows_driver_letter(cls, output_file):
+    def remove_windows_driver_letter(cls, output_file):
         output_file = output_file.replace( ":", "", 1 )
         output_file = output_file.replace( "\\", "/", 1 )
         return output_file.replace( "\\\\", "/", 1 )
