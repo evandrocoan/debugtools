@@ -223,7 +223,7 @@ class Debugger(Logger):
         self._setup_full_formatter(date, level, function, name, time, tick, formatter)
 
         if file_path:
-            self.output_file = self._get_debug_file_path( file_path )
+            self.output_file = self.get_debug_file_path( file_path )
 
             sys.stderr.write( "\n" + "".join( self._get_time_prefix( datetime.datetime.now() ) )
                     + "Logging to the file " + self.output_file + "\n" )
@@ -364,7 +364,7 @@ class Debugger(Logger):
                 ":%07d " % currentTime.microsecond ]
 
     @classmethod
-    def _get_debug_file_path(cls, output_file):
+    def get_debug_file_path(cls, output_file):
         """
             Reliably detect Windows in Python
             https://stackoverflow.com/questions/1387222/reliably-detect-windows-in-python
@@ -391,9 +391,9 @@ class Debugger(Logger):
         else:
             output_file = output_file
 
-        # print( "Debugger, _get_debug_file_path, output_file:   " + output_file )
-        # print( "Debugger, _get_debug_file_path, isabs:         " + str( os.path.isabs( output_file ) ) )
-        # print( "Debugger, _get_debug_file_path, platform_info: " + platform_info )
+        # print( "Debugger, get_debug_file_path, output_file:   " + output_file )
+        # print( "Debugger, get_debug_file_path, isabs:         " + str( os.path.isabs( output_file ) ) )
+        # print( "Debugger, get_debug_file_path, platform_info: " + platform_info )
         return output_file
 
     @classmethod
@@ -408,7 +408,7 @@ class Debugger(Logger):
             Return the main root logger `root_debugger` used by this extension of the standard
             logging module.
         """
-        return Debugger.root
+        return cls.root
 
 
 # Setup the alternate debugger, completely independent of the standard logging module Logger class
