@@ -105,6 +105,12 @@ class Debugger(Logger):
     def insert_empty_line(self, level=1):
         self.clean( level, "" )
 
+    def newline(self, level=1):
+        self.clean( level, "" )
+
+    def new_line(self, level=1):
+        self.clean( level, "" )
+
     def clean(self, debug_level, msg, *args, **kwargs):
 
         if self.debug_level & debug_level != 0:
