@@ -66,10 +66,16 @@ class Debugger(Logger):
     logger      = None
     output_file = None
 
-    def __init__(self, debugger_name, logging_level=None):
+    def __init__(self, debugger_name, logging_level=None, auto_setup_logger=True, **kwargs):
         """
             What is a clean, pythonic way to have multiple constructors in Python?
             https://stackoverflow.com/questions/682504/what-is-a-clean-pythonic-way-to-have-multiple-constructors-in-python
+
+            @param debugger_name the name of this logger accordingly with the standard logging.Logger() documentation.
+            @param logging_level an integer with the current bitwise enabled log level
+            @param auto_setup_logger whether or not to call now `setup_logger()` with its **kwargs
+
+            @param **kwargs are the parameters passed to the Debugger.setup_logger() member function.
         """
         self.debugger_name = debugger_name
         super( Debugger, self ).__init__( self.debugger_name, logging_level or "DEBUG" )
@@ -84,10 +90,11 @@ class Debugger(Logger):
         # 0 - Disabled debugging
         # 1 - Errors messages
         self.debug_level  = 127
+        self._frameLevel  = 3
         self._debug_level = 0
 
-        self._frameLevel = 3
-        self.setup_logger()
+        if auto_setup_logger:
+            self.setup_logger( **kwargs )
 
     def __call__(self, debug_level, msg, *args, **kwargs):
         """
@@ -103,31 +110,52 @@ class Debugger(Logger):
             self._log( DEBUG, msg, args, **kwargs )
 
     def insert_empty_line(self, level=1):
+        """
+            Prints a clean new line, without any formatter header.
+        """
         self.clean( level, "" )
 
     def newline(self, level=1):
+        """
+            Prints a clean new line, without any formatter header.
+        """
         self.clean( level, "" )
 
     def new_line(self, level=1):
+        """
+            Prints a clean new line, without any formatter header.
+        """
         self.clean( level, "" )
 
+
     def clean(self, debug_level, msg, *args, **kwargs):
+        """
+            Prints a message without the time prefix `[plugin_name.py] 11:13:51:0582059`
+
+            How to insert newline in python logging?
+            https://stackoverflow.com/questions/20111758/how-to-insert-newline-in-python-logging
+        """
 
         if self.debug_level & debug_level != 0:
             self._debug_level = debug_level
             self.alternate_formatter( self.clean_formatter, debug_level, msg, *args, **kwargs )
 
     def basic(self, debug_level, msg, *args, **kwargs):
+        """
+            Prints the bitwise logging message with the standard basic formatter, which uses by
+            default the format: [%(name)s] %(asctime)s:%(msecs)010.6f %(tickDifference).2e %(message)s
+
+            The basic logger format can be configured setting the standard formatter with
+            setup_logger() and calling invert_basic_full_formatter() to set the `full_formatter` as
+            the basic formatter.
+        """
 
         if self.debug_level & debug_level != 0:
             self.alternate_formatter( self.basic_formatter, debug_level, msg, *args, **kwargs )
 
     def alternate_formatter(self, formatter, debug_level, msg, *args, **kwargs):
         """
-            Prints a message without the time prefix `[plugin_name.py] 11:13:51:0582059 `
-
-            How to insert newline in python logging?
-            https://stackoverflow.com/questions/20111758/how-to-insert-newline-in-python-logging
+            Do a usual Debugger bitwise log using the specified logging.Formatter() object.
         """
 
         if self.debug_level & debug_level != 0:
@@ -157,6 +185,9 @@ class Debugger(Logger):
             open( self.output_file, 'w' ).close()
 
     def invert_basic_full_formatter(self):
+        """
+            Inverts the default formatter between the preconfigured `basic` and `full_formatter`.
+        """
         self.basic_formatter, self.full_formatter = self.full_formatter, self.basic_formatter
 
     def setup_logger(self, file_path=None, mode='a', delete=True, date=False, level=False,
@@ -164,6 +195,12 @@ class Debugger(Logger):
         """
             Instead of output the debug to the standard output stream, send it a file on the file
             system, which is faster for large outputs.
+
+            Single page cheat-sheet about Python string formatting pyformat.info
+            https://github.com/ulope/pyformat.info
+
+            Override a method at instance level
+            https://stackoverflow.com/questions/394770/override-a-method-at-instance-level
 
             @param file_path    a relative or absolute path to the log file. If empty the output
                                 will be sent to the standard output stream.
@@ -184,8 +221,6 @@ class Debugger(Logger):
         """
         self._setup_full_formatter(date, level, function, name, time, tick, formatter)
 
-        # Override a method at instance level
-        # https://stackoverflow.com/questions/394770/override-a-method-at-instance-level
         if file_path:
             self.output_file = self._get_debug_file_path( file_path )
 
@@ -203,6 +238,7 @@ class Debugger(Logger):
                     and self.stream_handler:
 
                 self.removeHandler( self.stream_handler )
+                self.stream_handler.close()
                 self.stream_handler = None
 
         else:
@@ -219,6 +255,7 @@ class Debugger(Logger):
                     and self.file_handler:
 
                 self.removeHandler( self.file_handler )
+                self.file_handler.close()
                 self.file_handler = None
 
     def findCaller(self, stack_info=False):
@@ -279,10 +316,6 @@ class Debugger(Logger):
         self.lastTick = self.currentTick
 
     def _setup_full_formatter(self, date, level, function, name, time, tick, formatter):
-        """
-            Single page cheat-sheet about Python string formatting pyformat.info
-            https://github.com/ulope/pyformat.info
-        """
         self.clean_formatter = logging.Formatter( "", "" )
         self.basic_formatter = logging.Formatter( "[%(name)s] %(asctime)s:%(msecs)010.6f "
                 "%(tickDifference).2e %(message)s", "%H:%M:%S" )
@@ -316,7 +349,8 @@ class Debugger(Logger):
                 ":%02d" % currentTime.second,
                 ":%07d " % currentTime.microsecond ]
 
-    def _get_debug_file_path(self, output_file):
+    @classmethod
+    def _get_debug_file_path(cls, output_file):
         """
             Reliably detect Windows in Python
             https://stackoverflow.com/questions/1387222/reliably-detect-windows-in-python
@@ -329,12 +363,12 @@ class Debugger(Logger):
         platform_info = platform.platform( True ).lower()
 
         if "cygwin" in platform_info:
-            new_output = "/cygdrive/" + self._remove_windows_driver_letter( output_file )
+            new_output = "/cygdrive/" + cls._remove_windows_driver_letter( output_file )
 
         elif "linux" in platform_info \
                 and "microsoft" in platform_info:
 
-            new_output = self._remove_windows_driver_letter( output_file )
+            new_output = cls._remove_windows_driver_letter( output_file )
             new_output = "/mnt/" + new_output[0].lower() + new_output[1:]
 
         if os.path.isabs( new_output ):
@@ -354,17 +388,30 @@ class Debugger(Logger):
         output_file = output_file.replace( "\\", "/", 1 )
         return output_file.replace( "\\\\", "/", 1 )
 
+    @classmethod
+    def getRootLogger(cls):
+        """
+            Return the main root logger `root_debugger` used by this extension of the standard
+            logging module.
+        """
+        return Debugger.root
 
-# Setup the alternate debugger, independent of the standard logging module Logger class
-Debugger.manager = Manager( Logger.root )
-Debugger.manager.loggerClass = Debugger
+
+# Setup the alternate debugger, completely independent of the standard logging module Logger class
+root_debugger = Debugger( "root_debugger", "WARNING", False )
+Debugger.root = root_debugger
+
+Debugger.manager = Manager( root_debugger )
+Debugger.manager.setLoggerClass( Debugger )
 
 
-def getLogger(debug_level=127, debugger_name=None, output_file=None):
+def getLogger(debug_level=127, debugger_name=None, **kwargs):
     """
-    Return a logger with the specified name, creating it if necessary.
+    Return a logger with the specified name, creating it if necessary. If no name is specified,
+    return a new logger based on the main logger file name.
 
-    If no name is specified, return a new logger based on the main logger file name.
+    @param debug_level & debugger_name are the same parameters passed to the Debugger() constructor.
+    @param **kwargs are the parameters passed to the Debugger.setup_logger() member function.
     """
 
     if debugger_name:
@@ -392,5 +439,6 @@ def getLogger(debug_level=127, debugger_name=None, output_file=None):
     logger = Debugger.manager.getLogger( debugger_name )
     logger.debug_level = debug_level
 
-    logger.setup_logger( output_file )
+    logger.setup_logger( **kwargs )
     return logger
+
