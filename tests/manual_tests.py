@@ -1,13 +1,18 @@
 
 
-# To run this file, run on the Sublime Text console:
-# import sublime_plugin; sublime_plugin.reload_plugin( "PythonDebugTools.tests.manual_tests" )
-import sublime_plugin
+try:
+    # To run this file, run on the Sublime Text console:
+    # import sublime_plugin; sublime_plugin.reload_plugin( "PythonDebugTools.tests.manual_tests" )
+    import sublime_plugin
 
-# Import and reload the debugger
-sublime_plugin.reload_plugin( "debug_tools.logger" )
+    # Import and reload the debugger
+    sublime_plugin.reload_plugin( "debug_tools.logger" )
+
+except:
+    pass
+
+
 from debug_tools.logger import getLogger
-
 log = getLogger( 127, __name__, date=True )
 
 log( 1, "Bitwise" )
@@ -37,8 +42,8 @@ log.setup( date=True )
 log.newline()
 function_name()
 
-log = getLogger( 127 )
-log.setup()
+log = getLogger( 127, function=True )
+# log.setup()
 log.newline()
 function_name()
 

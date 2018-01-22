@@ -192,7 +192,7 @@ class Debugger(Logger):
         self.basic_formatter, self.full_formatter = self.full_formatter, self.basic_formatter
 
     def setup(self, file_path=None, mode='a', delete=True, date=False, level=False,
-            function=True, name=True, time=True, tick=True, formatter=None):
+            function=not is_python2, name=True, time=True, tick=True, formatter=None):
         """
             Instead of output the debug to the standard output stream, send it a file on the file
             system, which is faster for large outputs.
@@ -331,8 +331,8 @@ class Debugger(Logger):
 
     def _setup_full_formatter(self, date, level, function, name, time, tick, formatter):
         self.clean_formatter = logging.Formatter( "", "" )
-        self.basic_formatter = logging.Formatter( "[%(name)s] %(asctime)s:%(msecs)010.6f "
-                "%(tickDifference).2e %(message)s", "%H:%M:%S" )
+        self.basic_formatter = logging.Formatter( "[%(name)s] %(asctime)s:%(msecs)010.6f{} %(message)s".format(
+                "" if is_python2 else " %(tickDifference).2e" ), "%H:%M:%S" )
 
         if formatter:
             self.full_formatter = formatter
