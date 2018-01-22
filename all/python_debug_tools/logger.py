@@ -209,11 +209,11 @@ class Debugger(Logger):
                 self.stream_handler.setFormatter( self.full_formatter )
                 self.addHandler( self.stream_handler )
 
-                if delete \
-                        and self.file_handler:
+            if delete \
+                    and self.file_handler:
 
-                    self.removeHandler( self.file_handler )
-                    self.file_handler = None
+                self.removeHandler( self.file_handler )
+                self.file_handler = None
 
     def findCaller(self, stack_info=False):
         """
