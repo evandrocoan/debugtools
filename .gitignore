@@ -1,5 +1,5 @@
 
-all/python_debug_tools.egg-info
+all/debug_tools.egg-info
 dist/
 
 *.pyc

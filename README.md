@@ -23,7 +23,7 @@ Basic logger for python on the output form:
 See also the example on [tests/manual_tests.py](tests/manual_tests.py):
 ```
 reloading plugin PythonDebugTools.tests.manual_tests
-reloading plugin python_debug_tools.logger
+reloading plugin debug_tools.logger
 [PythonDebugTools.tests.manual_tests] 16:31:26:638.928890 2.19e-04 <module>:13 My logging
 [PythonDebugTools.tests.manual_tests] 16:31:26:639.429092 4.90e-04 <module>:14 A warning
 [PythonDebugTools.tests.manual_tests] 16:31:26:639.930010 4.77e-04 <module>:15 A debugging
@@ -47,7 +47,7 @@ ___
 
 ```python
 # Import the debugger
-from python_debug_tools import getLogger
+from debug_tools import getLogger
 
 # Enable debug messages: (bitwise)
 #
@@ -79,7 +79,7 @@ def assert_path(module):
 assert_path( os.path.join( os.path.dirname( os.path.realpath( __file__ ) ), 'PythonDebugTools/all' ) )
 
 # Import the debugger
-from python_debug_tools import getLogger
+from debug_tools import getLogger
 
 # Enable debug messages: (bitwise)
 #
@@ -100,10 +100,10 @@ log( 1, "..." )
 If you want to reload the debug tools code on the fly, you can use this to import it:
 ```python
 import imp
-from python_debug_tools.logger import getLogger
+from debug_tools.logger import getLogger
 
-imp.reload( python_debug_tools.logger )
-from python_debug_tools.logger import getLogger
+imp.reload( debug_tools.logger )
+from debug_tools.logger import getLogger
 ```
 
 

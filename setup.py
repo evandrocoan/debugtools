@@ -36,14 +36,14 @@ except OSError:
 
     setup \
     (
-          name='python_debug_tools',
+          name='debug_tools',
           version = '1.0.2',
           description = 'Python Distribution Logger, Debugger and Utilities',
           author = 'Evandro Coan',
           license = "GPLv3",
           url = 'https://github.com/evandrocoan/PythonDebugTools',
           package_dir = {'': 'all'},
-          packages = ['python_debug_tools'],
+          packages = ['debug_tools'],
           long_description = open('README.md').read(),
           classifiers=[
               'Development Status :: 5 - Production/Stable',

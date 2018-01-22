@@ -5,8 +5,8 @@
 import sublime_plugin
 
 # Import and reload the debugger
-sublime_plugin.reload_plugin( "python_debug_tools.logger" )
-from python_debug_tools.logger import getLogger
+sublime_plugin.reload_plugin( "debug_tools.logger" )
+from debug_tools.logger import getLogger
 
 log = getLogger( 127, __name__, date=True )
 
