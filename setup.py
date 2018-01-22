@@ -3,7 +3,7 @@
 try:
     import sublime_plugin
 
-except OSError:
+except:
     # https://setuptools.readthedocs.io/en/latest/setuptools.html
     from setuptools import setup
 
@@ -37,7 +37,7 @@ except OSError:
     setup \
     (
           name='debug_tools',
-          version = '1.0.2',
+          version = '2.0.0',
           description = 'Python Distribution Logger, Debugger and Utilities',
           author = 'Evandro Coan',
           license = "GPLv3",
