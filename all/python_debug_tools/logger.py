@@ -301,13 +301,18 @@ class Debugger(Logger):
             active handlers.
         """
         current = self
+
         while current:
+
             if current.handlers:
                 return current
+
             if not current.propagate:
                 break
+
             else:
                 current = current.parent
+
         return None
 
     def _log(self, level, msg, args, exc_info=None, extra={}, stack_info=False, debug_level=0):
