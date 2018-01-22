@@ -43,6 +43,7 @@ from logging import _srcfile
 
 
 is_python2 = False
+EMPTY_KWARG = sys.maxsize
 
 if sys.version_info[0] < 3:
     is_python2 = True
@@ -82,6 +83,21 @@ class Debugger(Logger):
 
         self.file_handler   = None
         self.stream_handler = None
+
+        # Used to remember the these parameters values set on the subsequent calls to `setup()`
+        self.default_arguments = \
+        {
+            "file_path": None,
+            "mode": 'a',
+            "delete": True,
+            "date": False,
+            "level": False,
+            "function": not is_python2,
+            "name": True,
+            "time": True,
+            "tick": True,
+            "formatter": None,
+        }
 
         # Initialize the first last tick as the current tick
         self.lastTick = timeit.default_timer()
@@ -191,8 +207,8 @@ class Debugger(Logger):
         """
         self.basic_formatter, self.full_formatter = self.full_formatter, self.basic_formatter
 
-    def setup(self, file_path=None, mode='a', delete=True, date=False, level=False,
-            function=not is_python2, name=True, time=True, tick=True, formatter=None):
+    def setup(self, file_path=EMPTY_KWARG, mode=EMPTY_KWARG, delete=EMPTY_KWARG, date=EMPTY_KWARG, level=EMPTY_KWARG,
+            function=EMPTY_KWARG, name=EMPTY_KWARG, time=EMPTY_KWARG, tick=EMPTY_KWARG, formatter=EMPTY_KWARG):
         """
             Instead of output the debug to the standard output stream, send it a file on the file
             system, which is faster for large outputs.
@@ -220,10 +236,25 @@ class Debugger(Logger):
             @param tick         if True, add to the `full_formatter` the time.perf_counter() difference from the last call.
             @param formatter    if not None, replace this `full_formatter` by the logging.Formatter() provided.
         """
-        self._setup_full_formatter(date, level, function, name, time, tick, formatter)
+        self._setup( file_path=file_path, mode=mode, delete=delete, date=date, level=level,
+            function=function, name=name, time=time, tick=tick, formatter=formatter )
 
-        if file_path:
-            self.output_file = self.get_debug_file_path( file_path )
+    def _setup(self, **kwargs):
+        """
+            Allow to pass positional arguments to `setup()`.
+        """
+        default_arguments = self.default_arguments
+
+        for kwarg in kwargs:
+            value = kwargs[kwarg]
+
+            if value != EMPTY_KWARG:
+                default_arguments[kwarg] = value
+
+        self._setup_full_formatter( default_arguments )
+
+        if default_arguments['file_path']:
+            self.output_file = self.get_debug_file_path( default_arguments['file_path'] )
 
             sys.stderr.write( "\n" + "".join( self._get_time_prefix( datetime.datetime.now() ) )
                     + "Logging to the file " + self.output_file + "\n" )
@@ -231,15 +262,14 @@ class Debugger(Logger):
             if self.file_handler:
                 self.removeHandler( self.file_handler )
 
-            self.file_handler = logging.FileHandler( self.output_file, mode )
+            self.file_handler = logging.FileHandler( self.output_file, default_arguments['mode'] )
             self.file_handler.setFormatter( self.full_formatter )
             self.addHandler( self.file_handler )
 
-            if delete \
+            if default_arguments['delete'] \
                     and self.stream_handler:
 
                 self.removeHandler( self.stream_handler )
-                self.stream_handler.close()
                 self.stream_handler = None
 
         else:
@@ -252,7 +282,7 @@ class Debugger(Logger):
                 self.stream_handler.setFormatter( self.full_formatter )
                 self.addHandler( self.stream_handler )
 
-            if delete \
+            if default_arguments['delete'] \
                     and self.file_handler:
 
                 self.removeHandler( self.file_handler )
@@ -329,32 +359,32 @@ class Debugger(Logger):
 
         self.lastTick = self.currentTick
 
-    def _setup_full_formatter(self, date, level, function, name, time, tick, formatter):
+    def _setup_full_formatter(self, default_arguments):
         self.clean_formatter = logging.Formatter( "", "" )
         self.basic_formatter = logging.Formatter( "[%(name)s] %(asctime)s:%(msecs)010.6f{} %(message)s".format(
                 "" if is_python2 else " %(tickDifference).2e" ), "%H:%M:%S" )
 
-        if formatter:
-            self.full_formatter = formatter
+        if default_arguments['formatter']:
+            self.full_formatter = default_arguments['formatter']
 
         else:
-            date_format = "%Y-%m-%d " if date else ""
-            date_format += "%H:%M:%S" if time else ""
+            date_format = "%Y-%m-%d " if default_arguments['date'] else ""
+            date_format += "%H:%M:%S" if default_arguments['time'] else ""
 
-            if time:
+            if default_arguments['time']:
                 time = "%(asctime)s:%(msecs)010.6f " if len( date_format ) else ""
 
             else:
                 time = "%(asctime)s" if len( date_format ) else ""
 
-            name = "[%(name)s] "           if name else ""
-            tick = "%(tickDifference).2e " if tick else ""
+            name = "[%(name)s] "           if default_arguments['name'] else ""
+            tick = "%(tickDifference).2e " if default_arguments['tick'] else ""
 
-            level = "%(levelname)s%(debugLevel)s " if level else ""
-            function = "%(funcName)s:%(lineno)d "  if function else ""
+            level = "%(levelname)s%(debugLevel)s " if default_arguments['level'] else ""
+            function = "%(funcName)s:%(lineno)d "  if default_arguments['function'] else ""
 
-            self.full_formatter = logging.Formatter( "{}{}{}{}{}%(message)s".format( name, time, tick, level, function ),
-                    date_format )
+            self.full_formatter = logging.Formatter( "{}{}{}{}{}%(message)s".format(
+                    name, time, tick, level, function ), date_format )
 
     def _get_time_prefix(self, currentTime):
         return [ "[%s]" % self.debugger_name,
@@ -428,7 +458,7 @@ def getLogger(debug_level=127, debugger_name=None, **kwargs):
     @param `setup` if True, ensure there is at least one handler enabled in the hierarchy. If not,
         then the current created Logger will be called with `setup=True`. See also
         logging::Logger::getLogger()
-    @param `**kwargs` are the parameters passed to the Debugger.setup() member function.
+    @param `**kwargs` are the named parameters passed to the Debugger.setup() member function.
     """
 
     if debugger_name:
