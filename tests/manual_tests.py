@@ -8,7 +8,7 @@ import sublime_plugin
 sublime_plugin.reload_plugin( "python_debug_tools.logger" )
 from python_debug_tools.logger import getLogger
 
-log = getLogger( 127, __name__ )
+log = getLogger( 127, __name__, date=True )
 
 log( 1, "Bitwise" )
 log( 8, "Bitwise" )
@@ -23,27 +23,27 @@ def function_name():
     log.info( "Info" )
     log.debug( "Debug" )
 
-log.setup_logger( function=False, level=True )
-log.insert_empty_line()
+log.setup( function=False, level=True )
+log.newline()
 function_name()
 
 log = getLogger( __name__, 127 )
-log.setup_logger( date=True )
-log.insert_empty_line()
+log.setup( date=True )
+log.newline()
 function_name()
 
 log = getLogger( __name__ )
-log.setup_logger( date=True )
-log.insert_empty_line()
+log.setup( date=True )
+log.newline()
 function_name()
 
 log = getLogger( 127 )
-log.setup_logger()
-log.insert_empty_line()
+log.setup()
+log.newline()
 function_name()
 
 log = getLogger()
-log.setup_logger()
-log.insert_empty_line()
+log.setup()
+log.newline()
 function_name()
 

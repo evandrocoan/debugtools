@@ -66,16 +66,16 @@ class Debugger(Logger):
     logger      = None
     output_file = None
 
-    def __init__(self, debugger_name, logging_level=None, auto_setup_logger=True, **kwargs):
+    def __init__(self, debugger_name, logging_level=None, setup=False, **kwargs):
         """
             What is a clean, pythonic way to have multiple constructors in Python?
             https://stackoverflow.com/questions/682504/what-is-a-clean-pythonic-way-to-have-multiple-constructors-in-python
 
             @param debugger_name the name of this logger accordingly with the standard logging.Logger() documentation.
             @param logging_level an integer with the current bitwise enabled log level
-            @param auto_setup_logger whether or not to call now `setup_logger()` with its **kwargs
+            @param setup whether or not to call now `setup()` with its **kwargs
 
-            @param **kwargs are the parameters passed to the Debugger.setup_logger() member function.
+            @param **kwargs are the parameters passed to the Debugger.setup() member function.
         """
         self.debugger_name = debugger_name
         super( Debugger, self ).__init__( self.debugger_name, logging_level or "DEBUG" )
@@ -93,8 +93,8 @@ class Debugger(Logger):
         self._frameLevel  = 3
         self._debug_level = 0
 
-        if auto_setup_logger:
-            self.setup_logger( **kwargs )
+        if setup:
+            self.setup( **kwargs )
 
     def __call__(self, debug_level, msg, *args, **kwargs):
         """
@@ -109,28 +109,29 @@ class Debugger(Logger):
             kwargs['debug_level'] = debug_level
             self._log( DEBUG, msg, args, **kwargs )
 
-    def insert_empty_line(self, level=1):
+    def warn(self, msg, *args, **kwargs):
+        """
+            Fix second indirection created by the super().warn() method, by directly calling _log()
+        """
+
+        if self.isEnabledFor( WARNING ):
+            self._log( WARNING, msg, args, **kwargs )
+
+    def newline(self, level=1, count=1):
         """
             Prints a clean new line, without any formatter header.
         """
         self.clean( level, "" )
 
-    def newline(self, level=1):
+    def new_line(self, level=1, count=1):
         """
             Prints a clean new line, without any formatter header.
         """
         self.clean( level, "" )
-
-    def new_line(self, level=1):
-        """
-            Prints a clean new line, without any formatter header.
-        """
-        self.clean( level, "" )
-
 
     def clean(self, debug_level, msg, *args, **kwargs):
         """
-            Prints a message without the time prefix `[plugin_name.py] 11:13:51:0582059`
+            Prints a message without the time prefix as `[plugin_name.py] 11:13:51:0582059`
 
             How to insert newline in python logging?
             https://stackoverflow.com/questions/20111758/how-to-insert-newline-in-python-logging
@@ -138,7 +139,7 @@ class Debugger(Logger):
 
         if self.debug_level & debug_level != 0:
             self._debug_level = debug_level
-            self.alternate_formatter( self.clean_formatter, debug_level, msg, *args, **kwargs )
+            self.alternate( self.clean_formatter, debug_level, msg, *args, **kwargs )
 
     def basic(self, debug_level, msg, *args, **kwargs):
         """
@@ -146,14 +147,14 @@ class Debugger(Logger):
             default the format: [%(name)s] %(asctime)s:%(msecs)010.6f %(tickDifference).2e %(message)s
 
             The basic logger format can be configured setting the standard formatter with
-            setup_logger() and calling invert_basic_full_formatter() to set the `full_formatter` as
+            setup() and calling invert() to set the `full_formatter` as
             the basic formatter.
         """
 
         if self.debug_level & debug_level != 0:
-            self.alternate_formatter( self.basic_formatter, debug_level, msg, *args, **kwargs )
+            self.alternate( self.basic_formatter, debug_level, msg, *args, **kwargs )
 
-    def alternate_formatter(self, formatter, debug_level, msg, *args, **kwargs):
+    def alternate(self, formatter, debug_level, msg, *args, **kwargs):
         """
             Do a usual Debugger bitwise log using the specified logging.Formatter() object.
         """
@@ -175,7 +176,7 @@ class Debugger(Logger):
             if self.file_handler:
                 self.file_handler.setFormatter( self.full_formatter )
 
-    def clear_log_file(self):
+    def clear(self):
         """
             Clear the log file contents
         """
@@ -184,13 +185,13 @@ class Debugger(Logger):
             sys.stderr.write( "\n" + "Cleaning the file: " + self.output_file )
             open( self.output_file, 'w' ).close()
 
-    def invert_basic_full_formatter(self):
+    def invert(self):
         """
             Inverts the default formatter between the preconfigured `basic` and `full_formatter`.
         """
         self.basic_formatter, self.full_formatter = self.full_formatter, self.basic_formatter
 
-    def setup_logger(self, file_path=None, mode='a', delete=True, date=False, level=False,
+    def setup(self, file_path=None, mode='a', delete=True, date=False, level=False,
             function=True, name=True, time=True, tick=True, formatter=None):
         """
             Instead of output the debug to the standard output stream, send it a file on the file
@@ -293,13 +294,21 @@ class Debugger(Logger):
             break
         return rv
 
-    def warn(self, msg, *args, **kwargs):
+    def getActiveLogger(self):
         """
-            Fix second indirection created by the super().warn() method, by directly calling _log()
+            Works accordingly with super::hasHandlers(), except that this returns the activate
+            logger object if it has some activate handler, or None if there are not loggers with
+            active handlers.
         """
-
-        if self.isEnabledFor( WARNING ):
-            self._log( WARNING, msg, args, **kwargs )
+        current = self
+        while current:
+            if current.handlers:
+                return current
+            if not current.propagate:
+                break
+            else:
+                current = current.parent
+        return None
 
     def _log(self, level, msg, args, exc_info=None, extra={}, stack_info=False, debug_level=0):
         self.currentTick = timeit.default_timer()
@@ -398,10 +407,10 @@ class Debugger(Logger):
 
 
 # Setup the alternate debugger, completely independent of the standard logging module Logger class
-root_debugger = Debugger( "root_debugger", "WARNING", False )
-Debugger.root = root_debugger
+root = Debugger( "root_debugger", "WARNING", False )
+Debugger.root = root
 
-Debugger.manager = Manager( root_debugger )
+Debugger.manager = Manager( root )
 Debugger.manager.setLoggerClass( Debugger )
 
 
@@ -410,8 +419,11 @@ def getLogger(debug_level=127, debugger_name=None, **kwargs):
     Return a logger with the specified name, creating it if necessary. If no name is specified,
     return a new logger based on the main logger file name.
 
-    @param debug_level & debugger_name are the same parameters passed to the Debugger() constructor.
-    @param **kwargs are the parameters passed to the Debugger.setup_logger() member function.
+    @param `debug_level` & `debugger_name` are the same parameters passed to the Debugger() constructor.
+    @param `setup` if True, ensure there is at least one handler enabled in the hierarchy. If not,
+        then the current created Logger will be called with `setup=True`. See also
+        logging::Logger::getLogger()
+    @param `**kwargs` are the parameters passed to the Debugger.setup() member function.
     """
 
     if debugger_name:
@@ -439,6 +451,11 @@ def getLogger(debug_level=127, debugger_name=None, **kwargs):
     logger = Debugger.manager.getLogger( debugger_name )
     logger.debug_level = debug_level
 
-    logger.setup_logger( **kwargs )
+    if kwargs.pop( "setup", True ):
+        active = logger.getActiveLogger()
+
+        if not active:
+            logger.setup( **kwargs )
+
     return logger
 
