@@ -449,18 +449,27 @@ Debugger.manager = Manager( root )
 Debugger.manager.setLoggerClass( Debugger )
 
 
-def getLogger(debug_level=127, debugger_name=None, **kwargs):
+def getLogger(debug_level=127, debugger_name=None,
+            file_path=EMPTY_KWARG, mode=EMPTY_KWARG, delete=EMPTY_KWARG, date=EMPTY_KWARG, level=EMPTY_KWARG,
+            function=EMPTY_KWARG, name=EMPTY_KWARG, time=EMPTY_KWARG, tick=EMPTY_KWARG, formatter=EMPTY_KWARG, **kwargs):
     """
     Return a logger with the specified name, creating it if necessary. If no name is specified,
     return a new logger based on the main logger file name.
 
     @param `debug_level` & `debugger_name` are the same parameters passed to the Debugger() constructor.
     @param `setup` if True, ensure there is at least one handler enabled in the hierarchy. If not,
-        then the current created Logger will be called with `setup=True`. See also
-        logging::Logger::getLogger()
-    @param `**kwargs` are the named parameters passed to the Debugger.setup() member function.
+        then the current created Logger will be called with `setup=True`. See also logging::Manager::getLogger()
+    @param from `file_path` until `**kwargs` are the named parameters passed to the Debugger.setup() member function.
     """
+    return _getLogger( debug_level, debugger_name,
+            file_path=file_path, mode=mode, delete=delete, date=date, level=level,
+            function=function, name=name, time=time, tick=tick, formatter=formatter, **kwargs )
 
+
+def _getLogger(debug_level=127, debugger_name=None, **kwargs):
+    """
+        Allow to pass positional arguments to `getLogger()`.
+    """
     if debugger_name:
 
         if isinstance( debugger_name, int ):
@@ -487,10 +496,11 @@ def getLogger(debug_level=127, debugger_name=None, **kwargs):
     logger.debug_level = debug_level
 
     if kwargs.pop( "setup", True ):
+        # The root logger is not returned, unless it is already setup with handlers
         active = logger.getActiveLogger()
 
         if not active:
-            logger.setup( **kwargs )
+            logger._setup( **kwargs )
 
     return logger
 
