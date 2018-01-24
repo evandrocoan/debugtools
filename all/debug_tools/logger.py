@@ -97,6 +97,7 @@ class Debugger(Logger):
             "time": True,
             "tick": True,
             "formatter": None,
+            "rotation": 0,
         }
 
         # Initialize the first last tick as the current tick
@@ -208,7 +209,8 @@ class Debugger(Logger):
         self.basic_formatter, self.full_formatter = self.full_formatter, self.basic_formatter
 
     def setup(self, file_path=EMPTY_KWARG, mode=EMPTY_KWARG, delete=EMPTY_KWARG, date=EMPTY_KWARG, level=EMPTY_KWARG,
-            function=EMPTY_KWARG, name=EMPTY_KWARG, time=EMPTY_KWARG, tick=EMPTY_KWARG, formatter=EMPTY_KWARG):
+            function=EMPTY_KWARG, name=EMPTY_KWARG, time=EMPTY_KWARG, tick=EMPTY_KWARG, formatter=EMPTY_KWARG,
+            rotation=EMPTY_KWARG):
         """
             Instead of output the debug to the standard output stream, send it a file on the file
             system, which is faster for large outputs.
@@ -222,8 +224,11 @@ class Debugger(Logger):
             @param file_path    a relative or absolute path to the log file. If empty the output
                                 will be sent to the standard output stream.
 
-            @param mode         the file write mode on the file system. It can be `a` to append to
-                                the existent file, or `w` to erase the existent file before start.
+            @param mode         the file write mode on the file system. It can be `a` to append to the
+                                existent file, or `w` to erase the existent file before start. If the
+                                parameter `rotation` is set to non zero, then this will be an integer value
+                                setting how many backups are going to be keep when doing the file rotation as
+                                specified on logging::handlers::RotatingFileHandler documentation.
 
             @param delete       if True, it will delete all other handlers before activate the
                                 current one, otherwise it will only activate the selected handler.
@@ -235,9 +240,13 @@ class Debugger(Logger):
             @param time         if True, add to the `full_formatter` the time on the format `%H:%M:%S:microseconds`.
             @param tick         if True, add to the `full_formatter` the time.perf_counter() difference from the last call.
             @param formatter    if not None, replace this `full_formatter` by the logging.Formatter() provided.
+            @param rotation     if non zero, creates a RotatingFileHandler with the specified size
+                                in Mega Bytes instead of FileHandler when creating a log file by the
+                                `file_path` option. See logging::handlers::RotatingFileHandler for more information.
         """
         self._setup( file_path=file_path, mode=mode, delete=delete, date=date, level=level,
-            function=function, name=name, time=time, tick=tick, formatter=formatter )
+                function=function, name=name, time=time, tick=tick, formatter=formatter,
+                rotation=rotation )
 
     def _setup(self, **kwargs):
         """
@@ -254,6 +263,7 @@ class Debugger(Logger):
         self._setup_full_formatter( default_arguments )
 
         if default_arguments['file_path']:
+            rotation = default_arguments['rotation']
             self.output_file = self.get_debug_file_path( default_arguments['file_path'] )
 
             sys.stderr.write( "\n" + "".join( self._get_time_prefix( datetime.datetime.now() ) )
@@ -262,7 +272,16 @@ class Debugger(Logger):
             if self.file_handler:
                 self.removeHandler( self.file_handler )
 
-            self.file_handler = logging.FileHandler( self.output_file, default_arguments['mode'] )
+            if rotation > 0:
+                backup_count = default_arguments['mode']
+                backup_count = abs( backup_count ) if isinstance( backup_count, int ) else 2
+
+                rotation = rotation * 1024 * 1024
+                self.file_handler = logging.handlers.RotatingFileHandler( self.output_file, maxBytes=rotation, backupCount=backup_count )
+
+            else:
+                self.file_handler = logging.FileHandler( self.output_file, default_arguments['mode'] )
+
             self.file_handler.setFormatter( self.full_formatter )
             self.addHandler( self.file_handler )
 
@@ -451,7 +470,8 @@ Debugger.manager.setLoggerClass( Debugger )
 
 def getLogger(debug_level=127, debugger_name=None,
             file_path=EMPTY_KWARG, mode=EMPTY_KWARG, delete=EMPTY_KWARG, date=EMPTY_KWARG, level=EMPTY_KWARG,
-            function=EMPTY_KWARG, name=EMPTY_KWARG, time=EMPTY_KWARG, tick=EMPTY_KWARG, formatter=EMPTY_KWARG, **kwargs):
+            function=EMPTY_KWARG, name=EMPTY_KWARG, time=EMPTY_KWARG, tick=EMPTY_KWARG, formatter=EMPTY_KWARG,
+            rotation=EMPTY_KWARG, **kwargs):
     """
     Return a logger with the specified name, creating it if necessary. If no name is specified,
     return a new logger based on the main logger file name.
