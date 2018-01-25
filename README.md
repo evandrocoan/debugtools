@@ -57,7 +57,8 @@ from debug_tools import getLogger
 # 4   - StickIntelligence class' notices.
 # 127 - All debugging levels at the same time.
 #
-log = getLogger( 127, os.path.basename( __file__ ) )
+# log = getLogger( 127, os.path.basename( __file__ ) )
+log = getLogger( 127, __name__ )
 
 # Later, use `log.log_level = 0` to disable the debugger, or change the level.
 log( 1, "Debugging" )
@@ -89,7 +90,8 @@ from debug_tools import getLogger
 # 4   - StickIntelligence class' notices.
 # 127 - All debugging levels at the same time.
 #
-log = getLogger( 127, os.path.basename( __file__ ) )
+# log = getLogger( 127, os.path.basename( __file__ ) )
+log = getLogger( 127, __name__ )
 
 # Later, use `log.log_level = 0` to disable the debugger, or change the level.
 log( 1, "Debugging" )
