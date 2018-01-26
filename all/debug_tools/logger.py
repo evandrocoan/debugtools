@@ -30,9 +30,10 @@ import sys
 
 import timeit
 import datetime
+import platform
 
 import logging
-import platform
+import logging.handlers
 
 from logging import Logger
 from logging import Manager
@@ -112,6 +113,23 @@ class Debugger(Logger):
 
         if setup:
             self.setup( **kwargs )
+
+    def __str__(self):
+        total_loggers = 0
+        representations = []
+        loggers = Debugger.manager.loggerDict
+
+        for logger_name in loggers:
+            logger = loggers[logger_name]
+            total_loggers += 1
+
+            representations.append( "%2d. debugger_name: %-30s, debug_level: %3d, _debug_level: %3d, propagate: %5s, "
+                "_frameLevel: %2d, stream_handler: %s, file_handler: %s, default_arguments: %s" %
+                ( total_loggers, logger.debugger_name, logger.debug_level, logger._debug_level,
+                logger.propagate, logger._frameLevel, logger.stream_handler, logger.file_handler,
+                logger.default_arguments ) )
+
+        return "\n%s" % "\n".join( reversed( representations ) )
 
     def __call__(self, debug_level, msg, *args, **kwargs):
         """
