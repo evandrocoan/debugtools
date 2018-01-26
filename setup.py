@@ -37,7 +37,7 @@ except:
     setup \
     (
           name='debug_tools',
-          version = '2.1.0',
+          version = '2.1.1',
           description = 'Python Distribution Logger, Debugger and Utilities',
           author = 'Evandro Coan',
           license = "GPLv3",
