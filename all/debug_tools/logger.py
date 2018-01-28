@@ -226,6 +226,20 @@ class Debugger(Logger):
         """
         self.basic_formatter, self.full_formatter = self.full_formatter, self.basic_formatter
 
+    def disable(self):
+        """
+            Delete all automatically setup handlers created by the automatic `setup()`.
+        """
+
+        if self.stream_handler:
+            self.removeHandler( self.stream_handler )
+            self.stream_handler = None
+
+        if self.file_handler:
+            self.removeHandler( self.file_handler )
+            self.file_handler.close()
+            self.file_handler = None
+
     def setup(self, file_path=EMPTY_KWARG, mode=EMPTY_KWARG, delete=EMPTY_KWARG, date=EMPTY_KWARG, level=EMPTY_KWARG,
             function=EMPTY_KWARG, name=EMPTY_KWARG, time=EMPTY_KWARG, tick=EMPTY_KWARG, formatter=EMPTY_KWARG,
             rotation=EMPTY_KWARG):
@@ -430,6 +444,32 @@ class Debugger(Logger):
                 ":%02d" % currentTime.second,
                 ":%07d " % currentTime.microsecond ]
 
+    def _fixChildren(self):
+        """
+            When automatically creating loggers, some children logger can be setup before the
+            parent logger, if the children logger is instantiated on module level and its module
+            is imported before the parent logger to be setup.
+
+            Then this will cause the the both parent and child logger to be setup and have handlers
+            outputting data to theirs output stream. Hence, here we fix that by disabling the
+            children logger when they are setup before the parent logger.
+
+            This method is only called automatically by this module level function `getLogger()`
+            when is set to automatically setup the logger. If you are not using the automatic setup
+            you do not need to use this function because you should know what you are doing and how
+            you should setup your own loggers.
+        """
+        loggers = Debugger.manager.loggerDict
+        parent_name = self.name
+        parent_name_length = len( parent_name )
+
+        for logger_name in loggers:
+            logger = loggers[logger_name]
+
+            # i.e., if logger.parent.name.startswith( parent_name )
+            if logger.parent.name[:parent_name_length] == parent_name:
+                logger.disable()
+
     @classmethod
     def get_debug_file_path(cls, output_file):
         """
@@ -539,6 +579,8 @@ def _getLogger(debug_level=127, debugger_name=None, **kwargs):
 
         if not active:
             logger._setup( **kwargs )
+
+        logger._fixChildren()
 
     return logger
 
