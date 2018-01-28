@@ -1,5 +1,13 @@
 # Python Debug Tools
 
+[![Build Status](https://travis-ci.org/evandrocoan/PythonDebugTools.svg?branch=master)](https://travis-ci.org/evandrocoan/PythonDebugTools)
+[![Build status](https://ci.appveyor.com/api/projects/status/github/evandrocoan/PythonDebugTools?branch=master&svg=true)](https://ci.appveyor.com/project/evandrocoan/PythonDebugTools/branch/master)
+[![codecov](https://codecov.io/gh/evandrocoan/PythonDebugTools/branch/master/graph/badge.svg)](https://codecov.io/gh/evandrocoan/PythonDebugTools)
+[![Coverage Status](https://coveralls.io/repos/github/evandrocoan/PythonDebugTools/badge.svg?branch=master)](https://coveralls.io/github/evandrocoan/PythonDebugTools?branch=master)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/3ab71bdcf0114065b5273dbed6c89779)](https://www.codacy.com/app/evandrocoan/PythonDebugTools?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=evandrocoan/PythonDebugTools&amp;utm_campaign=Badge_Grade)
+[![Latest Release](https://img.shields.io/github/tag/evandrocoan/PythonDebugTools.svg?label=version)](https://github.com/evandrocoan/PythonDebugTools/releases)
+<a href="https://packagecontrol.io/packages/PythonDebugTools"><img src="https://packagecontrol.herokuapp.com/downloads/PythonDebugTools.svg"></a>
+
 Basic logger for python on the output form:
 ```
 [main.py] 23:34:08:081.722975 3.16e-04 Debugging
