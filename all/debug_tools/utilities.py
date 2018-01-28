@@ -24,6 +24,7 @@
 
 import sys
 import threading
+import textwrap
 
 if sys.version_info[0] < 3:
     Event = threading._Event
@@ -53,4 +54,9 @@ class SleepEvent(Event):
 
     def disableSleepCall(self):
         self.set()
+
+
+def wrap_text(text):
+    return textwrap.dedent( text ).strip( " " ).strip( "\n" )
+
 
