@@ -37,6 +37,7 @@ import logging.handlers
 
 from logging import Logger
 from logging import Manager
+from logging import PlaceHolder
 
 from logging import DEBUG
 from logging import WARNING
@@ -466,9 +467,11 @@ class Debugger(Logger):
         for logger_name in loggers:
             logger = loggers[logger_name]
 
-            # i.e., if logger.parent.name.startswith( parent_name )
-            if logger.parent.name[:parent_name_length] == parent_name:
-                logger.disable()
+            if not isinstance( logger, PlaceHolder ):
+
+                # i.e., if logger.parent.name.startswith( parent_name )
+                if logger.parent.name[:parent_name_length] == parent_name:
+                    logger.disable()
 
     @classmethod
     def get_debug_file_path(cls, output_file):

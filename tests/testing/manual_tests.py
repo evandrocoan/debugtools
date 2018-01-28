@@ -2,7 +2,7 @@
 
 try:
     # To run this file, run on the Sublime Text console:
-    # import sublime_plugin; sublime_plugin.reload_plugin( "PythonDebugTools.tests.manual_tests" )
+    # import sublime_plugin; sublime_plugin.reload_plugin( "PythonDebugTools.tests.testing.manual_tests" )
     import sublime_plugin
 
     # Import and reload the debugger
