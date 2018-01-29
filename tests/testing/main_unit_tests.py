@@ -90,3 +90,29 @@ class MainUnitTests(unittest.TestCase):
                 """ ),
                 output )
 
+
+    def test_no_function_name_and_level(self):
+
+        try:
+            sys.stdout, sys.stderr = self.new_out, self.new_err
+            log = getLogger( 127, __name__, date=True, function=False, level=True )
+
+            log( 1, "Bitwise" )
+            log( 8, "Bitwise" )
+            log.warn( "Warn" )
+            log.info( "Info" )
+            log.debug( "Debug" )
+
+        finally:
+            sys.stdout, sys.stderr = self.old_out, self.old_err
+
+        output = self.getOutput()
+        self.assertEqual( wrap_text( """\
+                [testing.main_unit_tests] DEBUG(1) Bitwise
+                [testing.main_unit_tests] DEBUG(8) Bitwise
+                [testing.main_unit_tests] WARNING Warn
+                [testing.main_unit_tests] INFO Info
+                [testing.main_unit_tests] DEBUG Debug
+                """ ),
+                output )
+
