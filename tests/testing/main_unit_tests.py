@@ -2,45 +2,57 @@
 
 import sys
 import unittest
+
 import sublime_plugin
+from io import StringIO
+
 
 # Import and reload the debugger
 sublime_plugin.reload_plugin( "PythonDebugTools.all.debug_tools.logger" )
 sublime_plugin.reload_plugin( "PythonDebugTools.all.debug_tools.utilities" )
+
 from PythonDebugTools.all.debug_tools.logger import getLogger
 from PythonDebugTools.all.debug_tools.utilities import wrap_text
 
-MODULE_NAME = "testing.main_unit_tests"
-MODULE_NAME_LENGTH = len( MODULE_NAME )
-
-
-# How to assert output with nosetest/unittest in python?
-# https://stackoverflow.com/questions/4219717/how-to-assert-output-with-nosetest-unittest-in-python
-from contextlib import contextmanager
-from io import StringIO
-
-@contextmanager
-def captured_output():
-    new_out, new_err = StringIO(), StringIO()
-    old_out, old_err = sys.stdout, sys.stderr
-
-    try:
-        sys.stdout, sys.stderr = new_out, new_err
-        yield sys.stdout, sys.stderr
-
-    finally:
-        sys.stdout, sys.stderr = old_out, old_err
+MODULE_NAME = "[testing.main_unit_tests] "
 
 
 class MainUnitTests(unittest.TestCase):
+    """
+        How to assert output with nosetest/unittest in python?
+        https://stackoverflow.com/questions/4219717/how-to-assert-output-with-nosetest-unittest-in-python
+    """
+
+    new_out, new_err = StringIO(), StringIO()
+    old_out, old_err = sys.stdout, sys.stderr
 
     @classmethod
     def setUp(self):
         self.maxDiff = None
 
+        self.new_out.truncate(0)
+        self.new_out.seek(0)
+
+        self.new_err.truncate(0)
+        self.new_err.seek(0)
+
+    def getOutput(self, module_name=MODULE_NAME, base_date="2018-01-28 20:29:26:617.002010 3.63e-04 "):
+        clean_output = []
+        output = self.new_err.getvalue().strip().split( "\n" )
+
+        base_date_length = len( base_date )
+        module_name_length = len( module_name )
+
+        for line in output:
+            clean_output.append( line[:module_name_length] + line[module_name_length+base_date_length:] )
+
+        output = "\n".join( clean_output )
+        return output
+
     def test_function_name(self):
 
-        with captured_output() as (out, err):
+        try:
+            sys.stdout, sys.stderr = self.new_out, self.new_err
             log = getLogger( 127, __name__, date=True )
 
             log( 1, "Bitwise" )
@@ -59,28 +71,22 @@ class MainUnitTests(unittest.TestCase):
             log.newline()
             function_name()
 
-        output = err.getvalue().strip().split( "\n" )
-        clean_output = []
+        finally:
+            sys.stdout, sys.stderr = self.old_out, self.old_err
 
-        base_date = "2018-01-28 20:29:26:617.002010 3.63e-04"
-        base_date_length = len( base_date )
-
-        for line in output:
-            clean_output.append( line[MODULE_NAME_LENGTH + base_date_length + 4:] )
-
-        output = "\n".join( clean_output )
+        output = self.getOutput()
         self.assertEqual( wrap_text( """\
-                test_function_name:46 Bitwise
-                test_function_name:47 Bitwise
-                test_function_name:48 Warn
-                test_function_name:49 Info
-                test_function_name:50 Debug
+                [testing.main_unit_tests] test_function_name:58 Bitwise
+                [testing.main_unit_tests] test_function_name:59 Bitwise
+                [testing.main_unit_tests] test_function_name:60 Warn
+                [testing.main_unit_tests] test_function_name:61 Info
+                [testing.main_unit_tests] test_function_name:62 Debug
 
-                function_name:53 Bitwise
-                function_name:54 Bitwise
-                function_name:55 Warn
-                function_name:56 Info
-                function_name:57 Debug
+                [testing.main_unit_tests] function_name:65 Bitwise
+                [testing.main_unit_tests] function_name:66 Bitwise
+                [testing.main_unit_tests] function_name:67 Warn
+                [testing.main_unit_tests] function_name:68 Info
+                [testing.main_unit_tests] function_name:69 Debug
                 """ ),
                 output )
 
