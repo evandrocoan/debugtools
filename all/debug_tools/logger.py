@@ -79,26 +79,11 @@ class Debugger(Logger):
             @param `setup` whether or not to call now `setup()` with its **kwargs
             @param `**kwargs` are the parameters passed to the Debugger.setup() member function.
         """
+        self.reset()
         super( Debugger, self ).__init__( logger_name, logger_level or "DEBUG" )
 
         self.file_handler   = None
         self.stream_handler = None
-
-        # Used to remember the these parameters values set on the subsequent calls to `setup()`
-        self.default_arguments = \
-        {
-            "file_path": None,
-            "mode": 'a',
-            "delete": True,
-            "date": False,
-            "level": False,
-            "function": not is_python2,
-            "name": True,
-            "time": True,
-            "tick": True,
-            "formatter": None,
-            "rotation": 0,
-        }
 
         # Initialize the first last tick as the current tick
         self.lastTick = timeit.default_timer()
@@ -150,6 +135,25 @@ class Debugger(Logger):
         if self.debug_level & debug_level != 0:
             kwargs['debug_level'] = debug_level
             self._log( DEBUG, msg, args, **kwargs )
+
+    def reset(self):
+        """
+            Used to remember the these parameters values set on the subsequent calls to `setup()`
+        """
+        self.default_arguments = \
+        {
+            "file_path": None,
+            "mode": 'a',
+            "delete": True,
+            "date": False,
+            "level": False,
+            "function": not is_python2,
+            "name": True,
+            "time": True,
+            "tick": True,
+            "formatter": None,
+            "rotation": 0,
+        }
 
     def warn(self, msg, *args, **kwargs):
         """
