@@ -69,19 +69,17 @@ class Debugger(Logger):
     logger      = None
     output_file = None
 
-    def __init__(self, debugger_name, logging_level=None, setup=False, **kwargs):
+    def __init__(self, logger_name, logger_level=None, setup=False, **kwargs):
         """
             What is a clean, pythonic way to have multiple constructors in Python?
             https://stackoverflow.com/questions/682504/what-is-a-clean-pythonic-way-to-have-multiple-constructors-in-python
 
-            @param debugger_name the name of this logger accordingly with the standard logging.Logger() documentation.
-            @param logging_level an integer with the current bitwise enabled log level
-            @param setup whether or not to call now `setup()` with its **kwargs
-
-            @param **kwargs are the parameters passed to the Debugger.setup() member function.
+            @param `logger_name` the name of this logger accordingly with the standard logging.Logger() documentation.
+            @param `logger_level` an integer with the current bitwise enabled log level
+            @param `setup` whether or not to call now `setup()` with its **kwargs
+            @param `**kwargs` are the parameters passed to the Debugger.setup() member function.
         """
-        self.debugger_name = debugger_name
-        super( Debugger, self ).__init__( self.debugger_name, logging_level or "DEBUG" )
+        super( Debugger, self ).__init__( logger_name, logger_level or "DEBUG" )
 
         self.file_handler   = None
         self.stream_handler = None
@@ -123,12 +121,20 @@ class Debugger(Logger):
         for logger_name in loggers:
             logger = loggers[logger_name]
             total_loggers += 1
+            current_logger = "True_" if logger == self else "False"
 
-            representations.append( "%2d. debugger_name: %-30s, debug_level: %3d, _debug_level: %3d, propagate: %5s, "
-                "_frameLevel: %2d, stream_handler: %s, file_handler: %s, default_arguments: %s" %
-                ( total_loggers, logger.debugger_name, logger.debug_level, logger._debug_level,
-                logger.propagate, logger._frameLevel, logger.stream_handler, logger.file_handler,
-                logger.default_arguments ) )
+            if isinstance( logger, PlaceHolder ):
+                representations.append( "%2d. PlaceHolder(%s), %s" %
+                        ( total_loggers, current_logger,
+                        "".join( ["loggerMap(%s): %s" % (item.name, logger.loggerMap[item])
+                                                       for item in logger.loggerMap] ) ) )
+
+            else:
+                representations.append( "%2d. name(%s): %-30s, debug_level: %3d, _debug_level: %3d, propagate: %5s, "
+                    "_frameLevel: %2d, stream_handler: %s, file_handler: %s, default_arguments: %s" %
+                    ( total_loggers, current_logger, logger.name, logger.debug_level, logger._debug_level,
+                    logger.propagate, logger._frameLevel, logger.stream_handler, logger.file_handler,
+                    logger.default_arguments ) )
 
         return "\n%s" % "\n".join( reversed( representations ) )
 
@@ -529,7 +535,7 @@ Debugger.manager = Manager( root )
 Debugger.manager.setLoggerClass( Debugger )
 
 
-def getLogger(debug_level=127, debugger_name=None,
+def getLogger(debug_level=127, logger_name=None,
             file_path=EMPTY_KWARG, mode=EMPTY_KWARG, delete=EMPTY_KWARG, date=EMPTY_KWARG, level=EMPTY_KWARG,
             function=EMPTY_KWARG, name=EMPTY_KWARG, time=EMPTY_KWARG, tick=EMPTY_KWARG, formatter=EMPTY_KWARG,
             rotation=EMPTY_KWARG, **kwargs):
@@ -537,50 +543,53 @@ def getLogger(debug_level=127, debugger_name=None,
     Return a logger with the specified name, creating it if necessary. If no name is specified,
     return a new logger based on the main logger file name.
 
-    @param `debug_level` & `debugger_name` are the same parameters passed to the Debugger() constructor.
+    @param `debug_level` & `logger_name` are the same parameters passed to the Debugger() constructor.
     @param `setup` if True, ensure there is at least one handler enabled in the hierarchy. If not,
         then the current created Logger will be called with `setup=True`. See also logging::Manager::getLogger()
     @param from `file_path` until `**kwargs` are the named parameters passed to the Debugger.setup() member function.
     """
-    return _getLogger( debug_level, debugger_name,
+    return _getLogger( debug_level, logger_name,
             file_path=file_path, mode=mode, delete=delete, date=date, level=level,
             function=function, name=name, time=time, tick=tick, formatter=formatter, **kwargs )
 
 
-def _getLogger(debug_level=127, debugger_name=None, **kwargs):
+def _getLogger(debug_level=127, logger_name=None, **kwargs):
     """
         Allow to pass positional arguments to `getLogger()`.
     """
-    if debugger_name:
+    if logger_name:
 
-        if isinstance( debugger_name, int ):
-            debug_level, debugger_name = debugger_name, debug_level
+        if isinstance( logger_name, int ):
+            debug_level, logger_name = logger_name, debug_level
 
-            if isinstance( debugger_name, int ):
-                raise ValueError( "The variable `debugger_name` must be an instance of string, instead of `%s`." % str( debugger_name ) )
+            if isinstance( logger_name, int ):
+                raise ValueError( "The variable `logger_name` must be an instance of string, instead of `%s`." % str( logger_name ) )
 
         else:
 
             if not isinstance( debug_level, int ):
-                raise ValueError( "The variable `debugger_name` must be an instance of int, instead of `%s`." % debugger_name )
+                raise ValueError( "The variable `logger_name` must be an instance of int, instead of `%s`." % logger_name )
 
     else:
 
         if isinstance( debug_level, int ):
-            debugger_name = os.path.basename( __file__ )
+            logger_name = os.path.basename( __file__ )
 
         else:
-            debugger_name = debug_level
+            logger_name = debug_level
             debug_level   = 127
 
-    logger = Debugger.manager.getLogger( debugger_name )
+    logger = Debugger.manager.getLogger( logger_name )
     logger.debug_level = debug_level
 
     if kwargs.pop( "setup", True ):
         # The root logger is not returned, unless it is already setup with handlers
         active = logger.getActiveLogger()
 
-        if not active:
+        if active:
+            active._setup( **kwargs )
+
+        else:
             logger._setup( **kwargs )
 
         logger._fixChildren()
