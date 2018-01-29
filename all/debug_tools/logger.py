@@ -386,7 +386,7 @@ class Debugger(Logger):
             break
         return rv
 
-    def getActiveLogger(self):
+    def active(self):
         """
             Works accordingly with super::hasHandlers(), except that this returns the activate
             logger object if it has some activate handler, or None if there are not loggers with
@@ -588,15 +588,14 @@ def _getLogger(debug_level=127, logger_name=None, **kwargs):
 
     if kwargs.pop( "setup", True ):
         # The root logger is not returned, unless it is already setup with handlers
-        active = logger.getActiveLogger()
+        active = logger.active()
 
         if active:
             active._setup( **kwargs )
 
         else:
             logger._setup( **kwargs )
-
-        logger._fixChildren()
+            logger._fixChildren()
 
     return logger
 

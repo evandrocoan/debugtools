@@ -100,9 +100,8 @@ class MainUnitTests(unittest.TestCase):
 
         else:
             frameinfo = getframeinfo(currentframe())
-            frameinfo.lineno
+            line      = frameinfo.lineno
 
-            line = frameinfo.lineno
             offset1 = -40
             offset2 = -38
 
