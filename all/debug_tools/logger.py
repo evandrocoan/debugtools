@@ -449,7 +449,7 @@ class Debugger(Logger):
                     name, time, tick, level, function ), date_format )
 
     def _get_time_prefix(self, currentTime):
-        return [ "[%s]" % self.debugger_name,
+        return [ "[%s]" % self.name,
                 " %02d" % currentTime.hour,
                 ":%02d" % currentTime.minute,
                 ":%02d" % currentTime.second,
