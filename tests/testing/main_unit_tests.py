@@ -5,10 +5,10 @@ import unittest
 import sublime_plugin
 
 # Import and reload the debugger
-sublime_plugin.reload_plugin( "debug_tools.logger" )
-sublime_plugin.reload_plugin( "debug_tools.utilities" )
-from debug_tools.logger import getLogger
-from debug_tools.utilities import wrap_text
+sublime_plugin.reload_plugin( "PythonDebugTools.all.debug_tools.logger" )
+sublime_plugin.reload_plugin( "PythonDebugTools.all.debug_tools.utilities" )
+from PythonDebugTools.all.debug_tools.logger import getLogger
+from PythonDebugTools.all.debug_tools.utilities import wrap_text
 
 MODULE_NAME = "testing.main_unit_tests"
 MODULE_NAME_LENGTH = len( MODULE_NAME )
