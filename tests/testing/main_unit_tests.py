@@ -4,8 +4,15 @@ import sys
 import unittest
 
 import sublime_plugin
-from io import StringIO
 
+from io import StringIO
+from inspect import currentframe, getframeinfo
+
+
+is_python2 = False
+
+if sys.version_info[0] < 3:
+    is_python2 = True
 
 # Import and reload the debugger
 sublime_plugin.reload_plugin( "PythonDebugTools.all.debug_tools.logger" )
@@ -13,8 +20,6 @@ sublime_plugin.reload_plugin( "PythonDebugTools.all.debug_tools.utilities" )
 
 from PythonDebugTools.all.debug_tools.logger import getLogger
 from PythonDebugTools.all.debug_tools.utilities import wrap_text
-
-MODULE_NAME = "[testing.main_unit_tests] "
 
 
 class MainUnitTests(unittest.TestCase):
@@ -36,7 +41,7 @@ class MainUnitTests(unittest.TestCase):
         self.new_err.truncate(0)
         self.new_err.seek(0)
 
-    def getOutput(self, module_name=MODULE_NAME, base_date="2018-01-28 20:29:26:617.002010 3.63e-04 "):
+    def getOutput(self, module_name, base_date):
         clean_output = []
         output = self.new_err.getvalue().strip().split( "\n" )
 
@@ -70,26 +75,53 @@ class MainUnitTests(unittest.TestCase):
 
             log.newline()
             function_name()
+            log.reset()
 
         finally:
             sys.stdout, sys.stderr = self.old_out, self.old_err
 
-        output = self.getOutput()
-        self.assertEqual( wrap_text( """\
-                [testing.main_unit_tests] test_function_name:58 Bitwise
-                [testing.main_unit_tests] test_function_name:59 Bitwise
-                [testing.main_unit_tests] test_function_name:60 Warn
-                [testing.main_unit_tests] test_function_name:61 Info
-                [testing.main_unit_tests] test_function_name:62 Debug
+        output = self.getOutput( "[testing.main_unit_tests] ", "2018-01-28 20:29:26:617.002010 3.63e-04 " )
 
-                [testing.main_unit_tests] function_name:65 Bitwise
-                [testing.main_unit_tests] function_name:66 Bitwise
-                [testing.main_unit_tests] function_name:67 Warn
-                [testing.main_unit_tests] function_name:68 Info
-                [testing.main_unit_tests] function_name:69 Debug
-                """ ),
-                output )
+        if is_python2:
+            self.assertEqual( wrap_text( """\
+                    [testing.main_unit_tests] (unknown function):0 Bitwise
+                    [testing.main_unit_tests] (unknown function):0 Bitwise
+                    [testing.main_unit_tests] (unknown function):0 Warn
+                    [testing.main_unit_tests] (unknown function):0 Info
+                    [testing.main_unit_tests] (unknown function):0 Debug
 
+                    [testing.main_unit_tests] (unknown function):0 Bitwise
+                    [testing.main_unit_tests] (unknown function):0 Bitwise
+                    [testing.main_unit_tests] (unknown function):0 Warn
+                    [testing.main_unit_tests] (unknown function):0 Info
+                    [testing.main_unit_tests] (unknown function):0 Debug
+                    """ ),
+                    output )
+
+        else:
+            frameinfo = getframeinfo(currentframe())
+            frameinfo.lineno
+
+            line = frameinfo.lineno
+            offset1 = -40
+            offset2 = -38
+
+            self.assertEqual( wrap_text( """\
+                    [testing.main_unit_tests] test_function_name:{} Bitwise
+                    [testing.main_unit_tests] test_function_name:{} Bitwise
+                    [testing.main_unit_tests] test_function_name:{} Warn
+                    [testing.main_unit_tests] test_function_name:{} Info
+                    [testing.main_unit_tests] test_function_name:{} Debug
+
+                    [testing.main_unit_tests] function_name:{} Bitwise
+                    [testing.main_unit_tests] function_name:{} Bitwise
+                    [testing.main_unit_tests] function_name:{} Warn
+                    [testing.main_unit_tests] function_name:{} Info
+                    [testing.main_unit_tests] function_name:{} Debug
+                    """.format(
+                            line+offset1+1, line+offset1+2, line+offset1+3, line+offset1+4, line+offset1+5,
+                            line+offset2+6, line+offset2+7, line+offset2+8, line+offset2+9, line+offset2+10,
+                    ) ), output )
 
     def test_no_function_name_and_level(self):
 
@@ -102,17 +134,70 @@ class MainUnitTests(unittest.TestCase):
             log.warn( "Warn" )
             log.info( "Info" )
             log.debug( "Debug" )
+            log.reset()
 
         finally:
             sys.stdout, sys.stderr = self.old_out, self.old_err
 
-        output = self.getOutput()
+        output = self.getOutput( "[testing.main_unit_tests] ", "2018-01-28 20:29:26:617.002010 3.63e-04 " )
         self.assertEqual( wrap_text( """\
                 [testing.main_unit_tests] DEBUG(1) Bitwise
                 [testing.main_unit_tests] DEBUG(8) Bitwise
                 [testing.main_unit_tests] WARNING Warn
                 [testing.main_unit_tests] INFO Info
                 [testing.main_unit_tests] DEBUG Debug
+                """ ),
+                output )
+
+    def test_date_disabled(self):
+
+        try:
+            sys.stdout, sys.stderr = self.new_out, self.new_err
+            log = getLogger( __name__, 127, date=False, function=False )
+
+            log( 1, "Bitwise" )
+            log( 8, "Bitwise" )
+            log.warn( "Warn" )
+            log.info( "Info" )
+            log.debug( "Debug" )
+            log.reset()
+
+        finally:
+            sys.stdout, sys.stderr = self.old_out, self.old_err
+
+        output = self.getOutput( "[testing.main_unit_tests] ", "20:29:26:617.002010 3.63e-04 " )
+        self.assertEqual( wrap_text( """\
+                [testing.main_unit_tests] Bitwise
+                [testing.main_unit_tests] Bitwise
+                [testing.main_unit_tests] Warn
+                [testing.main_unit_tests] Info
+                [testing.main_unit_tests] Debug
+                """ ),
+                output )
+
+    def test_get_logger_empty(self):
+
+        try:
+            sys.stdout, sys.stderr = self.new_out, self.new_err
+            log = getLogger( function=False )
+
+            log( 1, "Bitwise" )
+            log( 8, "Bitwise" )
+            log.warn( "Warn" )
+            log.info( "Info" )
+            log.debug( "Debug" )
+            log.reset()
+
+        finally:
+            sys.stdout, sys.stderr = self.old_out, self.old_err
+
+        output = self.getOutput( "[logger.py] ", "20:29:26:617.002010 3.63e-04 " )
+        self.assertEqual( wrap_text( """\
+                [logger.py] Bitwise
+                [logger.py] Bitwise
+                [logger.py] Warn
+                [logger.py] Info
+                [logger.py] Debug
                 """ ),
                 output )
 
