@@ -581,7 +581,7 @@ def _getLogger(debug_level=127, logger_name=None, **kwargs):
 
         else:
             logger_name = debug_level
-            debug_level   = 127
+            debug_level = 127
 
     logger = Debugger.manager.getLogger( logger_name )
     logger.debug_level = debug_level
