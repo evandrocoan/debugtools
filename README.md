@@ -6,6 +6,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/evandrocoan/PythonDebugTools/badge.svg?branch=master)](https://coveralls.io/github/evandrocoan/PythonDebugTools?branch=master)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/3ab71bdcf0114065b5273dbed6c89779)](https://www.codacy.com/app/evandrocoan/PythonDebugTools?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=evandrocoan/PythonDebugTools&amp;utm_campaign=Badge_Grade)
 [![Latest Release](https://img.shields.io/github/tag/evandrocoan/PythonDebugTools.svg?label=version)](https://github.com/evandrocoan/PythonDebugTools/releases)
+[![PyPi Versions](https://img.shields.io/pypi/pyversions/debug_tools.svg)](https://pypi.python.org/pypi/debug_tools)
 
 Basic logger for python on the output form:
 ```
