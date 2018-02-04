@@ -41,7 +41,7 @@ except:
           description = 'Python Distribution Logger, Debugger and Utilities',
           author = 'Evandro Coan',
           license = "GPLv3",
-          url = 'https://github.com/evandrocoan/PythonDebugTools',
+          url = 'https://github.com/evandrocoan/debug_tools',
           package_dir = {'': 'all'},
           packages = ['debug_tools'],
           long_description = open('README.md').read(),
