@@ -123,12 +123,16 @@ To use this as a Package Control Dependency https://packagecontrol.io/docs/depen
 this file on the root of your Package:
 ```json
 {
+    "windows": {
+        ">3000": [
+            "python-pywin32"
+        ]
+    },
     "*": {
         "*": [
-            "ConcurrentLogHandler",
-            "DebugTools",
             "PortalockerFiles",
-            "python-pywin32"
+            "ConcurrentLogHandler",
+            "DebugTools"
         ]
     }
 }

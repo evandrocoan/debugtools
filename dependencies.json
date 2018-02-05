@@ -1,9 +1,13 @@
 {
+    "windows": {
+        ">3000": [
+            "python-pywin32"
+        ]
+    },
     "*": {
         "*": [
-            "ConcurrentLogHandler",
             "PortalockerFiles",
-            "python-pywin32"
+            "ConcurrentLogHandler"
         ]
     }
 }
