@@ -43,6 +43,8 @@ from logging import DEBUG
 from logging import WARNING
 from logging import _srcfile
 
+from concurrent_log_handler import ConcurrentRotatingFileHandler
+
 
 is_python2 = False
 EMPTY_KWARG = sys.maxsize
@@ -320,7 +322,7 @@ class Debugger(Logger):
                 backup_count = abs( backup_count ) if isinstance( backup_count, int ) else 2
 
                 rotation = rotation * 1024 * 1024
-                self.file_handler = logging.handlers.RotatingFileHandler( self.output_file, maxBytes=rotation, backupCount=backup_count )
+                self.file_handler = ConcurrentRotatingFileHandler( self.output_file, maxBytes=rotation, backupCount=backup_count )
 
             else:
                 self.file_handler = logging.FileHandler( self.output_file, default_arguments['mode'] )

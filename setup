@@ -44,6 +44,9 @@ setup \
         'debug_tools',
     ],
     install_requires=[
+        'pypiwin32',
+        'portalocker',
+        'concurrent-log-handler',
     ],
     long_description = open('README.md').read(),
     classifiers=[
