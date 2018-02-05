@@ -15,11 +15,11 @@ if sys.version_info[0] < 3:
     is_python2 = True
 
 # Import and reload the debugger
-sublime_plugin.reload_plugin( "DebugTools.all.debug_tools.logger" )
-sublime_plugin.reload_plugin( "DebugTools.all.debug_tools.utilities" )
+sublime_plugin.reload_plugin( "PythonDebugTools.all.debug_tools.logger" )
+sublime_plugin.reload_plugin( "PythonDebugTools.all.debug_tools.utilities" )
 
-from DebugTools.all.debug_tools.logger import getLogger
-from DebugTools.all.debug_tools.utilities import wrap_text
+from PythonDebugTools.all.debug_tools.logger import getLogger
+from PythonDebugTools.all.debug_tools.utilities import wrap_text
 
 
 class MainUnitTests(unittest.TestCase):

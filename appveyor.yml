@@ -1,7 +1,7 @@
 
 environment:
     # The package name
-    PACKAGE: "DebugTools"
+    PACKAGE: "PythonDebugTools"
     SUBLIME_TEXT_VERSION : "3"
 
 
