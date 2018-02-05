@@ -1,0 +1,9 @@
+{
+    "*": {
+        "*": [
+            "ConcurrentLogHandler",
+            "PortalockerFiles",
+            "python-pywin32"
+        ]
+    }
+}
