@@ -285,6 +285,7 @@ class Debugger(Logger):
             @param time         if True, add to the `full_formatter` the time on the format `%H:%M:%S:microseconds`.
             @param tick         if True, add to the `full_formatter` the time.perf_counter() difference from the last call.
             @param formatter    if not None, replace this `full_formatter` by the logging.Formatter() provided.
+
             @param rotation     if non zero, creates a RotatingFileHandler with the specified size
                                 in Mega Bytes instead of FileHandler when creating a log file by the
                                 `file_path` option. See logging::handlers::RotatingFileHandler for more information.
@@ -444,8 +445,11 @@ class Debugger(Logger):
             name = "[%(name)s] "           if default_arguments['name'] else ""
             tick = "%(tickDifference).2e " if default_arguments['tick'] else ""
 
-            level = "%(levelname)s%(debugLevel)s " if default_arguments['level'] else ""
+            level = default_arguments['level']
             function = "%(funcName)s:%(lineno)d "  if default_arguments['function'] else ""
+
+            if isinstance( level, bool ):
+                level = "%(levelname)s%(debugLevel)s " if level else ""
 
             self.full_formatter = logging.Formatter( "{}{}{}{}{}%(message)s".format(
                     name, time, tick, level, function ), date_format )
@@ -550,8 +554,13 @@ def getLogger(debug_level=127, logger_name=None,
     return a new logger based on the main logger file name.
 
     @param `debug_level` & `logger_name` are the same parameters passed to the Debugger() constructor.
+
     @param `setup` if True, ensure there is at least one handler enabled in the hierarchy. If not,
         then the current created Logger will be called with `setup=True`. See also logging::Manager::getLogger()
+
+    @param `level`if True, add to the `full_formatter` the log levels. If not boolean,
+        it is the initial logging level accordingly to logging::Logger::setLevel(level)
+
     @param from `file_path` until `**kwargs` are the named parameters passed to the Debugger.setup() member function.
     """
     return _getLogger( debug_level, logger_name,
@@ -587,6 +596,14 @@ def _getLogger(debug_level=127, logger_name=None, **kwargs):
 
     logger = Debugger.manager.getLogger( logger_name )
     logger.debug_level = debug_level
+
+    level = kwargs.get( "level", False )
+
+    if level \
+            and not isinstance( level, bool ):
+
+        kwargs.pop( "level" )
+        logger.setLevel( level )
 
     if kwargs.pop( "setup", True ):
         # The root logger is not returned, unless it is already setup with handlers
