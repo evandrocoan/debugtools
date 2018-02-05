@@ -117,6 +117,24 @@ from debug_tools.logger import getLogger
 ```
 
 
+## Sublime Text Dependency
+
+To use this as a Package Control Dependency https://packagecontrol.io/docs/dependencies create
+this file on the root of your Package:
+```json
+{
+    "*": {
+        "*": [
+            "ConcurrentLogHandler",
+            "DebugTools",
+            "PortalockerFiles",
+            "python-pywin32"
+        ]
+    }
+}
+```
+
+
 # License
 
 See the file [LICENSE.txt](LICENSE.txt)
