@@ -2,11 +2,11 @@
 
 try:
     # To run this file, run on the Sublime Text console:
-    # import sublime_plugin; sublime_plugin.reload_plugin( "debug_tools.tests.testing.manual_tests" )
+    # import sublime_plugin; sublime_plugin.reload_plugin( "DebugTools.tests.testing.manual_tests" )
     import sublime_plugin
 
     # Import and reload the debugger
-    sublime_plugin.reload_plugin( "debug_tools.logger" )
+    sublime_plugin.reload_plugin( "DebugTools.logger" )
 
 except:
     pass
