@@ -2,17 +2,20 @@
 
 try:
     # To run this file, run on the Sublime Text console:
-    # import sublime_plugin; sublime_plugin.reload_plugin( "DebugTools.tests.testing.manual_tests" )
+    # import imp; import DebugTools.tests.testing.manual_tests; imp.reload( DebugTools.tests.testing.manual_tests )
     import sublime_plugin
 
-    # Import and reload the debugger
-    sublime_plugin.reload_plugin( "DebugTools.logger" )
-
-except:
+except (ImportError):
     pass
 
 
+# Import and reload the debugger
+import imp
+import DebugTools.all.debug_tools.logger
+imp.reload( DebugTools.all.debug_tools.logger )
+
 from debug_tools.logger import getLogger
+
 log = getLogger( 127, __name__, date=True )
 
 log( 1, "Bitwise" )

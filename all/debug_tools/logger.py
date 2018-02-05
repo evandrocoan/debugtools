@@ -71,15 +71,13 @@ class Debugger(Logger):
     logger      = None
     output_file = None
 
-    def __init__(self, logger_name, logger_level=None, setup=False, **kwargs):
+    def __init__(self, logger_name, logger_level=None):
         """
             What is a clean, pythonic way to have multiple constructors in Python?
             https://stackoverflow.com/questions/682504/what-is-a-clean-pythonic-way-to-have-multiple-constructors-in-python
 
             @param `logger_name` the name of this logger accordingly with the standard logging.Logger() documentation.
             @param `logger_level` an integer with the current bitwise enabled log level
-            @param `setup` whether or not to call now `setup()` with its **kwargs
-            @param `**kwargs` are the parameters passed to the Debugger.setup() member function.
         """
         self.reset()
         super( Debugger, self ).__init__( logger_name, logger_level or "DEBUG" )
@@ -96,9 +94,6 @@ class Debugger(Logger):
         self.debug_level  = 127
         self._frameLevel  = 3
         self._debug_level = 0
-
-        if setup:
-            self.setup( **kwargs )
 
     def __str__(self):
         total_loggers = 0
@@ -155,6 +150,7 @@ class Debugger(Logger):
             "tick": True,
             "formatter": None,
             "rotation": 0,
+            "msecs": True,
         }
 
     def warn(self, msg, *args, **kwargs):
@@ -230,7 +226,7 @@ class Debugger(Logger):
         """
 
         if self.output_file:
-            sys.stderr.write( "\n" + "Cleaning the file: " + self.output_file )
+            sys.stderr.write( "Cleaning the file: " + self.output_file + "\n" )
             open( self.output_file, 'w' ).close()
 
     def invert(self):
@@ -255,7 +251,7 @@ class Debugger(Logger):
 
     def setup(self, file_path=EMPTY_KWARG, mode=EMPTY_KWARG, delete=EMPTY_KWARG, date=EMPTY_KWARG, level=EMPTY_KWARG,
             function=EMPTY_KWARG, name=EMPTY_KWARG, time=EMPTY_KWARG, tick=EMPTY_KWARG, formatter=EMPTY_KWARG,
-            rotation=EMPTY_KWARG):
+            rotation=EMPTY_KWARG, msecs=EMPTY_KWARG):
         """
             Instead of output the debug to the standard output stream, send it a file on the file
             system, which is faster for large outputs.
@@ -292,7 +288,7 @@ class Debugger(Logger):
         """
         self._setup( file_path=file_path, mode=mode, delete=delete, date=date, level=level,
                 function=function, name=name, time=time, tick=tick, formatter=formatter,
-                rotation=rotation )
+                rotation=rotation, msecs=msecs )
 
     def _setup(self, **kwargs):
         """
@@ -312,7 +308,7 @@ class Debugger(Logger):
             rotation = default_arguments['rotation']
             self.output_file = self.get_debug_file_path( default_arguments['file_path'] )
 
-            sys.stderr.write( "\n" + "".join( self._get_time_prefix( datetime.datetime.now() ) )
+            sys.stderr.write( "".join( self._get_time_prefix( datetime.datetime.now() ) )
                     + "Logging to the file " + self.output_file + "\n" )
 
             if self.file_handler:
@@ -430,29 +426,39 @@ class Debugger(Logger):
                 "" if is_python2 else " %(tickDifference).2e" ), "%H:%M:%S" )
 
         if default_arguments['formatter']:
-            self.full_formatter = default_arguments['formatter']
 
-        else:
-            date_format = "%Y-%m-%d " if default_arguments['date'] else ""
-            date_format += "%H:%M:%S" if default_arguments['time'] else ""
-
-            if default_arguments['time']:
-                time = "%(asctime)s:%(msecs)010.6f " if len( date_format ) else ""
+            if isinstance( default_arguments['formatter'], logging.Formatter ):
+                self.full_formatter = default_arguments['formatter']
 
             else:
-                time = "%(asctime)s" if len( date_format ) else ""
+                raise ValueError( "Error: The formatter %s must be an instance of logging.Formatter" % default_arguments['formatter'] )
 
-            name = "[%(name)s] "           if default_arguments['name'] else ""
-            tick = "%(tickDifference).2e " if default_arguments['tick'] else ""
+        else:
+            name = self._getFormat( default_arguments, 'name', "[%(name)s] " )
+            tick = self._getFormat( default_arguments, 'tick', "%(tickDifference).2e " )
 
-            level = default_arguments['level']
-            function = "%(funcName)s:%(lineno)d "  if default_arguments['function'] else ""
+            level    = self._getFormat( default_arguments, 'level', "%(levelname)s%(debugLevel)s " )
+            function = self._getFormat( default_arguments, 'function', "%(funcName)s:%(lineno)d " )
 
-            if isinstance( level, bool ):
-                level = "%(levelname)s%(debugLevel)s " if level else ""
+            date_format  = self._getFormat( default_arguments, 'date', "%Y-%m-%d " )
+            date_format += self._getFormat( default_arguments, 'time', "%H:%M:%S" )
 
-            self.full_formatter = logging.Formatter( "{}{}{}{}{}%(message)s".format(
-                    name, time, tick, level, function ), date_format )
+            msecs = self._getFormat( default_arguments, 'msecs', ":%(msecs)010.6f " )
+
+            time  = "%(asctime)s" if len( date_format ) else ""
+            time += "" if msecs else " " if default_arguments['time'] else ""
+
+            self.full_formatter = logging.Formatter( "{}{}{}{}{}{}%(message)s".format(
+                    name, time, msecs, tick, level, function ), date_format )
+
+    @staticmethod
+    def _getFormat(default_arguments, setting, default):
+        value = default_arguments[setting]
+
+        if isinstance( value, str ):
+            return value
+
+        return default if value else ""
 
     def _get_time_prefix(self, currentTime):
         return [ "[%s]" % self.name,
@@ -538,7 +544,7 @@ class Debugger(Logger):
 
 
 # Setup the alternate debugger, completely independent of the standard logging module Logger class
-root = Debugger( "root_debugger", "WARNING", False )
+root = Debugger( "root_debugger", "WARNING" )
 Debugger.root = root
 
 Debugger.manager = Manager( root )
@@ -548,7 +554,7 @@ Debugger.manager.setLoggerClass( Debugger )
 def getLogger(debug_level=127, logger_name=None,
             file_path=EMPTY_KWARG, mode=EMPTY_KWARG, delete=EMPTY_KWARG, date=EMPTY_KWARG, level=EMPTY_KWARG,
             function=EMPTY_KWARG, name=EMPTY_KWARG, time=EMPTY_KWARG, tick=EMPTY_KWARG, formatter=EMPTY_KWARG,
-            rotation=EMPTY_KWARG, **kwargs):
+            rotation=EMPTY_KWARG, msecs=EMPTY_KWARG, **kwargs):
     """
     Return a logger with the specified name, creating it if necessary. If no name is specified,
     return a new logger based on the main logger file name.
@@ -565,13 +571,15 @@ def getLogger(debug_level=127, logger_name=None,
     """
     return _getLogger( debug_level, logger_name,
             file_path=file_path, mode=mode, delete=delete, date=date, level=level,
-            function=function, name=name, time=time, tick=tick, formatter=formatter, **kwargs )
+            function=function, name=name, time=time, tick=tick, formatter=formatter,
+            rotation=rotation, msecs=msecs, **kwargs )
 
 
 def _getLogger(debug_level=127, logger_name=None, **kwargs):
     """
         Allow to pass positional arguments to `getLogger()`.
     """
+
     if logger_name:
 
         if isinstance( logger_name, int ):
@@ -597,15 +605,16 @@ def _getLogger(debug_level=127, logger_name=None, **kwargs):
     logger = Debugger.manager.getLogger( logger_name )
     logger.debug_level = debug_level
 
-    level = kwargs.get( "level", False )
+    level = kwargs.get( "level", EMPTY_KWARG )
+    setup = kwargs.pop( "setup", EMPTY_KWARG )
 
-    if level \
+    if level != EMPTY_KWARG \
             and not isinstance( level, bool ):
 
         kwargs.pop( "level" )
         logger.setLevel( level )
 
-    if kwargs.pop( "setup", True ):
+    if setup in (EMPTY_KWARG, True):
         # The root logger is not returned, unless it is already setup with handlers
         active = logger.active()
 
