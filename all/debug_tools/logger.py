@@ -313,13 +313,20 @@ class Debugger(Logger):
         """
             Allow to pass positional arguments to `setup()`.
         """
+        has_changes = False
         default_arguments = self.default_arguments
 
         for kwarg in kwargs:
             value = kwargs[kwarg]
 
             if value != EMPTY_KWARG:
-                default_arguments[kwarg] = value
+
+                if default_arguments[kwarg] != value:
+                    has_changes = True
+                    default_arguments[kwarg] = value
+
+        if not has_changes:
+            return
 
         self._setup_full_formatter( default_arguments )
 
