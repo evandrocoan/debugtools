@@ -1,6 +1,8 @@
 
-all/debug_tools.egg-info
+.tox/
 dist/
+build/
+all/debug_tools.egg-info
 
 *.pyc
 

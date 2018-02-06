@@ -3,9 +3,6 @@
 import sys
 import unittest
 
-import sublime_plugin
-
-from io import StringIO
 from inspect import currentframe, getframeinfo
 
 
@@ -13,13 +10,37 @@ is_python2 = False
 
 if sys.version_info[0] < 3:
     is_python2 = True
+    from StringIO import StringIO
 
-# Import and reload the debugger
-sublime_plugin.reload_plugin( "DebugTools.all.debug_tools.logger" )
-sublime_plugin.reload_plugin( "DebugTools.all.debug_tools.utilities" )
+else:
+    from io import StringIO
 
-from DebugTools.all.debug_tools.logger import getLogger
-from DebugTools.all.debug_tools.utilities import wrap_text
+
+try:
+    import sublime_plugin
+
+    from DebugTools.all.debug_tools.logger import getLogger
+    from DebugTools.all.debug_tools.utilities import wrap_text
+
+    # Import and reload the debugger
+    sublime_plugin.reload_plugin( "DebugTools.all.debug_tools.logger" )
+    sublime_plugin.reload_plugin( "DebugTools.all.debug_tools.utilities" )
+
+except ImportError:
+    import os
+    import sys
+
+    def assert_path(module):
+
+        if module not in sys.path:
+            sys.path.append( module )
+
+    # Import the debug tools
+    assert_path( os.path.join( os.path.dirname( os.path.dirname( os.path.realpath( __file__ ) ) ), 'DebugTools/all' ) )
+
+    from debug_tools.logger import getLogger
+    from debug_tools.utilities import wrap_text
+
 
 
 class MainUnitTests(unittest.TestCase):
@@ -58,7 +79,7 @@ class MainUnitTests(unittest.TestCase):
 
         try:
             sys.stdout, sys.stderr = self.new_out, self.new_err
-            log = getLogger( 127, __name__, date=True )
+            log = getLogger( 127, "testing.main_unit_tests", date=True, function=True )
 
             log( 1, "Bitwise" )
             log( 8, "Bitwise" )
@@ -126,7 +147,7 @@ class MainUnitTests(unittest.TestCase):
 
         try:
             sys.stdout, sys.stderr = self.new_out, self.new_err
-            log = getLogger( 127, __name__, date=True, function=False, level=True )
+            log = getLogger( 127, "testing.main_unit_tests", date=True, function=False, level=True )
 
             log( 1, "Bitwise" )
             log( 8, "Bitwise" )
@@ -152,7 +173,7 @@ class MainUnitTests(unittest.TestCase):
 
         try:
             sys.stdout, sys.stderr = self.new_out, self.new_err
-            log = getLogger( __name__, 127, date=False, function=False )
+            log = getLogger( "testing.main_unit_tests", 127, date=False, function=False )
 
             log( 1, "Bitwise" )
             log( 8, "Bitwise" )

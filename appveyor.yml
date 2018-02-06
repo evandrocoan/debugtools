@@ -1,34 +1,22 @@
 
 environment:
-    # The package name
-    PACKAGE: "DebugTools"
-    SUBLIME_TEXT_VERSION : "3"
+
+    matrix:
+        - TOXENV: py26
+        - TOXENV: py27
+        - TOXENV: py33
+        - TOXENV: py34
+        - TOXENV: py35
+        - TOXENV: py36
 
 
 install:
-    - ps: appveyor DownloadFile "https://raw.githubusercontent.com/SublimeText/UnitTesting/master/sbin/appveyor.ps1"
-    - ps: .\appveyor.ps1 "bootstrap" -verbose
-    - ps: pip install coverage codacy-coverage
-    # install Package Control
-    # - ps: .\appveyor.ps1 "install_package_control" -verbose
+    - C:\Python27\python -m pip install --pre -U tox
 
 
 build: off
 
 
 test_script:
-    # run tests with test coverage report
-    - ps: .\appveyor.ps1 "run_tests" -coverage -verbose
-    - echo
-
-
-on_finish:
-    - "SET PYTHON=C:\\Python33"
-    - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
-    - pip install codecov
-    - codecov
-    - python --version
-    - echo %PATH%
-    - coverage xml -o coverage.xml
-    - python-codacy-coverage
+    - C:\Python27\scripts\tox
 
