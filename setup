@@ -44,7 +44,7 @@ setup \
         'debug_tools',
     ],
     install_requires=[
-        'pypiwin32',
+        'pypiwin32;platform_system=="Windows"',
         'portalocker',
         'concurrent-log-handler',
     ],
