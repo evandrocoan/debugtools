@@ -67,6 +67,12 @@ else: #pragma: no cover
 class Debugger(Logger):
     """
         https://docs.python.org/2.6/library/logging.html
+
+        How to define global function in Python?
+        https://stackoverflow.com/questions/27930038/how-to-define-global-function-in-python
+
+        How to print list inside python print?
+        https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
     """
     logger      = None
     output_file = None
@@ -122,11 +128,9 @@ class Debugger(Logger):
 
     def __call__(self, debug_level, msg, *args, **kwargs):
         """
-            How to define global function in Python?
-            https://stackoverflow.com/questions/27930038/how-to-define-global-function-in-python
-
-            How to print list inside python print?
-            https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
+            Log to the current active handlers its message based on the bitwise `self.debug_level`
+            value. Note, differently from the standard logging level, each logger object has its own
+            bitwise logging level, instead of all sharing the main `level`.
         """
 
         if self.debug_level & debug_level != 0:
@@ -135,7 +139,9 @@ class Debugger(Logger):
 
     def reset(self):
         """
-            Used to remember the these parameters values set on the subsequent calls to `setup()`
+            Used to remember the these parameters values set on the subsequent calls to `setup()`.
+            Call this if you want to reset to default all the parameters values. Note, you still
+            need to call Debugger::setup() to this changes take effect.
         """
         self.default_arguments = \
         {
@@ -253,8 +259,18 @@ class Debugger(Logger):
             function=EMPTY_KWARG, name=EMPTY_KWARG, time=EMPTY_KWARG, tick=EMPTY_KWARG, formatter=EMPTY_KWARG,
             rotation=EMPTY_KWARG, msecs=EMPTY_KWARG):
         """
-            Instead of output the debug to the standard output stream, send it a file on the file
-            system, which is faster for large outputs.
+            If `file_path` parameter is passed, instead of output the debug to the standard output
+            stream, send it a file on the file system, which is faster for large outputs.
+
+            As this function remembers its parameters passed from previous calls, you need to
+            explicitly pass `file_path=None` with `delete=True` if you want to disable the file
+            system output after setting up it to log to a file. See the function Debugger::reset()
+            for the default parameters values used on this setup utility.
+
+            If the parameters `date`, `level`, `function`, `name`, `time`, `tick` and `msecs` are
+            strings nonempty, their value will be used to defining their configuration formatting.
+            For example, if you pass name="%(name)s: " the function name will be displayed as
+            `name: `, instead of the default `[name] `.
 
             Single page cheat-sheet about Python string formatting pyformat.info
             https://github.com/ulope/pyformat.info
@@ -262,29 +278,32 @@ class Debugger(Logger):
             Override a method at instance level
             https://stackoverflow.com/questions/394770/override-a-method-at-instance-level
 
-            @param file_path    a relative or absolute path to the log file. If empty the output
+            @param `file_path`  a relative or absolute path to the log file. If empty the output
                                 will be sent to the standard output stream.
 
-            @param mode         the file write mode on the file system. It can be `a` to append to the
+            @param `mode`       the file write mode on the file system. It can be `a` to append to the
                                 existent file, or `w` to erase the existent file before start. If the
                                 parameter `rotation` is set to non zero, then this will be an integer value
                                 setting how many backups are going to be keep when doing the file rotation as
                                 specified on logging::handlers::RotatingFileHandler documentation.
 
-            @param delete       if True, it will delete all other handlers before activate the
+            @param `delete`     if True, it will delete all other handlers before activate the
                                 current one, otherwise it will only activate the selected handler.
+                                Useful for enabling multiple handlers simultaneously.
 
-            @param date         if True, add to the `full_formatter` the date on the format `%Y-%m-%d`.
-            @param level        if True, add to the `full_formatter` the log levels.
-            @param function     if True, add to the `full_formatter` the function name.
-            @param name         if True, add to the `full_formatter` the logger name.
-            @param time         if True, add to the `full_formatter` the time on the format `%H:%M:%S:microseconds`.
-            @param tick         if True, add to the `full_formatter` the time.perf_counter() difference from the last call.
-            @param formatter    if not None, replace this `full_formatter` by the logging.Formatter() provided.
+            @param `date`       if True, add to the `full_formatter` the date on the format `%Y-%m-%d`.
+            @param `level`      if True, add to the `full_formatter` the log levels.
+            @param `function`   if True, add to the `full_formatter` the function name.
+            @param `name`       if True, add to the `full_formatter` the logger name.
+            @param `time`       if True, add to the `full_formatter` the time on the format `%H:%M:%S:microseconds`.
+            @param `tick`       if True, add to the `full_formatter` the time.perf_counter() difference from the last call.
+            @param `formatter`  if not None, replace this `full_formatter` by the logging.Formatter() provided.
 
-            @param rotation     if non zero, creates a RotatingFileHandler with the specified size
+            @param `rotation`   if non zero, creates a RotatingFileHandler with the specified size
                                 in Mega Bytes instead of FileHandler when creating a log file by the
                                 `file_path` option. See logging::handlers::RotatingFileHandler for more information.
+
+            @param `msecs`      if True, add to the `full_formatter` the time.perf_counter() difference from the last call.
         """
         self._setup( file_path=file_path, mode=mode, delete=delete, date=date, level=level,
                 function=function, name=name, time=time, tick=tick, formatter=formatter,
