@@ -47,7 +47,7 @@ from concurrent_log_handler import ConcurrentRotatingFileHandler
 
 
 is_python2 = False
-EMPTY_KWARG = sys.maxsize
+EMPTY_KWARG = -sys.maxsize
 
 if sys.version_info[0] < 3:
     is_python2 = True
