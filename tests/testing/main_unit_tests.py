@@ -42,8 +42,8 @@ except ImportError:
     from debug_tools.utilities import wrap_text
 
 
-new_out, new_err = StringIO(), StringIO()
-old_out, old_err = sys.stdout, sys.stderr
+new_err = StringIO()
+old_err = sys.stderr
 
 
 class MainUnitTests(unittest.TestCase):
@@ -64,9 +64,6 @@ class MainUnitTests(unittest.TestCase):
             Explain the “setUp” and “tearDown” Python methods used in test cases
             https://stackoverflow.com/questions/6854658/explain-the-setup-and-teardown-python-methods-used-in-test-cases
         """
-        new_out.seek(0)
-        new_out.truncate(0)
-
         new_err.seek(0)
         new_err.truncate(0)
 
@@ -86,7 +83,7 @@ class MainUnitTests(unittest.TestCase):
     def test_function_name(self):
 
         try:
-            sys.stdout, sys.stderr = new_out, new_err
+            sys.stderr = new_err
             log = getLogger( 127, "testing.main_unit_tests", date=True, function=True )
 
             log( 1, "Bitwise" )
@@ -107,7 +104,7 @@ class MainUnitTests(unittest.TestCase):
             log.reset()
 
         finally:
-            sys.stdout, sys.stderr = old_out, old_err
+            sys.stderr = old_err
 
         output = self.getOutput( "[testing.main_unit_tests] ", "2018-01-28 20:29:26:617.002010 3.63e-04 " )
 
@@ -154,7 +151,7 @@ class MainUnitTests(unittest.TestCase):
     def test_no_function_name_and_level(self):
 
         try:
-            sys.stdout, sys.stderr = new_out, new_err
+            sys.stderr = new_err
             log = getLogger( 127, "testing.main_unit_tests", date=True, function=False, level=True )
 
             log( 1, "Bitwise" )
@@ -165,7 +162,7 @@ class MainUnitTests(unittest.TestCase):
             log.reset()
 
         finally:
-            sys.stdout, sys.stderr = old_out, old_err
+            sys.stderr = old_err
 
         output = self.getOutput( "[testing.main_unit_tests] ", "2018-01-28 20:29:26:617.002010 3.63e-04 " )
         self.assertEqual( wrap_text( """\
@@ -180,7 +177,7 @@ class MainUnitTests(unittest.TestCase):
     def test_date_disabled(self):
 
         try:
-            sys.stdout, sys.stderr = new_out, new_err
+            sys.stderr = new_err
             log = getLogger( "testing.main_unit_tests", 127, date=False, function=False )
 
             log( 1, "Bitwise" )
@@ -191,7 +188,7 @@ class MainUnitTests(unittest.TestCase):
             log.reset()
 
         finally:
-            sys.stdout, sys.stderr = old_out, old_err
+            sys.stderr = old_err
 
         output = self.getOutput( "[testing.main_unit_tests] ", "20:29:26:617.002010 3.63e-04 " )
         self.assertEqual( wrap_text( """\
@@ -206,7 +203,7 @@ class MainUnitTests(unittest.TestCase):
     def test_get_logger_empty(self):
 
         try:
-            sys.stdout, sys.stderr = new_out, new_err
+            sys.stderr = new_err
             log = getLogger( function=False )
 
             log( 1, "Bitwise" )
@@ -217,7 +214,7 @@ class MainUnitTests(unittest.TestCase):
             log.reset()
 
         finally:
-            sys.stdout, sys.stderr = old_out, old_err
+            sys.stderr = old_err
 
         output = self.getOutput( "[logger.py] ", "20:29:26:617.002010 3.63e-04 " )
         self.assertEqual( wrap_text( """\
