@@ -11,8 +11,8 @@ except (ImportError):
 
 # Import and reload the debugger
 import imp
-import DebugTools.all.debug_tools.logger
-imp.reload( DebugTools.all.debug_tools.logger )
+import debug_tools.logger
+imp.reload( debug_tools.logger )
 
 from debug_tools.logger import getLogger
 
@@ -31,25 +31,30 @@ def function_name():
     log.info( "Info" )
     log.debug( "Debug" )
 
+log.reset()
 log.setup( function=False, level=True )
 log.newline()
 function_name()
 
+log.reset()
 log = getLogger( __name__, 127 )
 log.setup( date=True )
 log.newline()
 function_name()
 
+log.reset()
 log = getLogger( __name__ )
 log.setup( date=True )
 log.newline()
 function_name()
 
+log.reset()
 log = getLogger( 127, function=True )
-# log.setup()
+log.setup()
 log.newline()
 function_name()
 
+log.reset()
 log = getLogger()
 log.setup()
 log.newline()

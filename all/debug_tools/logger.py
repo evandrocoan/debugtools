@@ -93,6 +93,7 @@ class Debugger(Logger):
 
         # Initialize the first last tick as the current tick
         self.lastTick = timeit.default_timer()
+        self._setup_formatters( self.default_arguments )
 
         # Enable debug messages: (bitwise)
         # 0 - Disabled debugging
@@ -157,6 +158,7 @@ class Debugger(Logger):
             "formatter": None,
             "rotation": 0,
             "msecs": True,
+            "setup": False,  # Do not change. It is required for the first setup() call.
         }
 
     def warn(self, msg, *args, **kwargs):
@@ -257,7 +259,7 @@ class Debugger(Logger):
 
     def setup(self, file_path=EMPTY_KWARG, mode=EMPTY_KWARG, delete=EMPTY_KWARG, date=EMPTY_KWARG, level=EMPTY_KWARG,
             function=EMPTY_KWARG, name=EMPTY_KWARG, time=EMPTY_KWARG, tick=EMPTY_KWARG, formatter=EMPTY_KWARG,
-            rotation=EMPTY_KWARG, msecs=EMPTY_KWARG):
+            rotation=EMPTY_KWARG, msecs=EMPTY_KWARG, **kwargs):
         """
             If `file_path` parameter is passed, instead of output the debug to the standard output
             stream, send it a file on the file system, which is faster for large outputs.
@@ -307,7 +309,7 @@ class Debugger(Logger):
         """
         self._setup( file_path=file_path, mode=mode, delete=delete, date=date, level=level,
                 function=function, name=name, time=time, tick=tick, formatter=formatter,
-                rotation=rotation, msecs=msecs )
+                rotation=rotation, msecs=msecs, **kwargs )
 
     def _setup(self, **kwargs):
         """
@@ -321,14 +323,15 @@ class Debugger(Logger):
 
             if value != EMPTY_KWARG:
 
-                if default_arguments[kwarg] != value:
+                if value != default_arguments[kwarg]:
                     has_changes = True
                     default_arguments[kwarg] = value
 
-        if not has_changes:
-            return
+        if has_changes:
+            self._setup_formatters( default_arguments )
+            self._setup_log_handlers( default_arguments )
 
-        self._setup_full_formatter( default_arguments )
+    def _setup_log_handlers(self, default_arguments):
 
         if default_arguments['file_path']:
             rotation = default_arguments['rotation']
@@ -416,6 +419,8 @@ class Debugger(Logger):
             Works accordingly with super::hasHandlers(), except that this returns the activate
             logger object if it has some activate handler, or None if there are not loggers with
             active handlers.
+
+            The root logger is not returned, unless it is already setup with handlers.
         """
         current = self
 
@@ -442,11 +447,11 @@ class Debugger(Logger):
             super( Debugger, self )._log( level, msg, args, exc_info, extra )
 
         else:
-            super( Debugger, self )._log( level, msg, args, exc_info, extra, stack_info )
+            super()._log( level, msg, args, exc_info, extra, stack_info )
 
         self.lastTick = self.currentTick
 
-    def _setup_full_formatter(self, default_arguments):
+    def _setup_formatters(self, default_arguments):
         self.clean_formatter = logging.Formatter( "", "" )
         self.basic_formatter = logging.Formatter( "[%(name)s] %(asctime)s:%(msecs)010.6f{} %(message)s".format(
                 "" if is_python2 else " %(tickDifference).2e" ), "%H:%M:%S" )
@@ -460,16 +465,16 @@ class Debugger(Logger):
                 raise ValueError( "Error: The formatter %s must be an instance of logging.Formatter" % default_arguments['formatter'] )
 
         else:
-            name = self._getFormat( default_arguments, 'name', "[%(name)s] " )
-            tick = self._getFormat( default_arguments, 'tick', "%(tickDifference).2e " )
+            name = self.getFormat( default_arguments, 'name', "[%(name)s] " )
+            tick = self.getFormat( default_arguments, 'tick', "%(tickDifference).2e " )
 
-            level    = self._getFormat( default_arguments, 'level', "%(levelname)s%(debugLevel)s " )
-            function = self._getFormat( default_arguments, 'function', "%(funcName)s:%(lineno)d " )
+            level    = self.getFormat( default_arguments, 'level', "%(levelname)s%(debugLevel)s " )
+            function = self.getFormat( default_arguments, 'function', "%(funcName)s:%(lineno)d " )
 
-            date_format  = self._getFormat( default_arguments, 'date', "%Y-%m-%d " )
-            date_format += self._getFormat( default_arguments, 'time', "%H:%M:%S" )
+            date_format  = self.getFormat( default_arguments, 'date', "%Y-%m-%d " )
+            date_format += self.getFormat( default_arguments, 'time', "%H:%M:%S" )
 
-            msecs = self._getFormat( default_arguments, 'msecs', ":%(msecs)010.6f " )
+            msecs = self.getFormat( default_arguments, 'msecs', ":%(msecs)010.6f " )
 
             time  = "%(asctime)s" if len( date_format ) else ""
             time += "" if msecs else " " if default_arguments['time'] else ""
@@ -478,7 +483,7 @@ class Debugger(Logger):
                     name, time, msecs, tick, level, function ), date_format )
 
     @staticmethod
-    def _getFormat(default_arguments, setting, default):
+    def getFormat(default_arguments, setting, default):
         value = default_arguments[setting]
 
         if isinstance( value, str ):
@@ -587,13 +592,13 @@ def getLogger(debug_level=127, logger_name=None,
 
     @param `debug_level` & `logger_name` are the same parameters passed to the Debugger() constructor.
 
-    @param `setup` if True, ensure there is at least one handler enabled in the hierarchy. If not,
-        then the current created Logger will be called with `setup=True`. See also logging::Manager::getLogger()
-
     @param `level`if True, add to the `full_formatter` the log levels. If not boolean,
         it is the initial logging level accordingly to logging::Logger::setLevel(level)
 
     @param from `file_path` until `**kwargs` are the named parameters passed to the Debugger.setup() member function.
+
+    @param `setup` if True (default), ensure there is at least one handler enabled in the hierarchy,
+        then the current created Logger will be called with `setup=True`. See also logging::Manager::getLogger()
     """
     return _getLogger( debug_level, logger_name,
             file_path=file_path, mode=mode, delete=delete, date=date, level=level,
@@ -631,8 +636,8 @@ def _getLogger(debug_level=127, logger_name=None, **kwargs):
     logger = Debugger.manager.getLogger( logger_name )
     logger.debug_level = debug_level
 
+    setup = kwargs.get( "setup", True )
     level = kwargs.get( "level", EMPTY_KWARG )
-    setup = kwargs.pop( "setup", EMPTY_KWARG )
 
     if level != EMPTY_KWARG \
             and not isinstance( level, bool ):
@@ -640,9 +645,9 @@ def _getLogger(debug_level=127, logger_name=None, **kwargs):
         kwargs.pop( "level" )
         logger.setLevel( level )
 
-    if setup in (EMPTY_KWARG, True):
-        # The root logger is not returned, unless it is already setup with handlers
+    if setup == True:
         active = logger.active()
+        kwargs['setup'] = True
 
         if active:
             active._setup( **kwargs )

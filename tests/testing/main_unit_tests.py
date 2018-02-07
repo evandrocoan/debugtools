@@ -62,7 +62,7 @@ class TeeNoFile(object):
         self.close()
 
     def clear(self):
-        self._contents.clear()
+        del self._contents[:]
 
     def flush(self):
         self._stderr.flush()
