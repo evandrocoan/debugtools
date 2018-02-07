@@ -161,13 +161,28 @@ class Debugger(Logger):
             "setup": False,  # Do not change. It is required for the first setup() call.
         }
 
-    def warn(self, msg, *args, **kwargs):
+    def active(self):
         """
-            Fix second indirection created by the super().warn() method, by directly calling _log()
-        """
+            Works accordingly with super::hasHandlers(), except that this returns the activate
+            logger object if it has some activate handler, or None if there are not loggers with
+            active handlers.
 
-        if self.isEnabledFor( WARNING ):
-            self._log( WARNING, msg, args, **kwargs )
+            The root logger is not returned, unless it is already setup with handlers.
+        """
+        current = self
+
+        while current:
+
+            if current.handlers:
+                return current
+
+            if not current.propagate:
+                break
+
+            else:
+                current = current.parent
+
+        return None
 
     def newline(self, level=1, count=1):
         """
@@ -379,63 +394,13 @@ class Debugger(Logger):
                 self.file_handler.close()
                 self.file_handler = None
 
-    def findCaller(self, stack_info=False):
+    def warn(self, msg, *args, **kwargs):
         """
-            Copied from the python 3.6.3 implementation, only changing the `sys._getframe(3)` to
-            `sys._getframe(4)` because due the inheritance, we need to take a higher frame to get
-            the correct function name, otherwise the result would always be `__call__`, which is the
-            internal function we use here.
-
-            Find the stack frame of the caller so that we can note the source file name, line number
-            and function name.
+            Fix second indirection created by the super().warn() method, by directly calling _log()
         """
-        f = currentframe()
-        #On some versions of IronPython, currentframe() returns None if
-        #IronPython isn't run with -X:Frames.
-        if f is not None:
-            f = f.f_back
-        rv = "(unknown file)", 0, "(unknown function)", None
-        while hasattr(f, "f_code"):
-            co = f.f_code
-            filename = os.path.normcase(co.co_filename)
-            if filename == _srcfile:
-                f = f.f_back
-                continue
-            sinfo = None
-            if stack_info:
-                sio = io.StringIO()
-                sio.write('Stack (most recent call last):\n')
-                traceback.print_stack(f, file=sio)
-                sinfo = sio.getvalue()
-                if sinfo[-1] == '\n':
-                    sinfo = sinfo[:-1]
-                sio.close()
-            rv = (co.co_filename, f.f_lineno, co.co_name, sinfo)
-            break
-        return rv
 
-    def active(self):
-        """
-            Works accordingly with super::hasHandlers(), except that this returns the activate
-            logger object if it has some activate handler, or None if there are not loggers with
-            active handlers.
-
-            The root logger is not returned, unless it is already setup with handlers.
-        """
-        current = self
-
-        while current:
-
-            if current.handlers:
-                return current
-
-            if not current.propagate:
-                break
-
-            else:
-                current = current.parent
-
-        return None
+        if self.isEnabledFor( WARNING ):
+            self._log( WARNING, msg, args, **kwargs )
 
     def _log(self, level, msg, args, exc_info=None, extra={}, stack_info=False, debug_level=0):
         self.currentTick = timeit.default_timer()
@@ -572,6 +537,41 @@ class Debugger(Logger):
             logging module.
         """
         return cls.root
+
+    def findCaller(self, stack_info=False):
+        """
+            Copied from the python 3.6.3 implementation, only changing the `sys._getframe(3)` to
+            `sys._getframe(4)` because due the inheritance, we need to take a higher frame to get
+            the correct function name, otherwise the result would always be `__call__`, which is the
+            internal function we use here.
+
+            Find the stack frame of the caller so that we can note the source file name, line number
+            and function name.
+        """
+        f = currentframe()
+        #On some versions of IronPython, currentframe() returns None if
+        #IronPython isn't run with -X:Frames.
+        if f is not None:
+            f = f.f_back
+        rv = "(unknown file)", 0, "(unknown function)", None
+        while hasattr(f, "f_code"):
+            co = f.f_code
+            filename = os.path.normcase(co.co_filename)
+            if filename == _srcfile:
+                f = f.f_back
+                continue
+            sinfo = None
+            if stack_info:
+                sio = io.StringIO()
+                sio.write('Stack (most recent call last):\n')
+                traceback.print_stack(f, file=sio)
+                sinfo = sio.getvalue()
+                if sinfo[-1] == '\n':
+                    sinfo = sinfo[:-1]
+                sio.close()
+            rv = (co.co_filename, f.f_lineno, co.co_name, sinfo)
+            break
+        return rv
 
 
 # Setup the alternate debugger, completely independent of the standard logging module Logger class
