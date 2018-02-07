@@ -158,7 +158,6 @@ class Debugger(Logger):
             "formatter": None,
             "rotation": 0,
             "msecs": True,
-            "setup": False,  # Do not change. It is required for the first setup() call.
         }
 
     def active(self):
@@ -273,8 +272,8 @@ class Debugger(Logger):
             self.file_handler = None
 
     def setup(self, file_path=EMPTY_KWARG, mode=EMPTY_KWARG, delete=EMPTY_KWARG, date=EMPTY_KWARG, level=EMPTY_KWARG,
-            function=EMPTY_KWARG, name=EMPTY_KWARG, time=EMPTY_KWARG, tick=EMPTY_KWARG, formatter=EMPTY_KWARG,
-            rotation=EMPTY_KWARG, msecs=EMPTY_KWARG, **kwargs):
+            function=EMPTY_KWARG, name=EMPTY_KWARG, time=EMPTY_KWARG, msecs=EMPTY_KWARG, tick=EMPTY_KWARG,
+            formatter=EMPTY_KWARG, rotation=EMPTY_KWARG, **kwargs):
         """
             If `file_path` parameter is passed, instead of output the debug to the standard output
             stream, send it a file on the file system, which is faster for large outputs.
@@ -288,6 +287,9 @@ class Debugger(Logger):
             strings nonempty, their value will be used to defining their configuration formatting.
             For example, if you pass name="%(name)s: " the function name will be displayed as
             `name: `, instead of the default `[name] `.
+
+            If you change your `sys.stderr` after creating an StreamHandler, you need to pass `force=True`
+            to make it to recreate the StreamHandler because of the old reference to `sys.stderr`.
 
             Single page cheat-sheet about Python string formatting pyformat.info
             https://github.com/ulope/pyformat.info
@@ -304,7 +306,7 @@ class Debugger(Logger):
                                 setting how many backups are going to be keep when doing the file rotation as
                                 specified on logging::handlers::RotatingFileHandler documentation.
 
-            @param `delete`     if True, it will delete all other handlers before activate the
+            @param `delete`     if True, it will delete the other handler before activate the
                                 current one, otherwise it will only activate the selected handler.
                                 Useful for enabling multiple handlers simultaneously.
 
@@ -313,6 +315,7 @@ class Debugger(Logger):
             @param `function`   if True, add to the `full_formatter` the function name.
             @param `name`       if True, add to the `full_formatter` the logger name.
             @param `time`       if True, add to the `full_formatter` the time on the format `%H:%M:%S:microseconds`.
+            @param `msecs`      if True, add to the `full_formatter` the time.perf_counter() difference from the last call.
             @param `tick`       if True, add to the `full_formatter` the time.perf_counter() difference from the last call.
             @param `formatter`  if not None, replace this `full_formatter` by the logging.Formatter() provided.
 
@@ -320,17 +323,20 @@ class Debugger(Logger):
                                 in Mega Bytes instead of FileHandler when creating a log file by the
                                 `file_path` option. See logging::handlers::RotatingFileHandler for more information.
 
-            @param `msecs`      if True, add to the `full_formatter` the time.perf_counter() difference from the last call.
+            @param `force`      if True (default False), it will force to create the the handlers,
+                                even if there are not changes on the current saved default parameters.
         """
         self._setup( file_path=file_path, mode=mode, delete=delete, date=date, level=level,
-                function=function, name=name, time=time, tick=tick, formatter=formatter,
-                rotation=rotation, msecs=msecs, **kwargs )
+                function=function, name=name, time=time, msecs=msecs, tick=tick,
+                formatter=formatter, rotation=rotation, **kwargs )
 
     def _setup(self, **kwargs):
         """
             Allow to pass positional arguments to `setup()`.
         """
         has_changes = False
+
+        force = kwargs.pop( 'force', False )
         default_arguments = self.default_arguments
 
         for kwarg in kwargs:
@@ -342,7 +348,11 @@ class Debugger(Logger):
                     has_changes = True
                     default_arguments[kwarg] = value
 
-        if has_changes:
+        if has_changes \
+                or force \
+                or ( not self.stream_handler \
+                    and not self.file_handler ):
+
             self._setup_formatters( default_arguments )
             self._setup_log_handlers( default_arguments )
 
@@ -380,12 +390,11 @@ class Debugger(Logger):
         else:
 
             if self.stream_handler:
-                self.stream_handler.setFormatter( self.full_formatter )
+                self.removeHandler( self.stream_handler )
 
-            else:
-                self.stream_handler = logging.StreamHandler()
-                self.stream_handler.setFormatter( self.full_formatter )
-                self.addHandler( self.stream_handler )
+            self.stream_handler = logging.StreamHandler()
+            self.stream_handler.setFormatter( self.full_formatter )
+            self.addHandler( self.stream_handler )
 
             if default_arguments['delete'] \
                     and self.file_handler:
@@ -584,32 +593,60 @@ Debugger.manager.setLoggerClass( Debugger )
 
 def getLogger(debug_level=127, logger_name=None,
             file_path=EMPTY_KWARG, mode=EMPTY_KWARG, delete=EMPTY_KWARG, date=EMPTY_KWARG, level=EMPTY_KWARG,
-            function=EMPTY_KWARG, name=EMPTY_KWARG, time=EMPTY_KWARG, tick=EMPTY_KWARG, formatter=EMPTY_KWARG,
-            rotation=EMPTY_KWARG, msecs=EMPTY_KWARG, **kwargs):
+            function=EMPTY_KWARG, name=EMPTY_KWARG, time=EMPTY_KWARG, msecs=EMPTY_KWARG, tick=EMPTY_KWARG,
+            formatter=EMPTY_KWARG, rotation=EMPTY_KWARG, **kwargs):
     """
     Return a logger with the specified name, creating it if necessary. If no name is specified,
-    return a new logger based on the main logger file name.
+    return a new logger based on the main logger file name. See also logging::Manager::getLogger()
 
-    @param `debug_level` & `logger_name` are the same parameters passed to the Debugger() constructor.
+    It has the same parameters as Debugger::setup with the addition of the following parameters:
 
-    @param `level`if True, add to the `full_formatter` the log levels. If not boolean,
-        it is the initial logging level accordingly to logging::Logger::setLevel(level)
+    @param `debug_level` and `logger_name` are the same parameters passed to the Debugger::__init__() constructor.
+
+    @param `level` if True, add to the `full_formatter` the log levels. If not a boolean,
+        it should be the initial logging level accordingly to logging::Logger::setLevel(level)
 
     @param from `file_path` until `**kwargs` are the named parameters passed to the Debugger.setup() member function.
 
     @param `setup` if True (default), ensure there is at least one handler enabled in the hierarchy,
-        then the current created Logger will be called with `setup=True`. See also logging::Manager::getLogger()
+        then the current created Logger setup method will be called with `force=True`.
     """
     return _getLogger( debug_level, logger_name,
             file_path=file_path, mode=mode, delete=delete, date=date, level=level,
-            function=function, name=name, time=time, tick=tick, formatter=formatter,
-            rotation=rotation, msecs=msecs, **kwargs )
+            function=function, name=name, time=time, msecs=msecs, tick=tick,
+            formatter=formatter, rotation=rotation, **kwargs )
 
 
 def _getLogger(debug_level=127, logger_name=None, **kwargs):
     """
         Allow to pass positional arguments to `getLogger()`.
     """
+    level = kwargs.get( "level", EMPTY_KWARG )
+    debug_level, logger_name = _get_debug_level( debug_level, logger_name )
+
+    logger = Debugger.manager.getLogger( logger_name )
+    logger.debug_level = debug_level
+
+    if level != EMPTY_KWARG \
+            and not isinstance( level, bool ):
+
+        kwargs.pop( "level" )
+        logger.setLevel( level )
+
+    if kwargs.pop( "setup", True ) == True:
+        active = logger.active()
+
+        if active:
+            active._setup( **kwargs )
+
+        else:
+            logger._setup( **kwargs )
+            logger._fixChildren()
+
+    return logger
+
+
+def _get_debug_level(debug_level, logger_name):
 
     if logger_name:
 
@@ -633,28 +670,5 @@ def _getLogger(debug_level=127, logger_name=None, **kwargs):
             logger_name = debug_level
             debug_level = 127
 
-    logger = Debugger.manager.getLogger( logger_name )
-    logger.debug_level = debug_level
-
-    setup = kwargs.get( "setup", True )
-    level = kwargs.get( "level", EMPTY_KWARG )
-
-    if level != EMPTY_KWARG \
-            and not isinstance( level, bool ):
-
-        kwargs.pop( "level" )
-        logger.setLevel( level )
-
-    if setup == True:
-        active = logger.active()
-        kwargs['setup'] = True
-
-        if active:
-            active._setup( **kwargs )
-
-        else:
-            logger._setup( **kwargs )
-            logger._fixChildren()
-
-    return logger
+    return debug_level, logger_name
 

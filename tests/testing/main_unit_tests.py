@@ -23,8 +23,8 @@ try:
     from DebugTools.all.debug_tools.utilities import wrap_text
 
     # Import and reload the debugger
-    sublime_plugin.reload_plugin( "DebugTools.all.debug_tools.logger" )
-    sublime_plugin.reload_plugin( "DebugTools.all.debug_tools.utilities" )
+    sublime_plugin.reload_plugin( "debug_tools.logger" )
+    sublime_plugin.reload_plugin( "debug_tools.utilities" )
 
 except ImportError:
     import os
@@ -40,10 +40,6 @@ except ImportError:
 
     from debug_tools.logger import getLogger
     from debug_tools.utilities import wrap_text
-
-
-new_err = StringIO()
-old_err = sys.stderr
 
 
 class TeeNoFile(object):
@@ -95,6 +91,9 @@ class TeeNoFile(object):
 
 # We need to keep a global reference to this because the logging module internally grabs an
 # reference to the first `sys.strerr` it can get its hands on it.
+#
+# We could make the logger recreate the `stderr` output StreamHandler by passing `force=True` to
+# recreate the StreamHandler removing the old reference to `sys.stderr`.
 stderr = TeeNoFile()
 
 
