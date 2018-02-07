@@ -12,7 +12,9 @@ start_dir = os.path.join( PACKAGE_ROOT_DIRECTORY, 'testing' )
 
 suite = loader.discover( start_dir, "*unit_tests.py" )
 runner = unittest.TextTestRunner()
-results = runner.run( suite )
 
+# print( sys.path )
+results = runner.run( suite )
 sys.exit( not results.wasSuccessful() )
+
 
