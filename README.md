@@ -97,7 +97,7 @@ def assert_path(module):
         sys.path.append( module )
 
 # Import the debug tools
-assert_path( os.path.join( os.path.dirname( os.path.realpath( __file__ ) ), 'DebugTools/all' ) )
+assert_path( os.path.join( os.path.dirname( os.path.realpath( __file__ ) ), 'DebugTools', 'all' ) )
 
 # Import the debugger
 from debug_tools import getLogger
