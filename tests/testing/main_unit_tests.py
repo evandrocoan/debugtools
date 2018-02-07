@@ -236,11 +236,11 @@ class MainUnitTests(unittest.TestCase):
 
         output = stderr.contents( "[logger.py] ", "20:29:26:617.002010 3.63e-04 " )
         self.assertEqual( wrap_text( """\
-            [logger.py] Bitwise
-            [logger.py] Bitwise
-            [logger.py] Warn
-            [logger.py] Info
-            [logger.py] Debug
-            """ ),
+            [logger.py{python2}] Bitwise
+            [logger.py{python2}] Bitwise
+            [logger.py{python2}] Warn
+            [logger.py{python2}] Info
+            [logger.py{python2}] Debug
+            """.format( python2="c" if is_python2 else "" ) ),
             output )
 
