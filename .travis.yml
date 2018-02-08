@@ -19,11 +19,6 @@ matrix:
         - os: osx
           language: generic
 
-        - python: 2.6
-          os: linux
-          language: python
-          env: TOXENV=py26
-
         - python: 2.7
           os: linux
           language: python
