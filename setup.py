@@ -47,6 +47,9 @@ except ImportError:
         packages = [
             'debug_tools',
         ],
+        data_files = [
+            ("", ["LICENSE.txt"]),
+        ],
         install_requires=[
             'pypiwin32;platform_system=="Windows"',
             'portalocker',
