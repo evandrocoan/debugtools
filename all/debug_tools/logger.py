@@ -359,9 +359,11 @@ class Debugger(Logger):
 
             @param `force`      if True (default False), it will force to create the the handlers,
                                 even if there are not changes on the current saved default parameters.
+                                Its value is not saved between calls to this setup().
 
             @param `active`     if True (default True), it will not do the setup on the current logger object, but
                                 it will find out which one is the active logger and call his setup.
+                                Its value is not saved between calls to this setup().
         """
         self._setup( file=file, mode=mode, delete=delete, date=date, level=level,
                 function=function, name=name, time=time, msecs=msecs, tick=tick,
@@ -656,7 +658,7 @@ def getLogger(debug_level=127, logger_name=None,
     @param from `file` until `**kwargs` are the named parameters passed to the Debugger.setup() member function.
 
     @param `setup` if True (default), ensure there is at least one handler enabled in the hierarchy,
-        then the current created Logger setup method will be called with `force=True`.
+        then the current created active Logger setup method will be called.
     """
     return _getLogger( debug_level, logger_name,
             file=file, mode=mode, delete=delete, date=date, level=level,
@@ -681,14 +683,8 @@ def _getLogger(debug_level=127, logger_name=None, **kwargs):
         logger.setLevel( level )
 
     if kwargs.pop( "setup", True ) == True:
-        active = logger.active()
-
-        if active:
-            active._setup( **kwargs )
-
-        else:
-            logger._setup( **kwargs )
-            logger._fixChildren()
+        logger._setup( **kwargs )
+        logger._fixChildren()
 
     return logger
 
