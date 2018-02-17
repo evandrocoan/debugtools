@@ -57,14 +57,15 @@ if sys.version_info[0] < 3:
 
 
 if hasattr(sys, '_getframe'):
-    currentframe = lambda: sys._getframe(4)
+    currentframe = lambda level: sys._getframe(level)
+
 else: #pragma: no cover
-    def currentframe():
+    def currentframe(level):
         """Return the frame object for the caller's stack frame."""
         try:
             raise Exception
         except Exception:
-            return sys.exc_info()[3].tb_frame.f_back
+            return sys.exc_info()[level-1].tb_frame.f_back
 
 
 class Debugger(Logger):
@@ -101,7 +102,7 @@ class Debugger(Logger):
         # Enable debug messages: (bitwise)
         # 0 - Disabled debugging
         # 1 - Errors messages
-        self._frameLevel  = 3
+        self._frame_level = 4
         self._debug_level = 127
 
     @property
@@ -135,9 +136,9 @@ class Debugger(Logger):
 
             else:
                 representations.append( "%2d. name(%s): %-30s, _debug_level: %3d, propagate: %5s, "
-                    "_frameLevel: %2d, stream_handler: %s, file_handler: %s, default_arguments: %s" %
+                    "_frame_level: %2d, stream_handler: %s, file_handler: %s, default_arguments: %s" %
                     ( total_loggers, current_logger, logger.name, logger._debug_level,
-                    logger.propagate, logger._frameLevel, logger.stream_handler, logger.file_handler,
+                    logger.propagate, logger._frame_level, logger.stream_handler, logger.file_handler,
                     logger.default_arguments ) )
 
         return "\n%s" % "\n".join( reversed( representations ) )
@@ -603,7 +604,7 @@ class Debugger(Logger):
             Find the stack frame of the caller so that we can note the source file name, line number
             and function name.
         """
-        f = currentframe()
+        f = currentframe(self._frame_level)
         #On some versions of IronPython, currentframe() returns None if
         #IronPython isn't run with -X:Frames.
         if f is not None:
