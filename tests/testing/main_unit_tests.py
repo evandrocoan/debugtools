@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 
 import sys
+import re
 import unittest
 
 from inspect import currentframe, getframeinfo
@@ -68,17 +69,15 @@ class TeeNoFile(object):
         self._stderr.write( data )
         self._contents.append( data )
 
-    def contents(self, module_name, base_date):
+    def contents(self, date_regex):
         clean_output = []
-
-        base_date_length = len( base_date )
-        module_name_length = len( module_name )
+        date_regex_pattern = re.compile( date_regex )
 
         output = "".join( self._contents )
         output = output.strip().split( "\n" )
 
         for line in output:
-            clean_output.append( line[:module_name_length] + line[module_name_length+base_date_length:] )
+            clean_output.append( date_regex_pattern.sub( "", line ) )
 
         return "\n".join( clean_output )
 
@@ -133,21 +132,21 @@ class MainUnitTests(unittest.TestCase):
         function_name()
         log.reset()
 
-        output = stderr.contents( "[testing.main_unit_tests] ", "2018-01-28 20:29:26:617.002010 3.63e-04 " )
+        output = stderr.contents( r"\d{4}\-\d{2}-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e\-\d{2} \- " )
 
         if is_python2:
             self.assertEqual( wrap_text( """\
-                [testing.main_unit_tests] (unknown function):0 Bitwise
-                [testing.main_unit_tests] (unknown function):0 Bitwise
-                [testing.main_unit_tests] (unknown function):0 Warn
-                [testing.main_unit_tests] (unknown function):0 Info
-                [testing.main_unit_tests] (unknown function):0 Debug
+                testing.main_unit_tests.(unknown function):0 - Bitwise
+                testing.main_unit_tests.(unknown function):0 - Bitwise
+                testing.main_unit_tests.(unknown function):0 - Warn
+                testing.main_unit_tests.(unknown function):0 - Info
+                testing.main_unit_tests.(unknown function):0 - Debug
 
-                [testing.main_unit_tests] (unknown function):0 Bitwise
-                [testing.main_unit_tests] (unknown function):0 Bitwise
-                [testing.main_unit_tests] (unknown function):0 Warn
-                [testing.main_unit_tests] (unknown function):0 Info
-                [testing.main_unit_tests] (unknown function):0 Debug
+                testing.main_unit_tests.(unknown function):0 - Bitwise
+                testing.main_unit_tests.(unknown function):0 - Bitwise
+                testing.main_unit_tests.(unknown function):0 - Warn
+                testing.main_unit_tests.(unknown function):0 - Info
+                testing.main_unit_tests.(unknown function):0 - Debug
                 """ ),
                 output )
 
@@ -159,17 +158,17 @@ class MainUnitTests(unittest.TestCase):
             offset2 = -35
 
             self.assertEqual( wrap_text( """\
-                [testing.main_unit_tests] test_function_name:{} Bitwise
-                [testing.main_unit_tests] test_function_name:{} Bitwise
-                [testing.main_unit_tests] test_function_name:{} Warn
-                [testing.main_unit_tests] test_function_name:{} Info
-                [testing.main_unit_tests] test_function_name:{} Debug
+                testing.main_unit_tests.test_function_name:{} - Bitwise
+                testing.main_unit_tests.test_function_name:{} - Bitwise
+                testing.main_unit_tests.test_function_name:{} - Warn
+                testing.main_unit_tests.test_function_name:{} - Info
+                testing.main_unit_tests.test_function_name:{} - Debug
 
-                [testing.main_unit_tests] function_name:{} Bitwise
-                [testing.main_unit_tests] function_name:{} Bitwise
-                [testing.main_unit_tests] function_name:{} Warn
-                [testing.main_unit_tests] function_name:{} Info
-                [testing.main_unit_tests] function_name:{} Debug
+                testing.main_unit_tests.function_name:{} - Bitwise
+                testing.main_unit_tests.function_name:{} - Bitwise
+                testing.main_unit_tests.function_name:{} - Warn
+                testing.main_unit_tests.function_name:{} - Info
+                testing.main_unit_tests.function_name:{} - Debug
                 """.format(
                         line+offset1+1, line+offset1+2, line+offset1+3, line+offset1+4, line+offset1+5,
                         line+offset2+6, line+offset2+7, line+offset2+8, line+offset2+9, line+offset2+10,
@@ -188,13 +187,13 @@ class MainUnitTests(unittest.TestCase):
         log.newline()
         log.reset()
 
-        output = stderr.contents( "[testing.main_unit_tests] ", "2018-01-28 20:29:26:617.002010 3.63e-04 " )
+        output = stderr.contents( r"\d{4}\-\d{2}\-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e\-\d{2} \- " )
         self.assertEqual( wrap_text( """\
-            [testing.main_unit_tests] DEBUG(1) Bitwise
-            [testing.main_unit_tests] DEBUG(8) Bitwise
-            [testing.main_unit_tests] WARNING Warn
-            [testing.main_unit_tests] INFO Info
-            [testing.main_unit_tests] DEBUG Debug
+            testing.main_unit_tests DEBUG(1) - Bitwise
+            testing.main_unit_tests DEBUG(8) - Bitwise
+            testing.main_unit_tests WARNING - Warn
+            testing.main_unit_tests INFO - Info
+            testing.main_unit_tests DEBUG - Debug
             """ ),
             output )
 
@@ -211,13 +210,13 @@ class MainUnitTests(unittest.TestCase):
         log.newline()
         log.reset()
 
-        output = stderr.contents( "[testing.main_unit_tests] ", "20:29:26:617.002010 3.63e-04 " )
+        output = stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e\-\d{2} \- " )
         self.assertEqual( wrap_text( """\
-            [testing.main_unit_tests] Bitwise
-            [testing.main_unit_tests] Bitwise
-            [testing.main_unit_tests] Warn
-            [testing.main_unit_tests] Info
-            [testing.main_unit_tests] Debug
+            testing.main_unit_tests - Bitwise
+            testing.main_unit_tests - Bitwise
+            testing.main_unit_tests - Warn
+            testing.main_unit_tests - Info
+            testing.main_unit_tests - Debug
             """ ),
             output )
 
@@ -234,13 +233,13 @@ class MainUnitTests(unittest.TestCase):
         log.newline()
         log.reset()
 
-        output = stderr.contents( "[logger.py] ", "20:29:26:617.002010 3.63e-04 " )
+        output = stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e\-\d{2} \- " )
         self.assertEqual( wrap_text( """\
-            [logger.py{python2}] Bitwise
-            [logger.py{python2}] Bitwise
-            [logger.py{python2}] Warn
-            [logger.py{python2}] Info
-            [logger.py{python2}] Debug
+            logger.py{python2} - Bitwise
+            logger.py{python2} - Bitwise
+            logger.py{python2} - Warn
+            logger.py{python2} - Info
+            logger.py{python2} - Debug
             """.format( python2="c" if is_python2 else "" ) ),
             output )
 

@@ -488,22 +488,24 @@ class Debugger(Logger):
                 raise ValueError( "Error: The formatter %s must be an instance of logging.Formatter" % default_arguments['formatter'] )
 
         else:
-            name = self.getFormat( default_arguments, 'name', "[%(name)s] " )
-            tick = self.getFormat( default_arguments, 'tick', "%(tickDifference).2e " )
-
-            level    = self.getFormat( default_arguments, 'level', "%(levelname)s%(debugLevel)s " )
-            function = self.getFormat( default_arguments, 'function', "%(funcName)s:%(lineno)d " )
-
             date_format  = self.getFormat( default_arguments, 'date', "%Y-%m-%d " )
             date_format += self.getFormat( default_arguments, 'time', "%H:%M:%S" )
 
             msecs = self.getFormat( default_arguments, 'msecs', ":%(msecs)010.6f " )
-
             time  = "%(asctime)s" if len( date_format ) else ""
             time += "" if msecs else " " if default_arguments['time'] else ""
 
-            self.full_formatter = logging.Formatter( "{}{}{}{}{}{}%(message)s".format(
-                    name, time, msecs, tick, level, function ), date_format )
+            tick  = self.getFormat( default_arguments, 'tick', "%(tickDifference).2e " )
+            level = self.getFormat( default_arguments, 'level', "%(levelname)s%(debugLevel)s " )
+
+            name     = self.getFormat( default_arguments, 'name', "%(name)s" )
+            function = self.getFormat( default_arguments, 'function', "%(funcName)s:%(lineno)d " )
+
+            name += "." if function else " "
+            extra_spacing = "- " if name != " " or level or function else ""
+
+            self.full_formatter = logging.Formatter( "{}{}{}{}{}{}{}- %(message)s".format(
+                    time, msecs, tick, extra_spacing, name, level, function ), date_format )
 
     @staticmethod
     def getFormat(default_arguments, setting, default):
