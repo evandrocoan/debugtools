@@ -101,9 +101,21 @@ class Debugger(Logger):
         # Enable debug messages: (bitwise)
         # 0 - Disabled debugging
         # 1 - Errors messages
-        self.debug_level  = 127
         self._frameLevel  = 3
-        self._debug_level = 0
+        self._debug_level = 127
+
+    @property
+    def debug_level(self):
+        return self.debug_level
+
+    @debug_level.setter
+    def debug_level(self, debug_level):
+
+        if isinstance( debug_level, int ):
+            self._debug_level = debug_level
+
+        else:
+            raise ValueError( "Error: The debug_level `%s` must be an integer!" % debug_level )
 
     def __str__(self):
         total_loggers = 0
@@ -122,9 +134,9 @@ class Debugger(Logger):
                                                        for item in logger.loggerMap] ) ) )
 
             else:
-                representations.append( "%2d. name(%s): %-30s, debug_level: %3d, _debug_level: %3d, propagate: %5s, "
+                representations.append( "%2d. name(%s): %-30s, _debug_level: %3d, propagate: %5s, "
                     "_frameLevel: %2d, stream_handler: %s, file_handler: %s, default_arguments: %s" %
-                    ( total_loggers, current_logger, logger.name, logger.debug_level, logger._debug_level,
+                    ( total_loggers, current_logger, logger.name, logger._debug_level,
                     logger.propagate, logger._frameLevel, logger.stream_handler, logger.file_handler,
                     logger.default_arguments ) )
 
@@ -132,12 +144,12 @@ class Debugger(Logger):
 
     def __call__(self, debug_level, msg, *args, **kwargs):
         """
-            Log to the current active handlers its message based on the bitwise `self.debug_level`
+            Log to the current active handlers its message based on the bitwise `self._debug_level`
             value. Note, differently from the standard logging level, each logger object has its own
             bitwise logging level, instead of all sharing the main `level`.
         """
 
-        if self.debug_level & debug_level != 0:
+        if self._debug_level & debug_level != 0:
             kwargs['debug_level'] = debug_level
             self._log( DEBUG, msg, args, **kwargs )
 
@@ -206,8 +218,7 @@ class Debugger(Logger):
             https://stackoverflow.com/questions/20111758/how-to-insert-newline-in-python-logging
         """
 
-        if self.debug_level & debug_level != 0:
-            self._debug_level = debug_level
+        if self._debug_level & debug_level != 0:
             self.alternate( self.clean_formatter, debug_level, msg, *args, **kwargs )
 
     def basic(self, debug_level, msg, *args, **kwargs):
@@ -220,7 +231,7 @@ class Debugger(Logger):
             the basic formatter.
         """
 
-        if self.debug_level & debug_level != 0:
+        if self._debug_level & debug_level != 0:
             self.alternate( self.basic_formatter, debug_level, msg, *args, **kwargs )
 
     def alternate(self, formatter, debug_level, msg, *args, **kwargs):
@@ -228,7 +239,7 @@ class Debugger(Logger):
             Do a usual Debugger bitwise log using the specified logging.Formatter() object.
         """
 
-        if self.debug_level & debug_level != 0:
+        if self._debug_level & debug_level != 0:
 
             if self.stream_handler:
                 self.stream_handler.setFormatter( formatter )
