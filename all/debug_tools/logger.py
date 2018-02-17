@@ -41,6 +41,9 @@ from logging import PlaceHolder
 
 from logging import DEBUG
 from logging import WARNING
+from logging import CRITICAL
+
+from logging import NOTSET
 from logging import _srcfile
 
 from concurrent_log_handler import ConcurrentRotatingFileHandler
@@ -93,7 +96,7 @@ class Debugger(Logger):
 
         # Initialize the first last tick as the current tick
         self.lastTick = timeit.default_timer()
-        self._setup_formatters( self.default_arguments )
+        self._setup_formatters( self, self.default_arguments )
 
         # Enable debug messages: (bitwise)
         # 0 - Disabled debugging
@@ -146,7 +149,7 @@ class Debugger(Logger):
         """
         self.default_arguments = \
         {
-            "file_path": None,
+            "file": None,
             "mode": 'a',
             "delete": True,
             "date": False,
@@ -257,6 +260,25 @@ class Debugger(Logger):
         """
         self.basic_formatter, self.full_formatter = self.full_formatter, self.basic_formatter
 
+    def handle_exception(self):
+        """
+            Register a exception hook if the logger is capable of logging then to alternate streams.
+        """
+
+        def _handle_exception(exc_type, exc_value, exc_traceback):
+            """
+                Logging uncaught exceptions in Python
+                https://stackoverflow.com/questions/6234405/logging-uncaught-exceptions-in-python
+            """
+            self.critical( "Uncaught exception", exc_info=( exc_type, exc_value, exc_traceback ) )
+            sys.__excepthook__( exc_type, exc_value, exc_traceback )
+
+        if ( self.file_handler \
+                or self.hasHandlers() ) \
+                and self.getEffectiveLevel() != NOTSET:
+
+            sys.excepthook = _handle_exception
+
     def disable(self):
         """
             Delete all automatically setup handlers created by the automatic `setup()`.
@@ -271,15 +293,15 @@ class Debugger(Logger):
             self.file_handler.close()
             self.file_handler = None
 
-    def setup(self, file_path=EMPTY_KWARG, mode=EMPTY_KWARG, delete=EMPTY_KWARG, date=EMPTY_KWARG, level=EMPTY_KWARG,
+    def setup(self, file=EMPTY_KWARG, mode=EMPTY_KWARG, delete=EMPTY_KWARG, date=EMPTY_KWARG, level=EMPTY_KWARG,
             function=EMPTY_KWARG, name=EMPTY_KWARG, time=EMPTY_KWARG, msecs=EMPTY_KWARG, tick=EMPTY_KWARG,
             formatter=EMPTY_KWARG, rotation=EMPTY_KWARG, **kwargs):
         """
-            If `file_path` parameter is passed, instead of output the debug to the standard output
+            If `file` parameter is passed, instead of output the debug to the standard output
             stream, send it a file on the file system, which is faster for large outputs.
 
             As this function remembers its parameters passed from previous calls, you need to
-            explicitly pass `file_path=None` with `delete=True` if you want to disable the file
+            explicitly pass `file=None` with `delete=True` if you want to disable the file
             system output after setting up it to log to a file. See the function Debugger::reset()
             for the default parameters values used on this setup utility.
 
@@ -297,7 +319,7 @@ class Debugger(Logger):
             Override a method at instance level
             https://stackoverflow.com/questions/394770/override-a-method-at-instance-level
 
-            @param `file_path`  a relative or absolute path to the log file. If empty the output
+            @param `file`  a relative or absolute path to the log file. If empty the output
                                 will be sent to the standard output stream.
 
             @param `mode`       the file write mode on the file system. It can be `a` to append to the
@@ -321,12 +343,15 @@ class Debugger(Logger):
 
             @param `rotation`   if non zero, creates a RotatingFileHandler with the specified size
                                 in Mega Bytes instead of FileHandler when creating a log file by the
-                                `file_path` option. See logging::handlers::RotatingFileHandler for more information.
+                                `file` option. See logging::handlers::RotatingFileHandler for more information.
 
             @param `force`      if True (default False), it will force to create the the handlers,
                                 even if there are not changes on the current saved default parameters.
+
+            @param `active`     if True (default True), it will not do the setup on the current logger object, but
+                                it will find out which one is the active logger and call his setup.
         """
-        self._setup( file_path=file_path, mode=mode, delete=delete, date=date, level=level,
+        self._setup( file=file, mode=mode, delete=delete, date=date, level=level,
                 function=function, name=name, time=time, msecs=msecs, tick=tick,
                 formatter=formatter, rotation=rotation, **kwargs )
 
@@ -334,9 +359,10 @@ class Debugger(Logger):
         """
             Allow to pass positional arguments to `setup()`.
         """
-        has_changes = False
-
         force = kwargs.pop( 'force', False )
+        active = kwargs.pop( 'active', True )
+
+        has_changes = False
         default_arguments = self.default_arguments
 
         for kwarg in kwargs:
@@ -353,14 +379,21 @@ class Debugger(Logger):
                 or ( not self.stream_handler \
                     and not self.file_handler ):
 
-            self._setup_formatters( default_arguments )
-            self._setup_log_handlers( default_arguments )
+            if active:
+                logger = self.active() or self
 
+            else:
+                logger = self
+
+            self._setup_formatters( logger, default_arguments )
+            self._setup_log_handlers( logger, default_arguments )
+
+    @staticmethod
     def _setup_log_handlers(self, default_arguments):
 
-        if default_arguments['file_path']:
+        if default_arguments['file']:
             rotation = default_arguments['rotation']
-            self.output_file = self.get_debug_file_path( default_arguments['file_path'] )
+            self.output_file = self.get_debug_file_path( default_arguments['file'] )
 
             sys.stderr.write( "".join( self._get_time_prefix( datetime.datetime.now() ) )
                     + "Logging to the file " + self.output_file + "\n" )
@@ -380,6 +413,7 @@ class Debugger(Logger):
 
             self.file_handler.setFormatter( self.full_formatter )
             self.addHandler( self.file_handler )
+            self.handle_exception()
 
             if default_arguments['delete'] \
                     and self.stream_handler:
@@ -425,6 +459,7 @@ class Debugger(Logger):
 
         self.lastTick = self.currentTick
 
+    @staticmethod
     def _setup_formatters(self, default_arguments):
         self.clean_formatter = logging.Formatter( "", "" )
         self.basic_formatter = logging.Formatter( "[%(name)s] %(asctime)s:%(msecs)010.6f{} %(message)s".format(
@@ -592,7 +627,7 @@ Debugger.manager.setLoggerClass( Debugger )
 
 
 def getLogger(debug_level=127, logger_name=None,
-            file_path=EMPTY_KWARG, mode=EMPTY_KWARG, delete=EMPTY_KWARG, date=EMPTY_KWARG, level=EMPTY_KWARG,
+            file=EMPTY_KWARG, mode=EMPTY_KWARG, delete=EMPTY_KWARG, date=EMPTY_KWARG, level=EMPTY_KWARG,
             function=EMPTY_KWARG, name=EMPTY_KWARG, time=EMPTY_KWARG, msecs=EMPTY_KWARG, tick=EMPTY_KWARG,
             formatter=EMPTY_KWARG, rotation=EMPTY_KWARG, **kwargs):
     """
@@ -606,13 +641,13 @@ def getLogger(debug_level=127, logger_name=None,
     @param `level` if True, add to the `full_formatter` the log levels. If not a boolean,
         it should be the initial logging level accordingly to logging::Logger::setLevel(level)
 
-    @param from `file_path` until `**kwargs` are the named parameters passed to the Debugger.setup() member function.
+    @param from `file` until `**kwargs` are the named parameters passed to the Debugger.setup() member function.
 
     @param `setup` if True (default), ensure there is at least one handler enabled in the hierarchy,
         then the current created Logger setup method will be called with `force=True`.
     """
     return _getLogger( debug_level, logger_name,
-            file_path=file_path, mode=mode, delete=delete, date=date, level=level,
+            file=file, mode=mode, delete=delete, date=date, level=level,
             function=function, name=name, time=time, msecs=msecs, tick=tick,
             formatter=formatter, rotation=rotation, **kwargs )
 
