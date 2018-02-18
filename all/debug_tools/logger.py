@@ -97,11 +97,12 @@ class Debugger(Logger):
 
         # Initialize the first last tick as the current tick
         self.lastTick = timeit.default_timer()
-        self._setup_formatters( self, self.default_arguments )
+        self._setup_formatters()
 
         # Enable debug messages: (bitwise)
         # 0 - Disabled debugging
         # 1 - Errors messages
+        self._stderr = None
         self._frame_level = 4
         self._debug_level = 127
 
@@ -129,9 +130,9 @@ class Debugger(Logger):
 
             if isinstance( logger, PlaceHolder ):
                 representations.append( "%2s. name(%s), %s" %
-                        ( str( total_loggers[0] ), current_logger,
-                        "".join( ["loggerMap(%s): %s" % (item.name, logger.loggerMap[item])
-                                                       for item in logger.loggerMap] ) ) )
+                        ( str( total_loggers[0] ), current_logger, "".join(
+                                ["loggerMap(%s): %s" % (item.name, logger.loggerMap[item])
+                                for item in logger.loggerMap] ) ) )
 
             else:
                 representations.append( "%2s. _debug_level: %3d, level: %2s, propagate: %5s, "
@@ -280,25 +281,15 @@ class Debugger(Logger):
         """
             Register a exception hook if the logger is capable of logging then to alternate streams.
         """
-
-        def _handle_exception(exc_type, exc_value, exc_traceback):
-            """
-                Logging uncaught exceptions in Python
-                https://stackoverflow.com/questions/6234405/logging-uncaught-exceptions-in-python
-            """
-            self.critical( "Uncaught exception", exc_info=( exc_type, exc_value, exc_traceback ) )
-            sys.__excepthook__( exc_type, exc_value, exc_traceback )
-
-        if ( self.file_handler \
-                or self.hasHandlers() ) \
-                and self.getEffectiveLevel() != NOTSET:
-
-            sys.excepthook = _handle_exception
+        self._stderr = TeeNoFileStdErr.getInstace( self.error )
 
     def disable(self):
         """
             Delete all automatically setup handlers created by the automatic `setup()`.
         """
+
+        if self._stderr:
+            self._stderr.close()
 
         if self.stream_handler:
             self.removeHandler( self.stream_handler )
@@ -379,10 +370,13 @@ class Debugger(Logger):
             Allow to pass positional arguments to `setup()`.
         """
         force = kwargs.pop( 'force', False )
+        _fix_children = kwargs.pop( '_fix_children', False )
+
         active = kwargs.pop( 'active', True )
+        logger = self.active() or self if active else self
 
         has_changes = False
-        default_arguments = self.default_arguments
+        default_arguments = logger.default_arguments
 
         for kwarg in kwargs:
             value = kwargs[kwarg]
@@ -395,24 +389,30 @@ class Debugger(Logger):
 
         if has_changes \
                 or force \
-                or ( not self.stream_handler \
-                    and not self.file_handler ):
+                or ( not logger.stream_handler \
+                    and not logger.file_handler ):
 
-            logger = self.active() or self if active else self
-            default_arguments = logger.default_arguments
+            if _fix_children:
+                logger._fixChildren()
 
-            self._setup_formatters( logger, default_arguments )
-            self._setup_log_handlers( logger, default_arguments )
+            logger._setup_formatters()
+            logger._setup_log_handlers()
 
-    @staticmethod
-    def _setup_log_handlers(self, default_arguments):
+            if logger.file_handler:
+                logger.handle_exception()
+
+    def _setup_log_handlers(self):
+        default_arguments = self.default_arguments
 
         if default_arguments['file']:
             rotation = default_arguments['rotation']
             self.output_file = self.get_debug_file_path( default_arguments['file'] )
 
             sys.stderr.write( "".join( self._get_time_prefix( datetime.datetime.now() ) )
-                    + "Logging to the file " + self.output_file + "\n" )
+                    + "Logging `%s` to the file " % self.name + self.output_file + "\n" )
+
+            # import traceback
+            # traceback.print_stack()
 
             if self.file_handler:
                 self.removeHandler( self.file_handler )
@@ -429,7 +429,6 @@ class Debugger(Logger):
 
             self.file_handler.setFormatter( self.full_formatter )
             self.addHandler( self.file_handler )
-            self.handle_exception()
 
             if default_arguments['delete'] \
                     and self.stream_handler:
@@ -475,8 +474,9 @@ class Debugger(Logger):
 
         self.lastTick = self.currentTick
 
-    @staticmethod
-    def _setup_formatters(self, default_arguments):
+    def _setup_formatters(self):
+        default_arguments = self.default_arguments
+
         self.clean_formatter = logging.Formatter( "", "" )
         self.basic_formatter = logging.Formatter( "[%(name)s] %(asctime)s:%(msecs)010.6f{} %(message)s".format(
                 "" if is_python2 else " %(tickDifference).2e" ), "%H:%M:%S" )
@@ -636,6 +636,62 @@ class Debugger(Logger):
         return rv
 
 
+class TeeNoFileStdErr(object):
+    """
+        How do I duplicate sys.stdout to a log file in python?
+        https://stackoverflow.com/questions/616645/how-do-i-duplicate-sys-stdout-to-a-log-file-in-python
+
+        How to redirect stdout and stderr to logger in Python
+        https://stackoverflow.com/questions/19425736/how-to-redirect-stdout-and-stderr-to-logger-in-python
+    """
+    _stdstream = None
+    _singleton = None
+
+    @classmethod
+    def __init__(cls, logger):
+        cls.linebuf = ''
+        cls._stdstream = sys.stderr
+
+        cls.logger = logger
+        sys.stderr = cls
+
+    @classmethod
+    def getInstace(cls, logger):
+
+        if cls._stdstream:
+            return cls._singleton
+
+        elif cls._singleton:
+            cls._singleton.logger = logger
+            return cls._singleton
+
+        else:
+            cls._singleton = TeeNoFileStdErr( logger )
+            return cls._singleton
+
+    @classmethod
+    def __del__(cls):
+        cls.close()
+
+    @classmethod
+    def flush(cls):
+        cls._stdstream.flush()
+
+    @classmethod
+    def write(cls, data):
+        cls._stdstream.write( data )
+
+        for line in data.rstrip().splitlines():
+            cls.logger( line.rstrip() )
+
+    @classmethod
+    def close(cls):
+
+        if cls._stdstream is not None:
+            sys.stderr = cls._stdstream
+            cls._stdstream = None
+
+
 # Setup the alternate debugger, completely independent of the standard logging module Logger class
 root = Debugger( "root_debugger", "WARNING" )
 Debugger.root = root
@@ -687,8 +743,7 @@ def _getLogger(debug_level=127, logger_name=None, **kwargs):
         logger.setLevel( level )
 
     if kwargs.pop( "setup", True ) == True:
-        logger._setup( **kwargs )
-        logger._fixChildren()
+        logger._setup( _fix_children=True, **kwargs )
 
     return logger
 
