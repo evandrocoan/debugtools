@@ -56,7 +56,6 @@ class TeeNoFile(object):
         sys.stderr = self
 
     def __del__(self):
-        super( TeeNoFile, self ).__del__()
         self.close()
 
     def clear(self):
