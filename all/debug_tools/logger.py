@@ -78,7 +78,7 @@ class Debugger(Logger):
         How to print list inside python print?
         https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
     """
-    logger      = None
+    logger = None
     output_file = None
 
     def __init__(self, logger_name, logger_level=None):
@@ -281,7 +281,7 @@ class Debugger(Logger):
         """
             Register a exception hook if the logger is capable of logging then to alternate streams.
         """
-        self._stderr = TeeNoFileStdErr.getInstace( self.error )
+        self._stderr = TeeNoFile( self.error )
 
     def disable(self):
         """
@@ -636,7 +636,7 @@ class Debugger(Logger):
         return rv
 
 
-class TeeNoFileStdErr(object):
+class TeeNoFile(object):
     """
         How do I duplicate sys.stdout to a log file in python?
         https://stackoverflow.com/questions/616645/how-do-i-duplicate-sys-stdout-to-a-log-file-in-python
@@ -645,29 +645,15 @@ class TeeNoFileStdErr(object):
         https://stackoverflow.com/questions/19425736/how-to-redirect-stdout-and-stderr-to-logger-in-python
     """
     _stdstream = None
-    _singleton = None
 
     @classmethod
     def __init__(cls, logger):
         cls.linebuf = ''
-        cls._stdstream = sys.stderr
-
         cls.logger = logger
-        sys.stderr = cls
 
-    @classmethod
-    def getInstace(cls, logger):
-
-        if cls._stdstream:
-            return cls._singleton
-
-        elif cls._singleton:
-            cls._singleton.logger = logger
-            return cls._singleton
-
-        else:
-            cls._singleton = TeeNoFileStdErr( logger )
-            return cls._singleton
+        if cls._stdstream is None:
+            cls._stdstream = sys.stderr
+            sys.stderr = cls
 
     @classmethod
     def __del__(cls):
