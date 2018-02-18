@@ -123,24 +123,30 @@ class Debugger(Logger):
         representations = []
         loggers = Debugger.manager.loggerDict
 
-        for logger_name in loggers:
-            logger = loggers[logger_name]
+        def add(logger):
+            nonlocal total_loggers
+
             total_loggers += 1
             current_logger = "True_" if logger == self else "False"
 
             if isinstance( logger, PlaceHolder ):
-                representations.append( "%2d. PlaceHolder(%s), %s" %
-                        ( total_loggers, current_logger,
+                representations.append( "%2s. name(%s), %s" %
+                        ( str( total_loggers ), current_logger,
                         "".join( ["loggerMap(%s): %s" % (item.name, logger.loggerMap[item])
                                                        for item in logger.loggerMap] ) ) )
 
             else:
-                representations.append( "%2d. name(%s): %-30s, _debug_level: %3d, propagate: %5s, "
-                    "_frame_level: %2d, stream_handler: %s, file_handler: %s, default_arguments: %s" %
-                    ( total_loggers, current_logger, logger.name, logger._debug_level,
-                    logger.propagate, logger._frame_level, logger.stream_handler, logger.file_handler,
+                representations.append( "%2s. _debug_level: %3d, level: %2s, propagate: %5s, "
+                    "_frame_level: %2d, name(%s): %s, stream_handler: %s, file_handler: %s, default_arguments: %s" %
+                    ( str( total_loggers ), logger._debug_level, logger.level, logger.propagate,
+                    logger._frame_level, current_logger, logger.name, logger.stream_handler, logger.file_handler,
                     logger.default_arguments ) )
 
+        for logger_name in loggers:
+            logger = loggers[logger_name]
+            add( logger )
+
+        add( self.root )
         return "\n%s" % "\n".join( reversed( representations ) )
 
     def __call__(self, debug_level, msg, *args, **kwargs):
@@ -357,12 +363,13 @@ class Debugger(Logger):
                                 in Mega Bytes instead of FileHandler when creating a log file by the
                                 `file` option. See logging::handlers::RotatingFileHandler for more information.
 
-            @param `force`      if True (default False), it will force to create the the handlers,
+            @param `force`      if True (default False), it will force to create the handlers,
                                 even if there are not changes on the current saved default parameters.
                                 Its value is not saved between calls to this setup().
 
-            @param `active`     if True (default True), it will not do the setup on the current logger object, but
-                                it will find out which one is the active logger and call his setup.
+            @param `active`     if True (default True), it will search for any other active logger in
+                                the current logger hierarchy and do the setup call on him. If no active
+                                logger is found, it will do the setup on the current logger object,
                                 Its value is not saved between calls to this setup().
         """
         self._setup( file=file, mode=mode, delete=delete, date=date, level=level,
@@ -393,11 +400,8 @@ class Debugger(Logger):
                 or ( not self.stream_handler \
                     and not self.file_handler ):
 
-            if active:
-                logger = self.active() or self
-
-            else:
-                logger = self
+            logger = self.active() or self if active else self
+            default_arguments = logger.default_arguments
 
             self._setup_formatters( logger, default_arguments )
             self._setup_log_handlers( logger, default_arguments )
@@ -505,7 +509,7 @@ class Debugger(Logger):
             extra_spacing = "- " if name != " " or level or function else ""
 
             self.full_formatter = logging.Formatter( "{}{}{}{}{}{}{}- %(message)s".format(
-                    time, msecs, tick, extra_spacing, name, level, function ), date_format )
+                    time, msecs, tick, extra_spacing, name, function, level ), date_format )
 
     @staticmethod
     def getFormat(default_arguments, setting, default):
