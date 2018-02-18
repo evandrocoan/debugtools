@@ -6,7 +6,16 @@ try:
     import sublime_plugin
 
 except (ImportError):
-    pass
+    import os
+    import sys
+
+    def assert_path(module):
+
+        if module not in sys.path:
+            sys.path.append( module )
+
+    # Import the debug tools
+    assert_path( os.path.join( os.path.dirname( os.path.dirname( os.path.dirname( os.path.realpath( __file__ ) ) ) ), 'all' ) )
 
 
 # Import and reload the debugger
