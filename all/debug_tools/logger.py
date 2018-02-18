@@ -26,6 +26,7 @@
 #
 
 import os
+import io
 import sys
 
 import timeit
@@ -281,7 +282,7 @@ class Debugger(Logger):
         """
             Register a exception hook if the logger is capable of logging then to alternate streams.
         """
-        self._stderr = TeeNoFile( self.error )
+        self._stderr = TeeNoFile.lock( self.error )
 
     def disable(self):
         """
@@ -289,7 +290,7 @@ class Debugger(Logger):
         """
 
         if self._stderr:
-            self._stderr.close()
+            self._stderr.unlock()
 
         if self.stream_handler:
             self.removeHandler( self.stream_handler )
@@ -636,7 +637,7 @@ class Debugger(Logger):
         return rv
 
 
-class TeeNoFile(object):
+class TeeNoFile(io.TextIOWrapper):
     """
         How do I duplicate sys.stdout to a log file in python?
         https://stackoverflow.com/questions/616645/how-do-i-duplicate-sys-stdout-to-a-log-file-in-python
@@ -644,38 +645,42 @@ class TeeNoFile(object):
         How to redirect stdout and stderr to logger in Python
         https://stackoverflow.com/questions/19425736/how-to-redirect-stdout-and-stderr-to-logger-in-python
     """
-    _stdstream = None
+    _instance = None
+    is_active = False
+
+    def __init__(self, logger):
+        super( TeeNoFile, self ).__init__(
+            sys.__stderr__.buffer,
+            errors=sys.__stderr__.errors,
+            line_buffering=sys.__stderr__.line_buffering
+        )
+
+        sys.stderr = self
+        self.logger = logger
 
     @classmethod
-    def __init__(cls, logger):
-        cls.linebuf = ''
-        cls.logger = logger
+    def lock(cls, logger):
 
-        if cls._stdstream is None:
-            cls._stdstream = sys.stderr
-            sys.stderr = cls
+        if not cls._instance:
+            cls._instance = TeeNoFile( logger )
 
-    @classmethod
-    def __del__(cls):
-        cls.close()
+        if not cls.is_active:
+            cls.is_active = True
+            cls._instance.logger = logger
 
-    @classmethod
-    def flush(cls):
-        cls._stdstream.flush()
+        return cls._instance
 
     @classmethod
-    def write(cls, data):
-        cls._stdstream.write( data )
+    def unlock(cls):
+
+        if cls.is_active:
+            cls.is_active = False
+
+    def write(self, data):
+        super( TeeNoFile, self ).write( data )
 
         for line in data.rstrip().splitlines():
-            cls.logger( line.rstrip() )
-
-    @classmethod
-    def close(cls):
-
-        if cls._stdstream is not None:
-            sys.stderr = cls._stdstream
-            cls._stdstream = None
+            self.logger( line.rstrip() )
 
 
 # Setup the alternate debugger, completely independent of the standard logging module Logger class
