@@ -51,7 +51,7 @@ reloading plugin DebugTools.logger
 
 
 ___
-# Usage
+## Usage
 
 ```
 pip install debug_tools
@@ -126,6 +126,21 @@ from debug_tools.logger import getLogger
 
 imp.reload( debug_tools.logger )
 from debug_tools.logger import getLogger
+```
+
+If you want to load the logger configuration from a file, you need to replace the standard logging
+module class with this one:
+```
+import logging
+import debug_tools
+
+if log_config:
+
+    with open(log_config, 'r') as f:
+        logging.Logger.manager = debug_tools.Debugger.manager
+        logging.Logger.manager.setLoggerClass( debug_tools.Debugger )
+
+        logging.config.dictConfig(json.load(f))
 ```
 
 
