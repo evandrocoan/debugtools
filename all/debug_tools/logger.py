@@ -107,7 +107,7 @@ class Debugger(Logger):
 
     @property
     def debug_level(self):
-        return self.debug_level
+        return self._debug_level
 
     @debug_level.setter
     def debug_level(self, debug_level):
