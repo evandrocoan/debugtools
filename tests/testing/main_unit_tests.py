@@ -111,6 +111,7 @@ class MainUnitTests(unittest.TestCase):
             how do I clear a stringio object?
             https://stackoverflow.com/questions/4330812/how-do-i-clear-a-stringio-object
         """
+        print("")
         self.maxDiff = None
 
     def test_function_name(self):
