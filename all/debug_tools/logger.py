@@ -376,10 +376,10 @@ class Debugger(Logger):
         force = kwargs.pop( 'force', False )
         _fix_children = kwargs.pop( '_fix_children', False )
 
-        active = kwargs.pop( 'active', True )
-        logger = self.active() or self if active else self
+        active = self.active()
+        logger = active or self if kwargs.pop( 'active', True ) else self
 
-        has_changes = False
+        has_changes = bool( active )
         default_arguments = logger.default_arguments
 
         for kwarg in kwargs:
