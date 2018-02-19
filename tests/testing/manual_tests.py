@@ -33,12 +33,22 @@ log.warn( "Warn" )
 log.info( "Info" )
 log.debug( "Debug" )
 
+try:
+    raise Exception( "Test Error" )
+except Exception:
+    log.exception( "I am catching you" )
+
 def function_name():
     log( 1, "Bitwise" )
     log( 8, "Bitwise" )
     log.warn( "Warn" )
     log.info( "Info" )
     log.debug( "Debug" )
+
+    try:
+        raise Exception( "Test Error" )
+    except Exception:
+        log.exception( "I am catching you" )
 
 log.reset()
 log.setup( function=False, level=True )

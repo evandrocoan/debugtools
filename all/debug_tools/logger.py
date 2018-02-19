@@ -43,6 +43,7 @@ from logging import StreamHandler
 
 from logging import DEBUG
 from logging import WARNING
+from logging import ERROR
 
 from logging import _srcfile
 from logging import getLevelName
@@ -462,6 +463,13 @@ class Debugger(Logger):
 
         if self.isEnabledFor( WARNING ):
             self._log( WARNING, msg, args, **kwargs )
+
+    def exception(self, msg, *args, **kwargs):
+        """
+            Fix second indirection created by the super().error() method, by directly calling _log()
+        """
+        if self.isEnabledFor(ERROR):
+            self._log(ERROR, msg, args, exc_info=True, **kwargs)
 
     def _log(self, level, msg, args, exc_info=None, extra={}, stack_info=False, debug_level=0):
         self.currentTick = timeit.default_timer()

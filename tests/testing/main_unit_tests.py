@@ -225,3 +225,29 @@ class MainUnitTests(unittest.TestCase):
             """.format( python2="c" if is_python2 else "" ) ),
             output )
 
+    def test_exception_throwing(self):
+        stderr.clear()
+        log = getLogger( "testing.main_unit_tests", 127, function=True )
+
+        try:
+            raise Exception( "Test Error" )
+        except Exception:
+            log.exception( "I am catching you" )
+
+        log.newline()
+        log.reset()
+
+        frameinfo = getframeinfo(currentframe())
+        line      = frameinfo.lineno
+
+        regex_pattern = re.compile( r"File \".*\", line \d+," )
+
+        output = stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e\-\d{2} \- " )
+        self.assertEqual( wrap_text( """\
+                testing.main_unit_tests.test_exception_throwing:{} - I am catching you
+                Traceback (most recent call last):
+                   in test_exception_throwing
+                    raise Exception( "Test Error" )
+                Exception: Test Error            """.format( line - 5 ) ),
+            regex_pattern.sub( "", output ) )
+
