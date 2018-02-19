@@ -759,6 +759,14 @@ class TeeNoFile(object):
     is_active = False
 
     @classmethod
+    def __del__(cls):
+
+        if sys and cls._stderr:
+            sys.stderr = cls._stderr
+            cls._stderr = None
+            cls.is_active = False
+
+    @classmethod
     def lock(cls, logger):
 
         if not cls._stderr:

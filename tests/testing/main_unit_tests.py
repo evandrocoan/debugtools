@@ -56,6 +56,10 @@ class TeeNoFile(object):
         sys.stderr = self
 
     def __del__(self):
+        """
+            python Exception AttributeError: “'NoneType' object has no attribute 'var'”
+            https://stackoverflow.com/questions/9750308/python-exception-attributeerror-nonetype-object-has-no-attribute-var
+        """
         self.close()
 
     def clear(self):
@@ -81,9 +85,9 @@ class TeeNoFile(object):
         return "\n".join( clean_output )
 
     def close(self):
-        self.clear()
 
-        if self._stderr is not None:
+        # On shutdown `__del__`, the sys module can be already set to None.
+        if sys and self._stderr:
             sys.stderr = self._stderr
             self._stderr = None
 
