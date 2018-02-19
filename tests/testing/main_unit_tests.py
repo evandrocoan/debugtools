@@ -133,45 +133,28 @@ class MainUnitTests(unittest.TestCase):
 
         output = stderr.contents( r"\d{4}\-\d{2}-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e\-\d{2} \- " )
 
-        if is_python2:
-            self.assertEqual( wrap_text( """\
-                testing.main_unit_tests.(unknown function):0 - Bitwise
-                testing.main_unit_tests.(unknown function):0 - Bitwise
-                testing.main_unit_tests.(unknown function):0 - Warn
-                testing.main_unit_tests.(unknown function):0 - Info
-                testing.main_unit_tests.(unknown function):0 - Debug
+        frameinfo = getframeinfo(currentframe())
+        line      = frameinfo.lineno
 
-                testing.main_unit_tests.(unknown function):0 - Bitwise
-                testing.main_unit_tests.(unknown function):0 - Bitwise
-                testing.main_unit_tests.(unknown function):0 - Warn
-                testing.main_unit_tests.(unknown function):0 - Info
-                testing.main_unit_tests.(unknown function):0 - Debug
-                """ ),
-                output )
+        offset1 = -21
+        offset2 = -18
 
-        else:
-            frameinfo = getframeinfo(currentframe())
-            line      = frameinfo.lineno
+        self.assertEqual( wrap_text( """\
+            testing.main_unit_tests.test_function_name:{} - Bitwise
+            testing.main_unit_tests.test_function_name:{} - Bitwise
+            testing.main_unit_tests.test_function_name:{} - Warn
+            testing.main_unit_tests.test_function_name:{} - Info
+            testing.main_unit_tests.test_function_name:{} - Debug
 
-            offset1 = -38
-            offset2 = -35
-
-            self.assertEqual( wrap_text( """\
-                testing.main_unit_tests.test_function_name:{} - Bitwise
-                testing.main_unit_tests.test_function_name:{} - Bitwise
-                testing.main_unit_tests.test_function_name:{} - Warn
-                testing.main_unit_tests.test_function_name:{} - Info
-                testing.main_unit_tests.test_function_name:{} - Debug
-
-                testing.main_unit_tests.function_name:{} - Bitwise
-                testing.main_unit_tests.function_name:{} - Bitwise
-                testing.main_unit_tests.function_name:{} - Warn
-                testing.main_unit_tests.function_name:{} - Info
-                testing.main_unit_tests.function_name:{} - Debug
-                """.format(
-                        line+offset1+1, line+offset1+2, line+offset1+3, line+offset1+4, line+offset1+5,
-                        line+offset2+6, line+offset2+7, line+offset2+8, line+offset2+9, line+offset2+10,
-                ) ), output )
+            testing.main_unit_tests.function_name:{} - Bitwise
+            testing.main_unit_tests.function_name:{} - Bitwise
+            testing.main_unit_tests.function_name:{} - Warn
+            testing.main_unit_tests.function_name:{} - Info
+            testing.main_unit_tests.function_name:{} - Debug
+            """.format(
+                    line+offset1+1, line+offset1+2, line+offset1+3, line+offset1+4, line+offset1+5,
+                    line+offset2+6, line+offset2+7, line+offset2+8, line+offset2+9, line+offset2+10,
+            ) ), output )
 
     def test_no_function_name_and_level(self):
         stderr.clear()

@@ -98,7 +98,9 @@ class Debugger(Logger):
 
         # Initialize the first last tick as the current tick
         self.lastTick = timeit.default_timer()
+
         self._setup_formatters()
+        self._setupFindcaller()
 
         # Enable debug messages: (bitwise)
         # 0 - Disabled debugging
@@ -173,7 +175,7 @@ class Debugger(Logger):
             "delete": True,
             "date": False,
             "level": False,
-            "function": not is_python2,
+            "function": True,
             "name": True,
             "time": True,
             "tick": True,
@@ -610,40 +612,65 @@ class Debugger(Logger):
         """
         return cls.root
 
-    def findCaller(self, stack_info=False):
+    def _setupFindcaller(self):
         """
-            Copied from the python 3.6.3 implementation, only changing the `sys._getframe(3)` to
-            `sys._getframe(4)` because due the inheritance, we need to take a higher frame to get
+            Copied from the python 3.6.3 and 2.7.14 implementation, only changing the `sys._getframe(3)`
+            to `sys._getframe(4)` because due the inheritance, we need to take a higher frame to get
             the correct function name, otherwise the result would always be `__call__`, which is the
             internal function we use here.
 
             Find the stack frame of the caller so that we can note the source file name, line number
             and function name.
         """
-        f = currentframe(self._frame_level)
-        #On some versions of IronPython, currentframe() returns None if
-        #IronPython isn't run with -X:Frames.
-        if f is not None:
-            f = f.f_back
-        rv = "(unknown file)", 0, "(unknown function)", None
-        while hasattr(f, "f_code"):
-            co = f.f_code
-            filename = os.path.normcase(co.co_filename)
-            if filename == _srcfile:
+
+        def findCallerPython3(stack_info=False):
+            f = currentframe(self._frame_level)
+            #On some versions of IronPython, currentframe() returns None if
+            #IronPython isn't run with -X:Frames.
+            if f is not None:
                 f = f.f_back
-                continue
-            sinfo = None
-            if stack_info:
-                sio = io.StringIO()
-                sio.write('Stack (most recent call last):\n')
-                traceback.print_stack(f, file=sio)
-                sinfo = sio.getvalue()
-                if sinfo[-1] == '\n':
-                    sinfo = sinfo[:-1]
-                sio.close()
-            rv = (co.co_filename, f.f_lineno, co.co_name, sinfo)
-            break
-        return rv
+            rv = "(unknown file)", 0, "(unknown function)", None
+            while hasattr(f, "f_code"):
+                co = f.f_code
+                filename = os.path.normcase(co.co_filename)
+                if filename == _srcfile:
+                    f = f.f_back
+                    continue
+                sinfo = None
+                if stack_info:
+                    sio = io.StringIO()
+                    sio.write('Stack (most recent call last):\n')
+                    traceback.print_stack(f, file=sio)
+                    sinfo = sio.getvalue()
+                    if sinfo[-1] == '\n':
+                        sinfo = sinfo[:-1]
+                    sio.close()
+                rv = (co.co_filename, f.f_lineno, co.co_name, sinfo)
+                break
+            return rv
+
+        def findCallerPython2():
+            f = currentframe(self._frame_level)
+            #On some versions of IronPython, currentframe() returns None if
+            #IronPython isn't run with -X:Frames.
+            if f is not None:
+                f = f.f_back
+            rv = "(unknown file)", 0, "(unknown function)"
+            while hasattr(f, "f_code"):
+                co = f.f_code
+                filename = os.path.normcase(co.co_filename)
+                if filename == _srcfile:
+                    f = f.f_back
+                    continue
+                rv = (co.co_filename, f.f_lineno, co.co_name)
+                break
+            return rv
+
+        if is_python2:
+            self.findCaller = findCallerPython2
+
+        else:
+            self.findCaller = findCallerPython3
 
 
 class CleanLogRecord(object):
