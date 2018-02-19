@@ -178,6 +178,7 @@ class Debugger(Logger):
             "name": True,
             "time": True,
             "tick": True,
+            "separator": True,
             "formatter": None,
             "rotation": 0,
             "msecs": True,
@@ -307,7 +308,7 @@ class Debugger(Logger):
 
     def setup(self, file=EMPTY_KWARG, mode=EMPTY_KWARG, delete=EMPTY_KWARG, date=EMPTY_KWARG, level=EMPTY_KWARG,
             function=EMPTY_KWARG, name=EMPTY_KWARG, time=EMPTY_KWARG, msecs=EMPTY_KWARG, tick=EMPTY_KWARG,
-            formatter=EMPTY_KWARG, rotation=EMPTY_KWARG, **kwargs):
+            separator=EMPTY_KWARG, formatter=EMPTY_KWARG, rotation=EMPTY_KWARG, **kwargs):
         """
             If `file` parameter is passed, instead of output the debug to the standard output
             stream, send it a file on the file system, which is faster for large outputs.
@@ -349,8 +350,9 @@ class Debugger(Logger):
             @param `function`   if True, add to the `full_formatter` the function name.
             @param `name`       if True, add to the `full_formatter` the logger name.
             @param `time`       if True, add to the `full_formatter` the time on the format `%H:%M:%S:microseconds`.
-            @param `msecs`      if True, add to the `full_formatter` the time.perf_counter() difference from the last call.
+            @param `msecs`      if True, add to the `full_formatter` the current milliseconds on the format ddd,ddddd.
             @param `tick`       if True, add to the `full_formatter` the time.perf_counter() difference from the last call.
+            @param `separator`  if True, add to the `full_formatter` the a ` - ` to the end of the log record header.
             @param `formatter`  if not None, replace this `full_formatter` by the logging.Formatter() provided.
 
             @param `rotation`   if non zero, creates a RotatingFileHandler with the specified size
@@ -368,7 +370,7 @@ class Debugger(Logger):
         """
         self._setup( file=file, mode=mode, delete=delete, date=date, level=level,
                 function=function, name=name, time=time, msecs=msecs, tick=tick,
-                formatter=formatter, rotation=rotation, **kwargs )
+                separator=separator, formatter=formatter, rotation=rotation, **kwargs )
 
     def _setup(self, **kwargs):
         """
@@ -518,33 +520,44 @@ class Debugger(Logger):
                 raise ValueError( "Error: The formatter %s must be an instance of logging.Formatter" % default_arguments['formatter'] )
 
         else:
-            date_format  = self.getFormat( default_arguments, 'date', "%Y-%m-%d " )
-            date_format += self.getFormat( default_arguments, 'time', "%H:%M:%S" )
+            # These 2 do not need extra spacing because they are the last of their chain
+            tick  = self.getFormat( default_arguments, 'tick', "%(tickDifference).2e" )
+            level = self.getFormat( default_arguments, 'level', "%(levelname)s%(debugLevel)s" )
 
-            msecs = self.getFormat( default_arguments, 'msecs', ":%(msecs)010.6f " )
+            separator = self.getFormat( default_arguments, 'separator', " - " )
+            msecs = self.getFormat( default_arguments, 'msecs', ":%(msecs)010.6f", tick )
+
+            time_format = self.getFormat( default_arguments, 'time', "%H:%M:%S", not msecs )
+            date_format = self.getFormat( default_arguments, 'date', "%Y-%m-%d", time_format )
+
+            date_format += time_format
+
             time  = "%(asctime)s" if len( date_format ) else ""
             time += "" if msecs else " " if default_arguments['time'] else ""
 
-            tick  = self.getFormat( default_arguments, 'tick', "%(tickDifference).2e " )
-            level = self.getFormat( default_arguments, 'level', "%(levelname)s%(debugLevel)s " )
+            function = self.getFormat( default_arguments, 'function', "%(funcName)s:%(lineno)d", level )
+            name     = self.getFormat( default_arguments, 'name', "%(name)s", level and not function )
 
-            name     = self.getFormat( default_arguments, 'name', "%(name)s" )
-            function = self.getFormat( default_arguments, 'function', "%(funcName)s:%(lineno)d " )
+            name += "." if name and function else ""
+            extra_spacing = " - " if name or level or function else ""
 
-            name += "." if function else " "
-            extra_spacing = "- " if name != " " or level or function else ""
-
-            self.full_formatter = logging.Formatter( "{}{}{}{}{}{}{}- %(message)s".format(
-                    time, msecs, tick, extra_spacing, name, function, level ), date_format )
+            self.full_formatter = logging.Formatter( "{}{}{}{}{}{}{}{}%(message)s".format(
+                    time, msecs, tick, extra_spacing, name, function, level, separator ), date_format )
 
     @staticmethod
-    def getFormat(default_arguments, setting, default):
+    def getFormat(default_arguments, setting, default, next_parameter=""):
         value = default_arguments[setting]
 
         if isinstance( value, str ):
             return value
 
-        return default if value else ""
+        if value:
+            value = default + ( " " if next_parameter else "" )
+
+        else:
+            value = ""
+
+        return value
 
     def _get_time_prefix(self, currentTime):
         return [ "[%s]" % self.name,
@@ -804,7 +817,7 @@ Debugger.manager.setLoggerClass( Debugger )
 def getLogger(debug_level=127, logger_name=None,
             file=EMPTY_KWARG, mode=EMPTY_KWARG, delete=EMPTY_KWARG, date=EMPTY_KWARG, level=EMPTY_KWARG,
             function=EMPTY_KWARG, name=EMPTY_KWARG, time=EMPTY_KWARG, msecs=EMPTY_KWARG, tick=EMPTY_KWARG,
-            formatter=EMPTY_KWARG, rotation=EMPTY_KWARG, **kwargs):
+            separator=EMPTY_KWARG, formatter=EMPTY_KWARG, rotation=EMPTY_KWARG, **kwargs):
     """
     Return a logger with the specified name, creating it if necessary. If no name is specified,
     return a new logger based on the main logger file name. See also logging::Manager::getLogger()
@@ -824,7 +837,7 @@ def getLogger(debug_level=127, logger_name=None,
     return _getLogger( debug_level, logger_name,
             file=file, mode=mode, delete=delete, date=date, level=level,
             function=function, name=name, time=time, msecs=msecs, tick=tick,
-            formatter=formatter, rotation=rotation, **kwargs )
+            separator=separator, formatter=formatter, rotation=rotation, **kwargs )
 
 
 def _getLogger(debug_level=127, logger_name=None, **kwargs):
