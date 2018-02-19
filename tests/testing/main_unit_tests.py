@@ -221,12 +221,12 @@ class MainUnitTests(unittest.TestCase):
 
         output = stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e\-\d{2} \- " )
         self.assertEqual( wrap_text( """\
-            logger.py{python2} - Bitwise
-            logger.py{python2} - Bitwise
-            logger.py{python2} - Warn
-            logger.py{python2} - Info
-            logger.py{python2} - Debug
-            """.format( python2="c" if is_python2 else "" ) ),
+            logger - Bitwise
+            logger - Bitwise
+            logger - Warn
+            logger - Info
+            logger - Debug
+            """ ),
             output )
 
     def test_exception_throwing(self):

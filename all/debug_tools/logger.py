@@ -888,7 +888,7 @@ def _get_debug_level(debug_level, logger_name):
     else:
 
         if isinstance( debug_level, int ):
-            logger_name = os.path.basename( __file__ )
+            logger_name = os.path.basename( "logger" )
 
         else:
             logger_name = debug_level
