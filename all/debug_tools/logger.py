@@ -98,7 +98,6 @@ class Debugger(Logger):
 
         self.reset()
         self._setup_find_caller()
-        self._setup_log_upstream()
 
         # Enable debug messages: (bitwise)
         # 0 - Disabled debugging
@@ -474,31 +473,19 @@ class Debugger(Logger):
         if self.isEnabledFor(ERROR):
             self._log(ERROR, msg, args, exc_info=True, **kwargs)
 
-    def _setup_log_upstream(self):
+    def _log(self, level, msg, args, exc_info=None, extra={}, stack_info=False, debug_level=0):
+        self.currentTick = timeit.default_timer()
 
-        def _log_python2(level, msg, args, exc_info=None, extra={}, stack_info=False, debug_level=0):
-            self.currentTick = timeit.default_timer()
-
-            debug_level = "(%d)" % debug_level if debug_level else ""
-            extra.update( {"debugLevel": debug_level, "tickDifference": self.currentTick - self.lastTick} )
-
-            super( Debugger, self )._log( level, msg, args, exc_info, extra )
-            self.lastTick = self.currentTick
-
-        def _log_python3(level, msg, args, exc_info=None, extra={}, stack_info=False, debug_level=0):
-            self.currentTick = timeit.default_timer()
-
-            debug_level = "(%d)" % debug_level if debug_level else ""
-            extra.update( {"debugLevel": debug_level, "tickDifference": self.currentTick - self.lastTick} )
-
-            super( Debugger, self )._log( level, msg, args, exc_info, extra, stack_info )
-            self.lastTick = self.currentTick
+        debug_level = "(%d)" % debug_level if debug_level else ""
+        extra.update( {"debugLevel": debug_level, "tickDifference": self.currentTick - self.lastTick} )
 
         if is_python2:
-            self._log = _log_python2
+            super( Debugger, self )._log( level, msg, args, exc_info, extra )
 
         else:
-            self._log = _log_python3
+            super( Debugger, self )._log( level, msg, args, exc_info, extra, stack_info )
+
+        self.lastTick = self.currentTick
 
     def _log_clean(self, msg):
         record = CleanLogRecord( self.level, self.name, msg )
