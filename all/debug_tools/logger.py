@@ -101,7 +101,8 @@ class Debugger(Logger):
         self.lastTick = timeit.default_timer()
 
         self._setup_formatters()
-        self._setupFindcaller()
+        self._setup_find_caller()
+        self._setup_log_upstream()
 
         # Enable debug messages: (bitwise)
         # 0 - Disabled debugging
@@ -471,19 +472,31 @@ class Debugger(Logger):
         if self.isEnabledFor(ERROR):
             self._log(ERROR, msg, args, exc_info=True, **kwargs)
 
-    def _log(self, level, msg, args, exc_info=None, extra={}, stack_info=False, debug_level=0):
-        self.currentTick = timeit.default_timer()
+    def _setup_log_upstream(self):
 
-        debug_level = "(%d)" % debug_level if debug_level else ""
-        extra.update( {"debugLevel": debug_level, "tickDifference": self.currentTick - self.lastTick} )
+        def _log_python2(level, msg, args, exc_info=None, extra={}, stack_info=False, debug_level=0):
+            self.currentTick = timeit.default_timer()
+
+            debug_level = "(%d)" % debug_level if debug_level else ""
+            extra.update( {"debugLevel": debug_level, "tickDifference": self.currentTick - self.lastTick} )
+
+            super( Debugger, self )._log( level, msg, args, exc_info, extra )
+            self.lastTick = self.currentTick
+
+        def _log_python3(level, msg, args, exc_info=None, extra={}, stack_info=False, debug_level=0):
+            self.currentTick = timeit.default_timer()
+
+            debug_level = "(%d)" % debug_level if debug_level else ""
+            extra.update( {"debugLevel": debug_level, "tickDifference": self.currentTick - self.lastTick} )
+
+            super( Debugger, self )._log( level, msg, args, exc_info, extra, stack_info )
+            self.lastTick = self.currentTick
 
         if is_python2:
-            super( Debugger, self )._log( level, msg, args, exc_info, extra )
+            self._log = _log_python2
 
         else:
-            super()._log( level, msg, args, exc_info, extra, stack_info )
-
-        self.lastTick = self.currentTick
+            self._log = _log_python3
 
     def _log_clean(self, msg):
         record = CleanLogRecord( self.level, self.name, msg )
@@ -620,7 +633,7 @@ class Debugger(Logger):
         """
         return cls.root
 
-    def _setupFindcaller(self):
+    def _setup_find_caller(self):
         """
             Copied from the python 3.6.3 and 2.7.14 implementation, only changing the `sys._getframe(3)`
             to `sys._getframe(4)` because due the inheritance, we need to take a higher frame to get
