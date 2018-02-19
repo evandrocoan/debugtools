@@ -39,13 +39,13 @@ import logging.handlers
 from logging import Logger
 from logging import Manager
 from logging import PlaceHolder
+from logging import StreamHandler
 
 from logging import DEBUG
 from logging import WARNING
-from logging import CRITICAL
 
-from logging import NOTSET
 from logging import _srcfile
+from logging import getLevelName
 
 from concurrent_log_handler import ConcurrentRotatingFileHandler
 
@@ -282,7 +282,7 @@ class Debugger(Logger):
         """
             Register a exception hook if the logger is capable of logging then to alternate streams.
         """
-        self._stderr = TeeNoFile.lock( self.error )
+        self._stderr = TeeNoFile.lock( self )
 
     def disable(self):
         """
@@ -475,6 +475,10 @@ class Debugger(Logger):
 
         self.lastTick = self.currentTick
 
+    def _log_clean(self, msg):
+        record = CleanLogRecord( self.level, self.name, msg )
+        self.handle( record )
+
     def _setup_formatters(self):
         default_arguments = self.default_arguments
 
@@ -525,6 +529,11 @@ class Debugger(Logger):
                 ":%02d" % currentTime.minute,
                 ":%02d" % currentTime.second,
                 ":%07d " % currentTime.microsecond ]
+
+    def removeHandlers(self):
+
+        for handler in self.handlers:
+            self.remove( handler )
 
     def _fixChildren(self):
         """
@@ -637,7 +646,45 @@ class Debugger(Logger):
         return rv
 
 
-class TeeNoFile(io.TextIOWrapper):
+class CleanLogRecord(object):
+
+    def __init__(self, level, name, msg):
+        self.name = name
+        self.msg = msg
+        self.levelno = level
+
+        self.levelname = getLevelName(level)
+        self.pathname = "No Path Name"
+        self.filename = "No Filename"
+        self.module = "Unknown module"
+
+        self.debugLevel = ""
+        self.tickDifference = 0.0
+
+        self.exc_info = None
+        self.exc_text = None
+        self.stack_info = None
+        self.lineno = 0
+
+        self.args = "No Args"
+        self.funcName = "No Function"
+        self.created = 0
+        self.msecs = 0
+        self.relativeCreated = 0
+
+        self.thread = None
+        self.threadName = None
+        self.processName = None
+        self.process = None
+
+    def __str__(self):
+        return '<CleanLogRecord: "%s">' % ( self.msg )
+
+    def getMessage(self):
+        return str( self.msg )
+
+
+class TeeNoFile(object):
     """
         How do I duplicate sys.stdout to a log file in python?
         https://stackoverflow.com/questions/616645/how-do-i-duplicate-sys-stdout-to-a-log-file-in-python
@@ -645,42 +692,55 @@ class TeeNoFile(io.TextIOWrapper):
         How to redirect stdout and stderr to logger in Python
         https://stackoverflow.com/questions/19425736/how-to-redirect-stdout-and-stderr-to-logger-in-python
     """
-    _instance = None
+    _stderr = None
     is_active = False
-
-    def __init__(self, logger):
-        super( TeeNoFile, self ).__init__(
-            sys.__stderr__.buffer,
-            errors=sys.__stderr__.errors,
-            line_buffering=sys.__stderr__.line_buffering
-        )
-
-        sys.stderr = self
-        self.logger = logger
 
     @classmethod
     def lock(cls, logger):
 
-        if not cls._instance:
-            cls._instance = TeeNoFile( logger )
+        if not cls._stderr:
+
+            # On Sublime Text, the `sys.__stderr__` is None
+            if sys.__stderr__:
+                cls._stderr = sys.__stderr__
+
+            else:
+                cls._stderr = sys.stderr
 
         if not cls.is_active:
             cls.is_active = True
-            cls._instance.logger = logger
+            logger_call = logger._log_clean
 
-        return cls._instance
+            def write(data):
+                """
+                    Suppress newline in Python logging module
+                    https://stackoverflow.com/questions/7168790/suppress-newline-in-python-logging-module
+                """
+                cls._stderr_write( data )
+                file_handler = logger.file_handler
+
+                formatter = file_handler.formatter
+                file_handler.formatter = logger.clean_formatter
+
+                terminator = StreamHandler.terminator
+                StreamHandler.terminator = ""
+
+                logger_call( data )
+
+                file_handler.formatter = formatter
+                StreamHandler.terminator = terminator
+
+            cls._stderr_write = cls._stderr.write
+            cls._stderr.write = write
+
+        return cls
 
     @classmethod
     def unlock(cls):
 
         if cls.is_active:
             cls.is_active = False
-
-    def write(self, data):
-        super( TeeNoFile, self ).write( data )
-
-        for line in data.rstrip().splitlines():
-            self.logger( line.rstrip() )
+            cls._stderr.write = cls._stderr_write
 
 
 # Setup the alternate debugger, completely independent of the standard logging module Logger class
