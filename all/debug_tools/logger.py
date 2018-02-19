@@ -122,7 +122,10 @@ class Debugger(Logger):
     def __str__(self):
         total_loggers = [0]
         representations = []
-        loggers = Debugger.manager.loggerDict
+
+        place_holders = []
+        loggers = [self.root]
+        loggers_dict = Debugger.manager.loggerDict
 
         def add(logger):
             total_loggers[0] += 1
@@ -141,11 +144,21 @@ class Debugger(Logger):
                     logger._frame_level, current_logger, logger.name, logger.stream_handler, logger.file_handler,
                     logger.default_arguments ) )
 
-        for logger_name in loggers:
-            logger = loggers[logger_name]
+        for logger_name in loggers_dict:
+            logger = loggers_dict[logger_name]
+
+            if isinstance( logger, PlaceHolder ):
+                place_holders.append( logger )
+
+            else:
+                loggers.append( logger )
+
+        loggers.sort( key=lambda item: item.name, reverse=True )
+        loggers.extend( place_holders )
+
+        for logger in loggers:
             add( logger )
 
-        add( self.root )
         return "\n%s" % "\n".join( reversed( representations ) )
 
     def __call__(self, debug_level, msg, *args, **kwargs):
