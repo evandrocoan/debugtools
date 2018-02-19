@@ -295,11 +295,16 @@ class Debugger(Logger):
         """
         self.basic_formatter, self.full_formatter = self.full_formatter, self.basic_formatter
 
-    def handle_exception(self):
+    def handle_strerr(self, enable=True):
         """
             Register a exception hook if the logger is capable of logging then to alternate streams.
         """
-        self._stderr = TeeNoFile.lock( self )
+
+        if enable:
+            self._stderr = TeeNoFile.lock( self )
+
+        else:
+            self._stderr = TeeNoFile.unlock()
 
     def disable(self):
         """
@@ -418,7 +423,10 @@ class Debugger(Logger):
             logger._setup_log_handlers()
 
             if logger.file_handler:
-                logger.handle_exception()
+                logger.handle_strerr(True)
+
+            else:
+                logger.handle_strerr(False)
 
     def _setup_log_handlers(self):
         default_arguments = self.default_arguments
@@ -812,6 +820,8 @@ class TeeNoFile(object):
         if cls.is_active:
             cls.is_active = False
             cls._stderr.write = cls._stderr_write
+
+        return cls
 
 
 # Setup the alternate debugger, completely independent of the standard logging module Logger class
