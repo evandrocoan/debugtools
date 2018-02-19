@@ -229,6 +229,29 @@ class MainUnitTests(unittest.TestCase):
             """ ),
             output )
 
+    def test_get_logger_more_empty(self):
+        stderr.clear()
+        log = getLogger( function=False, name=False )
+
+        log( 1, "Bitwise" )
+        log( 8, "Bitwise" )
+        log.warn( "Warn" )
+        log.info( "Info" )
+        log.debug( "Debug" )
+
+        log.newline()
+        log.reset()
+
+        output = stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e\-\d{2} \- " )
+        self.assertEqual( wrap_text( """\
+            Bitwise
+            Bitwise
+            Warn
+            Info
+            Debug
+            """ ),
+            output )
+
     def test_exception_throwing(self):
         stderr.clear()
         log = getLogger( "testing.main_unit_tests", 127 )
