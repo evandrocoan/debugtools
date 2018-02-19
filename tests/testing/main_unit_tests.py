@@ -111,7 +111,7 @@ class MainUnitTests(unittest.TestCase):
 
     def test_function_name(self):
         stderr.clear()
-        log = getLogger( 127, "testing.main_unit_tests", date=True, function=True )
+        log = getLogger( 127, "testing.main_unit_tests", date=True )
 
         log( 1, "Bitwise" )
         log( 8, "Bitwise" )
@@ -181,7 +181,7 @@ class MainUnitTests(unittest.TestCase):
 
     def test_date_disabled(self):
         stderr.clear()
-        log = getLogger( "testing.main_unit_tests", 127, date=False, function=False )
+        log = getLogger( "testing.main_unit_tests", 127, function=False )
 
         log( 1, "Bitwise" )
         log( 8, "Bitwise" )
@@ -227,7 +227,7 @@ class MainUnitTests(unittest.TestCase):
 
     def test_exception_throwing(self):
         stderr.clear()
-        log = getLogger( "testing.main_unit_tests", 127, function=True )
+        log = getLogger( "testing.main_unit_tests", 127 )
 
         try:
             raise Exception( "Test Error" )

@@ -91,16 +91,12 @@ class Debugger(Logger):
             @param `logger_name` the name of this logger accordingly with the standard logging.Logger() documentation.
             @param `logger_level` an integer with the current bitwise enabled log level
         """
-        self.reset()
         super( Debugger, self ).__init__( logger_name, logger_level or "DEBUG" )
-
-        self.file_handler   = None
-        self.stream_handler = None
 
         # Initialize the first last tick as the current tick
         self.lastTick = timeit.default_timer()
 
-        self._setup_formatters()
+        self.reset()
         self._setup_find_caller()
         self._setup_log_upstream()
 
@@ -166,9 +162,10 @@ class Debugger(Logger):
 
     def reset(self):
         """
-            Used to remember the these parameters values set on the subsequent calls to `setup()`.
-            Call this if you want to reset to default all the parameters values. Note, you still
-            need to call Debugger::setup() to this changes take effect.
+            Reset all remembered parameters values set on the subsequent calls to `setup()`.
+
+            Call this if you want to reset to remove all handlers and set all parameters values to
+            their default.
         """
         self.default_arguments = \
         {
@@ -185,6 +182,9 @@ class Debugger(Logger):
             "rotation": 0,
             "msecs": True,
         }
+
+        self.removeHandlers()
+        self._setup_formatters()
 
     def active(self):
         """
@@ -380,7 +380,7 @@ class Debugger(Logger):
         active = self.active()
         logger = active or self if kwargs.pop( 'active', True ) else self
 
-        has_changes = bool( active )
+        has_changes = False
         default_arguments = logger.default_arguments
 
         for kwarg in kwargs:
@@ -554,9 +554,11 @@ class Debugger(Logger):
                 ":%07d " % currentTime.microsecond ]
 
     def removeHandlers(self):
+        self.file_handler = None
+        self.stream_handler = None
 
         for handler in self.handlers:
-            self.remove( handler )
+            self.removeHandler( handler )
 
     def _fixChildren(self):
         """
