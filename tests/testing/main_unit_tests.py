@@ -136,7 +136,7 @@ class MainUnitTests(unittest.TestCase):
         function_name()
         log.reset()
 
-        output = stderr.contents( r"\d{4}\-\d{2}-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e\-\d{2} \- " )
+        output = stderr.contents( r"\d{4}\-\d{2}-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
 
         frameinfo = getframeinfo(currentframe())
         line      = frameinfo.lineno
@@ -174,7 +174,7 @@ class MainUnitTests(unittest.TestCase):
         log.newline()
         log.reset()
 
-        output = stderr.contents( r"\d{4}\-\d{2}\-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e\-\d{2} \- " )
+        output = stderr.contents( r"\d{4}\-\d{2}\-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
         self.assertEqual( wrap_text( """\
             testing.main_unit_tests DEBUG(1) - Bitwise
             testing.main_unit_tests DEBUG(8) - Bitwise
@@ -197,7 +197,7 @@ class MainUnitTests(unittest.TestCase):
         log.newline()
         log.reset()
 
-        output = stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e\-\d{2} \- " )
+        output = stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
         self.assertEqual( wrap_text( """\
             testing.main_unit_tests - Bitwise
             testing.main_unit_tests - Bitwise
@@ -220,7 +220,7 @@ class MainUnitTests(unittest.TestCase):
         log.newline()
         log.reset()
 
-        output = stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e\-\d{2} \- " )
+        output = stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
         self.assertEqual( wrap_text( """\
             logger - Bitwise
             logger - Bitwise
@@ -243,7 +243,7 @@ class MainUnitTests(unittest.TestCase):
         log.newline()
         log.reset()
 
-        output = stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e\-\d{2} \- " )
+        output = stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
         self.assertEqual( wrap_text( """\
             Bitwise
             Bitwise
@@ -252,6 +252,22 @@ class MainUnitTests(unittest.TestCase):
             Debug
             """ ),
             output )
+
+    def test_basic_formatter(self):
+        stderr.clear()
+        log = getLogger( 127, "testing.main_unit_tests" )
+        log.setup_basic( function=True, separator=" " )
+
+        log.basic( 1, "Debug" )
+
+        log.newline()
+        log.reset()
+
+        frameinfo = getframeinfo(currentframe())
+        line      = frameinfo.lineno
+
+        output = stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+        self.assertEqual( "testing.main_unit_tests.test_basic_formatter:{} Debug".format( line - 5 ), output )
 
     def test_exception_throwing(self):
         stderr.clear()
@@ -270,7 +286,7 @@ class MainUnitTests(unittest.TestCase):
 
         regex_pattern = re.compile( r"File \".*\", line \d+," )
 
-        output = stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e\-\d{2} \- " )
+        output = stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
         self.assertEqual( wrap_text( """\
                 testing.main_unit_tests.test_exception_throwing:{} - I am catching you
                 Traceback (most recent call last):

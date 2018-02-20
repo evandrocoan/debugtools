@@ -179,7 +179,25 @@ class Debugger(Logger):
             Call this if you want to reset to remove all handlers and set all parameters values to
             their default.
         """
-        self.default_arguments = \
+        self.default_arguments = self._formatter_arguments()
+        self.removeHandlers()
+
+        self.full_formatter = self._setup_formatter( self.default_arguments )
+        self.clean_formatter = logging.Formatter( "", "" )
+        self.setup_basic( function=False, tick=False )
+
+    def setup_basic(self, **kwargs):
+        """
+            Configure the `basic_formatter` used by `Debugger.basic` logging function.
+
+            @param `**kwargs` the same formatting arguments passed to `Debugger.setup`
+        """
+        basic_arguments = self._formatter_arguments()
+        basic_arguments.update( kwargs )
+        self.basic_formatter = self._setup_formatter( basic_arguments )
+
+    def _formatter_arguments(self):
+        return \
         {
             "file": None,
             "mode": 'a',
@@ -195,9 +213,6 @@ class Debugger(Logger):
             "rotation": 0,
             "msecs": True,
         }
-
-        self.removeHandlers()
-        self._setup_formatters()
 
     def active(self):
         """
@@ -243,7 +258,25 @@ class Debugger(Logger):
         """
 
         if self._debug_level & debug_level != 0:
-            self.alternate( self.clean_formatter, debug_level, msg, *args, **kwargs )
+            file_handler = self.file_handler
+            stream_handler = self.stream_handler
+
+            if stream_handler:
+                stream_handler_formatter = stream_handler.formatter
+                stream_handler.formatter = self.clean_formatter
+
+            if file_handler:
+                file_handler_formatter = file_handler.formatter
+                file_handler.formatter = self.clean_formatter
+
+            kwargs['debug_level'] = debug_level
+            self._log_clean( msg % args )
+
+            if self.stream_handler:
+                stream_handler.formatter = stream_handler_formatter
+
+            if self.file_handler:
+                file_handler.formatter = file_handler_formatter
 
     def basic(self, debug_level, msg, *args, **kwargs):
         """
@@ -256,33 +289,29 @@ class Debugger(Logger):
         """
 
         if self._debug_level & debug_level != 0:
-            self.alternate( self.basic_formatter, debug_level, msg, *args, **kwargs )
+            file_handler = self.file_handler
+            stream_handler = self.stream_handler
 
-    def alternate(self, formatter, debug_level, msg, *args, **kwargs):
-        """
-            Do a usual Debugger bitwise log using the specified logging.Formatter() object.
-        """
+            if stream_handler:
+                stream_handler_formatter = stream_handler.formatter
+                stream_handler.formatter = self.basic_formatter
 
-        if self._debug_level & debug_level != 0:
-
-            if self.stream_handler:
-                self.stream_handler.setFormatter( formatter )
-
-            if self.file_handler:
-                self.file_handler.setFormatter( formatter )
+            if file_handler:
+                file_handler_formatter = file_handler.formatter
+                file_handler.formatter = self.basic_formatter
 
             kwargs['debug_level'] = debug_level
             self._log( DEBUG, msg, args, **kwargs )
 
             if self.stream_handler:
-                self.stream_handler.setFormatter( self.full_formatter )
+                stream_handler.formatter = stream_handler_formatter
 
             if self.file_handler:
-                self.file_handler.setFormatter( self.full_formatter )
+                file_handler.formatter = file_handler_formatter
 
     def clear(self):
         """
-            Clear the log file contents
+            Clear the log file contents.
         """
 
         if self.output_file:
@@ -419,7 +448,7 @@ class Debugger(Logger):
             if _fix_children:
                 logger._fixChildren()
 
-            logger._setup_formatters()
+            logger.full_formatter = logger._setup_formatter( logger.default_arguments )
             logger._setup_log_handlers()
 
             if logger.file_handler:
@@ -512,49 +541,45 @@ class Debugger(Logger):
         record = CleanLogRecord( self.level, self.name, msg )
         self.handle( record )
 
-    def _setup_formatters(self):
-        default_arguments = self.default_arguments
+    @classmethod
+    def _setup_formatter(cls, arguments):
 
-        self.clean_formatter = logging.Formatter( "", "" )
-        self.basic_formatter = logging.Formatter( "[%(name)s] %(asctime)s:%(msecs)010.6f{} %(message)s".format(
-                "" if is_python2 else " %(tickDifference).2e" ), "%H:%M:%S" )
+        if arguments['formatter']:
 
-        if default_arguments['formatter']:
-
-            if isinstance( default_arguments['formatter'], logging.Formatter ):
-                self.full_formatter = default_arguments['formatter']
+            if isinstance( arguments['formatter'], logging.Formatter ):
+                return arguments['formatter']
 
             else:
-                raise ValueError( "Error: The formatter %s must be an instance of logging.Formatter" % default_arguments['formatter'] )
+                raise ValueError( "Error: The formatter %s must be an instance of logging.Formatter" % arguments['formatter'] )
 
         else:
             # These 2 do not need extra spacing because they are the last of their chain
-            tick  = self.getFormat( default_arguments, 'tick', "%(tickDifference).2e" )
-            level = self.getFormat( default_arguments, 'level', "%(levelname)s%(debugLevel)s" )
+            tick  = cls.getFormat( arguments, 'tick', "%(tickDifference).2e" )
+            level = cls.getFormat( arguments, 'level', "%(levelname)s%(debugLevel)s" )
 
-            separator = self.getFormat( default_arguments, 'separator', " - " )
-            msecs = self.getFormat( default_arguments, 'msecs', ":%(msecs)010.6f", tick )
+            separator = cls.getFormat( arguments, 'separator', " - " )
+            msecs = cls.getFormat( arguments, 'msecs', ":%(msecs)010.6f", tick )
 
-            time_format = self.getFormat( default_arguments, 'time', "%H:%M:%S", not msecs )
-            date_format = self.getFormat( default_arguments, 'date', "%Y-%m-%d", time_format )
+            time_format = cls.getFormat( arguments, 'time', "%H:%M:%S", not msecs )
+            date_format = cls.getFormat( arguments, 'date', "%Y-%m-%d", time_format )
 
             date_format += time_format
 
             time  = "%(asctime)s" if len( date_format ) else ""
-            time += "" if msecs else " " if default_arguments['time'] else ""
+            time += "" if msecs else " " if arguments['time'] else ""
 
-            function = self.getFormat( default_arguments, 'function', "%(funcName)s:%(lineno)d", level )
-            name     = self.getFormat( default_arguments, 'name', "%(name)s", level and not function )
+            function = cls.getFormat( arguments, 'function', "%(funcName)s:%(lineno)d", level )
+            name     = cls.getFormat( arguments, 'name', "%(name)s", level and not function )
 
             name += "." if name and function else ""
             extra_spacing = " - " if name or level or function else ""
 
-            self.full_formatter = logging.Formatter( "{}{}{}{}{}{}{}{}%(message)s".format(
+            return logging.Formatter( "{}{}{}{}{}{}{}{}%(message)s".format(
                     time, msecs, tick, extra_spacing, name, function, level, separator ), date_format )
 
     @staticmethod
-    def getFormat(default_arguments, setting, default, next_parameter=""):
-        value = default_arguments[setting]
+    def getFormat(arguments, setting, default, next_parameter=""):
+        value = arguments[setting]
 
         if isinstance( value, str ):
             return value
