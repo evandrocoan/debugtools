@@ -81,7 +81,6 @@ class Debugger(Logger):
         https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
     """
     logger = None
-    output_file = None
 
     def __init__(self, logger_name, logger_level=None):
         """
@@ -105,6 +104,14 @@ class Debugger(Logger):
         self._stderr = None
         self._frame_level = 4
         self._debug_level = 127
+
+    @property
+    def output_file(self):
+
+        if self.file_handler:
+            return self.file_handler.baseFilename
+
+        return None
 
     @property
     def debug_level(self):
@@ -274,15 +281,10 @@ class Debugger(Logger):
         active = self.active()
 
         if active and active.output_file:
-            sys.stderr.write( "Cleaning the file: %s\n" % active.output_file )
+            output_file = active.output_file
 
-            if active.file_handler:
-                active._create_file_handler( self.arguments['rotation'], self.arguments['mode'], True )
-
-            else:
-
-                with open( active.output_file, 'w' ) as file:
-                    file.truncate()
+            sys.stderr.write( "Cleaning the file: %s\n" % output_file )
+            active._create_file_handler( output_file, self.arguments['rotation'], self.arguments['mode'], True )
 
     def invert(self):
         """
@@ -430,12 +432,12 @@ class Debugger(Logger):
         # traceback.print_stack()
 
         if arguments['file']:
-            self.output_file = self.get_debug_file_path( arguments['file'] )
+            output_file = self.get_debug_file_path( arguments['file'] )
 
             sys.stderr.write( "".join( self._get_time_prefix( datetime.datetime.now() ) )
-                    + "Logging to the file %s\n" % self.output_file )
+                    + "Logging to the file %s\n" % output_file )
 
-            self._create_file_handler( arguments['rotation'], arguments['mode'] )
+            self._create_file_handler( output_file, arguments['rotation'], arguments['mode'] )
 
             if arguments['delete'] \
                     and self.stream_handler:
@@ -459,7 +461,7 @@ class Debugger(Logger):
                 self.file_handler.close()
                 self.file_handler = None
 
-    def _create_file_handler(self, rotation, mode, clear=False):
+    def _create_file_handler(self, output_file, rotation, mode, clear=False):
         backup_count = mode
         mode = 'w' if clear else mode
 
@@ -469,21 +471,21 @@ class Debugger(Logger):
 
             if clear:
 
-                with open( self.output_file, 'w' ) as file:
+                with open( output_file, 'w' ) as file:
                     file.truncate()
 
         if rotation > 0:
             rotation = rotation * 1024 * 1024
 
             backup_count = abs( backup_count ) if isinstance( backup_count, int ) else 2
-            self.file_handler = ConcurrentRotatingFileHandler( self.output_file, maxBytes=rotation, backupCount=backup_count )
+            self.file_handler = ConcurrentRotatingFileHandler( output_file, maxBytes=rotation, backupCount=backup_count )
 
         else:
 
             if not isinstance( mode, str ):
                 raise ValueError( "The mode argument `%s` must be instance of string." % mode )
 
-            self.file_handler = logging.FileHandler( self.output_file, mode )
+            self.file_handler = logging.FileHandler( output_file, mode )
 
         self.file_handler.formatter = self.full_formatter
         self.addHandler( self.file_handler )
@@ -580,7 +582,6 @@ class Debugger(Logger):
                 ":%07d " % currentTime.microsecond ]
 
     def removeHandlers(self):
-        self.output_file = None
         self.file_handler = None
         self.stream_handler = None
 
@@ -616,7 +617,7 @@ class Debugger(Logger):
                     logger.disable()
 
     @classmethod
-    def get_debug_file_path(cls, output_file):
+    def get_debug_file_path(cls, file_path):
         """
             Reliably detect Windows in Python
             https://stackoverflow.com/questions/1387222/reliably-detect-windows-in-python
@@ -625,30 +626,30 @@ class Debugger(Logger):
             To "/cygwin/D/User/Downloads/debug.txt"
             To "/mnt/D/User/Downloads/debug.txt"
         """
-        new_output    = output_file
+        new_output    = file_path
         platform_info = platform.platform( True ).lower()
 
         if "cygwin" in platform_info:
-            new_output = "/cygdrive/" + cls.remove_windows_driver_letter( output_file )
+            new_output = "/cygdrive/" + cls.remove_windows_driver_letter( file_path )
 
         elif "linux" in platform_info \
                 and "microsoft" in platform_info:
 
-            new_output = cls.remove_windows_driver_letter( output_file )
+            new_output = cls.remove_windows_driver_letter( file_path )
             new_output = "/mnt/" + new_output[0].lower() + new_output[1:]
 
-        output_file = os.path.abspath( new_output )
+        file_path = os.path.abspath( new_output )
 
-        # print( "Debugger, get_debug_file_path, output_file:   " + output_file )
-        # print( "Debugger, get_debug_file_path, isabs:         " + str( os.path.isabs( output_file ) ) )
-        # print( "Debugger, get_debug_file_path, platform_info: " + platform_info )
-        return output_file
+        # print( "Debugger, file_path:   " + file_path )
+        # print( "Debugger, isabs:         " + str( os.path.isabs( file_path ) ) )
+        # print( "Debugger, platform_info: " + platform_info )
+        return file_path
 
     @classmethod
-    def remove_windows_driver_letter(cls, output_file):
-        output_file = output_file.replace( ":", "", 1 )
-        output_file = output_file.replace( "\\", "/", 1 )
-        return output_file.replace( "\\\\", "/", 1 )
+    def remove_windows_driver_letter(cls, file_path):
+        file_path = file_path.replace( ":", "", 1 )
+        file_path = file_path.replace( "\\", "/", 1 )
+        return file_path.replace( "\\\\", "/", 1 )
 
     @classmethod
     def getRootLogger(cls):
