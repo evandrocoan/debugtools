@@ -137,10 +137,10 @@ class Debugger(Logger):
             Call this if you want to reset to remove all handlers and set all parameters values to
             their default.
         """
-        self.default_arguments = self._formatter_arguments()
+        self.arguments = self._formatter_arguments()
         self.removeHandlers()
 
-        self.full_formatter = self._setup_formatter( self.default_arguments )
+        self.full_formatter = self._setup_formatter( self.arguments )
         self.clean_formatter = logging.Formatter( "", "" )
         self.setup_basic( function=False, tick=False )
 
@@ -277,7 +277,7 @@ class Debugger(Logger):
             sys.stderr.write( "Cleaning the file: %s\n" % active.output_file )
 
             if active.file_handler:
-                active._create_file_handler( self.default_arguments['rotation'], self.default_arguments['mode'], True )
+                active._create_file_handler( self.arguments['rotation'], self.arguments['mode'], True )
 
             else:
 
@@ -395,16 +395,16 @@ class Debugger(Logger):
         logger = active or self if kwargs.pop( 'active', True ) else self
 
         has_changes = False
-        default_arguments = logger.default_arguments
+        arguments = logger.arguments
 
         for kwarg in kwargs:
             value = kwargs[kwarg]
 
             if value != EMPTY_KWARG:
 
-                if value != default_arguments[kwarg]:
+                if value != arguments[kwarg]:
                     has_changes = True
-                    default_arguments[kwarg] = value
+                    arguments[kwarg] = value
 
         if has_changes \
                 or force \
@@ -414,7 +414,7 @@ class Debugger(Logger):
             if _fix_children:
                 logger._fixChildren()
 
-            logger.full_formatter = logger._setup_formatter( logger.default_arguments )
+            logger.full_formatter = logger._setup_formatter( logger.arguments )
             logger._setup_log_handlers()
 
             if logger.file_handler:
@@ -424,20 +424,20 @@ class Debugger(Logger):
                 logger.handle_strerr(False)
 
     def _setup_log_handlers(self):
-        default_arguments = self.default_arguments
+        arguments = self.arguments
 
         # import traceback
         # traceback.print_stack()
 
-        if default_arguments['file']:
-            self.output_file = self.get_debug_file_path( default_arguments['file'] )
+        if arguments['file']:
+            self.output_file = self.get_debug_file_path( arguments['file'] )
 
             sys.stderr.write( "".join( self._get_time_prefix( datetime.datetime.now() ) )
                     + "Logging to the file %s\n" % self.output_file )
 
-            self._create_file_handler( default_arguments['rotation'], default_arguments['mode'] )
+            self._create_file_handler( arguments['rotation'], arguments['mode'] )
 
-            if default_arguments['delete'] \
+            if arguments['delete'] \
                     and self.stream_handler:
 
                 self.removeHandler( self.stream_handler )
@@ -452,7 +452,7 @@ class Debugger(Logger):
             self.stream_handler.formatter = self.full_formatter
             self.addHandler( self.stream_handler )
 
-            if default_arguments['delete'] \
+            if arguments['delete'] \
                     and self.file_handler:
 
                 self.removeHandler( self.file_handler )
@@ -678,10 +678,10 @@ class Debugger(Logger):
 
             else:
                 representations.append( "%2s. _debug_level: %3d, level: %2s, propagate: %5s, "
-                    "_frame_level: %2d, name(%s): %s, stream_handler: %s, file_handler: %s, default_arguments: %s" %
+                    "_frame_level: %2d, name(%s): %s, stream_handler: %s, file_handler: %s, arguments: %s" %
                     ( str( total_loggers[0] ), logger._debug_level, logger.level, logger.propagate,
                     logger._frame_level, current_logger, logger.name, logger.stream_handler, logger.file_handler,
-                    logger.default_arguments ) )
+                    logger.arguments ) )
 
         for logger_name in loggers_dict:
             logger = loggers_dict[logger_name]
