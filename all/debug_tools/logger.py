@@ -118,10 +118,10 @@ class Debugger(Logger):
         return self._debug_level
 
     @debug_level.setter
-    def debug_level(self, debug_level):
+    def debug_level(self, value):
 
-        if isinstance( debug_level, int ):
-            self._debug_level = debug_level
+        if isinstance( value, int ):
+            self._debug_level = value
 
         else:
             raise ValueError( "Error: The debug_level `%s` must be an integer!" % debug_level )
@@ -144,10 +144,10 @@ class Debugger(Logger):
             Call this if you want to reset to remove all handlers and set all parameters values to
             their default.
         """
-        self.arguments = self._formatter_arguments()
+        self._arguments = self._formatter_arguments()
         self.removeHandlers()
 
-        self.full_formatter = self._setup_formatter( self.arguments )
+        self.full_formatter = self._setup_formatter( self._arguments )
         self.clean_formatter = logging.Formatter( "", "" )
         self.setup_basic( function=False, tick=False )
 
@@ -284,7 +284,7 @@ class Debugger(Logger):
             output_file = active.output_file
 
             sys.stderr.write( "Cleaning the file: %s\n" % output_file )
-            active._create_file_handler( output_file, self.arguments['rotation'], self.arguments['mode'], True )
+            active._create_file_handler( output_file, self._arguments['rotation'], self._arguments['mode'], True )
 
     def invert(self):
         """
@@ -397,7 +397,7 @@ class Debugger(Logger):
         logger = active or self if kwargs.pop( 'active', True ) else self
 
         has_changes = False
-        arguments = logger.arguments
+        arguments = logger._arguments
 
         for kwarg in kwargs:
             value = kwargs[kwarg]
@@ -416,7 +416,7 @@ class Debugger(Logger):
             if _fix_children:
                 logger._fixChildren()
 
-            logger.full_formatter = logger._setup_formatter( logger.arguments )
+            logger.full_formatter = logger._setup_formatter( logger._arguments )
             logger._setup_log_handlers()
 
             if logger.file_handler:
@@ -426,7 +426,7 @@ class Debugger(Logger):
                 logger.handle_strerr(False)
 
     def _setup_log_handlers(self):
-        arguments = self.arguments
+        arguments = self._arguments
 
         # import traceback
         # traceback.print_stack()
@@ -682,7 +682,7 @@ class Debugger(Logger):
                     "_frame_level: %2d, name(%s): %s, stream_handler: %s, file_handler: %s, arguments: %s" %
                     ( str( total_loggers[0] ), logger._debug_level, logger.level, logger.propagate,
                     logger._frame_level, current_logger, logger.name, logger.stream_handler, logger.file_handler,
-                    logger.arguments ) )
+                    logger._arguments ) )
 
         for logger_name in loggers_dict:
             logger = loggers_dict[logger_name]
