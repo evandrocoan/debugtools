@@ -1,7 +1,8 @@
 # -*- coding: UTF-8 -*-
 
-import sys
 import re
+import io
+import sys
 import unittest
 
 from inspect import getframeinfo
@@ -78,7 +79,7 @@ class TeeNoFile(object):
 
     def file_contents(self, date_regex):
 
-        with open( log.output_file, "r", encoding='utf-8' ) as file:
+        with io.open( log.output_file, "r", encoding='utf-8' ) as file:
             output = file.read()
 
         return self._process_contents( date_regex, output )

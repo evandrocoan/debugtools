@@ -626,24 +626,29 @@ class Debugger(Logger):
             To "/cygwin/D/User/Downloads/debug.txt"
             To "/mnt/D/User/Downloads/debug.txt"
         """
-        new_output    = file_path
+        is_absolute   = os.path.isabs( file_path )
         platform_info = platform.platform( True ).lower()
 
-        if "cygwin" in platform_info:
+        if is_absolute \
+                and "cygwin" in platform_info:
+
             new_output = "/cygdrive/" + cls.remove_windows_driver_letter( file_path )
 
-        elif "linux" in platform_info \
+        elif is_absolute \
+                and "linux" in platform_info \
                 and "microsoft" in platform_info:
 
             new_output = cls.remove_windows_driver_letter( file_path )
             new_output = "/mnt/" + new_output[0].lower() + new_output[1:]
 
-        file_path = os.path.abspath( new_output )
+        else:
+            new_output = os.path.abspath( file_path )
 
-        # print( "Debugger, file_path:   " + file_path )
-        # print( "Debugger, isabs:         " + str( os.path.isabs( file_path ) ) )
-        # print( "Debugger, platform_info: " + platform_info )
-        return file_path
+        # print( "Debugger, is_absolute:   %s" % is_absolute )
+        # print( "Debugger, new_output:    %s" % new_output )
+        # print( "Debugger, isabs:         %s" % str( os.path.isabs( new_output ) ) )
+        # print( "Debugger, platform_info: %s" % platform_info )
+        return new_output
 
     @classmethod
     def remove_windows_driver_letter(cls, file_path):
