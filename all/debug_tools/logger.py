@@ -28,6 +28,7 @@
 import os
 import io
 import sys
+import copy
 
 import timeit
 import datetime
@@ -94,6 +95,9 @@ class Debugger(Logger):
 
         # Initialize the first last tick as the current tick
         self.lastTick = timeit.default_timer()
+
+        self.file_handler = None
+        self.stream_handler = None
 
         self.reset()
         self._setup_find_caller()
@@ -286,8 +290,8 @@ class Debugger(Logger):
         if active and active.output_file:
             output_file = active.output_file
 
-            sys.stderr.write( "Cleaning the file: %s\n" % output_file )
-            active._create_file_handler( output_file, self._arguments['rotation'], self._arguments['mode'], True, delete )
+            sys.stderr.write( "Cleaning (delete=%s) the file: %s\n" % ( delete, output_file ) )
+            active._create_file_handler( output_file, active._arguments['rotation'], active._arguments['mode'], True, delete )
 
     def invert(self):
         """
@@ -306,22 +310,24 @@ class Debugger(Logger):
         else:
             self._stderr = TeeNoFile.unlock()
 
-    def disable(self):
+    def disable(self, stream=False, file=False):
         """
             Delete all automatically setup handlers created by the automatic `setup()`.
         """
 
-        if self._stderr:
-            self._stderr.unlock()
+        if stream \
+                and self.stream_handler:
 
-        if self.stream_handler:
             self.removeHandler( self.stream_handler )
             self.stream_handler = None
 
-        if self.file_handler:
-            self.removeHandler( self.file_handler )
-            self.file_handler.close()
-            self.file_handler = None
+        if file:
+            self.handle_strerr( False )
+
+            if self.file_handler:
+                self.removeHandler( self.file_handler )
+                self.file_handler.close()
+                self.file_handler = None
 
     def setup(self, file=EMPTY_KWARG, mode=EMPTY_KWARG, delete=EMPTY_KWARG, date=EMPTY_KWARG, level=EMPTY_KWARG,
             function=EMPTY_KWARG, name=EMPTY_KWARG, time=EMPTY_KWARG, msecs=EMPTY_KWARG, tick=EMPTY_KWARG,
@@ -422,12 +428,6 @@ class Debugger(Logger):
             logger.full_formatter = logger._setup_formatter( logger._arguments )
             logger._setup_log_handlers()
 
-            if logger.file_handler:
-                logger.handle_strerr(True)
-
-            else:
-                logger.handle_strerr(False)
-
     def _setup_log_handlers(self):
         arguments = self._arguments
 
@@ -441,36 +441,23 @@ class Debugger(Logger):
                     + "Logging to the file %s\n" % output_file )
 
             self._create_file_handler( output_file, arguments['rotation'], arguments['mode'] )
-
-            if arguments['delete'] \
-                    and self.stream_handler:
-
-                self.removeHandler( self.stream_handler )
-                self.stream_handler = None
+            self.disable( stream=arguments['delete'] )
 
         else:
-
-            if self.stream_handler:
-                self.removeHandler( self.stream_handler )
+            self.disable( stream=True )
 
             self.stream_handler = logging.StreamHandler()
             self.stream_handler.formatter = self.full_formatter
+
             self.addHandler( self.stream_handler )
-
-            if arguments['delete'] \
-                    and self.file_handler:
-
-                self.removeHandler( self.file_handler )
-                self.file_handler.close()
-                self.file_handler = None
+            self.disable( file=arguments['delete'] )
 
     def _create_file_handler(self, output_file, rotation, mode, clear=False, delete=False):
         backup_count = mode
         mode = 'w' if clear else mode
 
         if self.file_handler:
-            self.removeHandler( self.file_handler )
-            self.file_handler.close()
+            self.disable( file=True )
 
             if delete:
                 os.remove( output_file )
@@ -496,6 +483,7 @@ class Debugger(Logger):
 
         self.file_handler.formatter = self.full_formatter
         self.addHandler( self.file_handler )
+        self.handle_strerr( True )
 
     def warn(self, msg, *args, **kwargs):
         """
@@ -589,8 +577,7 @@ class Debugger(Logger):
                 ":%07d " % currentTime.microsecond ]
 
     def removeHandlers(self):
-        self.file_handler = None
-        self.stream_handler = None
+        self.disable( True, True )
 
         for handler in self.handlers:
             self.removeHandler( handler )
@@ -621,7 +608,7 @@ class Debugger(Logger):
 
                 # i.e., if logger.parent.name.startswith( parent_name )
                 if logger.parent.name[:parent_name_length] == parent_name:
-                    logger.disable()
+                    logger.removeHandlers()
 
     @classmethod
     def get_debug_file_path(cls, file_path):
@@ -812,7 +799,10 @@ class CleanLogRecord(object):
         return str( self.msg )
 
 
-class TeeNoFile( type( sys.stderr ) ):
+_stderr_singleton = None
+
+
+class TeeNoFile(object):
     """
         How do I duplicate sys.stdout to a log file in python?
         https://stackoverflow.com/questions/616645/how-do-i-duplicate-sys-stdout-to-a-log-file-in-python
@@ -823,64 +813,129 @@ class TeeNoFile( type( sys.stderr ) ):
         Set a Read-Only Attribute in Python?
         https://stackoverflow.com/questions/24497316/set-a-read-only-attribute-in-python
     """
-    _stderr = None
     is_active = False
 
     @classmethod
-    def __del__(cls):
-
-        if sys and cls._stderr:
-            sys.stderr = cls._stderr
-            cls._stderr = None
-            cls.is_active = False
-
-    @classmethod
     def lock(cls, logger):
+        global _stderr_default
+        global _stderr_singleton
+        global _stderr_class_type
 
-        if not cls._stderr:
+        # On Sublime Text, the `sys.__stderr__` is None
+        try:
+            _stderr_default
+            _stderr_class_type
 
-            # On Sublime Text, the `sys.__stderr__` is None
+        except NameError:
+
             if sys.__stderr__:
-                cls._stderr = sys.__stderr__
+                _stderr_default = sys.__stderr__
 
             else:
-                cls._stderr = sys.stderr
+                _stderr_default = sys.stderr
+
+            _stderr_class_type = type( _stderr_default )
+
+        class TeeNoFileHidden(_stderr_class_type):
+
+            def __init__(self):
+                pass
+
+            def __getattribute__(self, item):
+                print( "__getattribute__, item: %s, _sys_stderr_write: %s" % ( item, _sys_stderr_write ) )
+
+                if item == 'write':
+                    return _sys_stderr_write
+
+                try:
+
+                    return _stderr_default.__getattribute__( item )
+
+                except AttributeError:
+                    return super().__getattribute__( item )
+
+            def __del__(self):
+                global _stderr_default
+
+                if sys and _stderr_default:
+                    sys.stderr = _stderr_default
+                    _stderr_singleton = None
+                    TeeNoFile.is_active = False
+
+                    del _stderr_default
+                    del _stderr_class_type
+
+        # import inspect
+        # print( "_stderr_default:", _stderr_default )
+        # print( "_stderr_default.__dict__:", dir( _stderr_default ) )
+        # print( "_stderr_default.inspect:", inspect.getfullargspec( _stderr_default.__init__ ) )
 
         if not cls.is_active:
-            logger_call = logger._log_clean
             cls.is_active = True
+            _stderr_write = _stderr_default.write
 
-            def write(data):
+            logger_call = logger._log_clean
+            clean_formatter = logger.clean_formatter
+
+            global _sys_stderr_write
+            global _sys_stderr_write_hidden
+
+            def _sys_stderr_write(*args, **kwargs):
+                """
+                    Hides the actual function pointer. This allow the external function pointer to
+                    be cached while the internal written can be exchanged between the standard
+                    `sys.stderr.write` and our custom wrapper around it.
+                """
+                return _sys_stderr_write_hidden( *args, **kwargs )
+
+            def _sys_stderr_write_hidden(*args, **kwargs):
                 """
                     Suppress newline in Python logging module
                     https://stackoverflow.com/questions/7168790/suppress-newline-in-python-logging-module
                 """
-                cls._stderr.write( data )
-                file_handler = logger.file_handler
 
-                formatter = file_handler.formatter
-                file_handler.formatter = logger.clean_formatter
+                try:
+                    _stderr_write( data )
+                    file_handler = logger.file_handler
 
-                terminator = StreamHandler.terminator
-                StreamHandler.terminator = ""
+                    formatter = file_handler.formatter
+                    file_handler.formatter = clean_formatter
 
-                logger_call( data )
+                    terminator = StreamHandler.terminator
+                    StreamHandler.terminator = ""
 
-                file_handler.formatter = formatter
-                StreamHandler.terminator = terminator
+                    logger_call( data )
 
-            cls.write = write
+                    file_handler.formatter = formatter
+                    StreamHandler.terminator = terminator
 
-        return cls
+                except Exception:
+                    logger.exception( "Could not write to the file_handler" )
+                    cls.unlock()
+
+        # Create the singleton instance
+        if _stderr_singleton:
+
+            try:
+                _stderr_singleton = copy.copy( _stderr_default )
+
+            except TypeError:
+                _stderr_singleton = TeeNoFileHidden()
+
+            sys.stderr = _stderr_singleton
+
+        return _stderr_singleton
 
     @classmethod
     def unlock(cls):
 
         if cls.is_active:
-            cls.is_active = False
-            cls.write = cls._stderr.write
+            global _sys_stderr_write_hidden
 
-        return cls
+            cls.is_active = False
+            _sys_stderr_write_hidden = _stderr_default.write
+
+        return _stderr_singleton
 
 
 # Setup the alternate debugger, completely independent of the standard logging module Logger class
