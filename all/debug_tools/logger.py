@@ -274,9 +274,12 @@ class Debugger(Logger):
             if self.file_handler:
                 file_handler.formatter = file_handler_formatter
 
-    def clear(self):
+    def clear(self, delete=False):
         """
             Clear the log file contents.
+
+            @param `delete` if True, the log file will also be removed/deleted and the current file
+                handler will be removed.
         """
         active = self.active()
 
@@ -284,7 +287,7 @@ class Debugger(Logger):
             output_file = active.output_file
 
             sys.stderr.write( "Cleaning the file: %s\n" % output_file )
-            active._create_file_handler( output_file, self._arguments['rotation'], self._arguments['mode'], True )
+            active._create_file_handler( output_file, self._arguments['rotation'], self._arguments['mode'], True, delete )
 
     def invert(self):
         """
@@ -461,7 +464,7 @@ class Debugger(Logger):
                 self.file_handler.close()
                 self.file_handler = None
 
-    def _create_file_handler(self, output_file, rotation, mode, clear=False):
+    def _create_file_handler(self, output_file, rotation, mode, clear=False, delete=False):
         backup_count = mode
         mode = 'w' if clear else mode
 
@@ -469,7 +472,11 @@ class Debugger(Logger):
             self.removeHandler( self.file_handler )
             self.file_handler.close()
 
-            if clear:
+            if delete:
+                os.remove( output_file )
+                return
+
+            elif clear:
 
                 with open( output_file, 'w' ) as file:
                     file.truncate()
@@ -805,13 +812,16 @@ class CleanLogRecord(object):
         return str( self.msg )
 
 
-class TeeNoFile(object):
+class TeeNoFile( type( sys.stderr ) ):
     """
         How do I duplicate sys.stdout to a log file in python?
         https://stackoverflow.com/questions/616645/how-do-i-duplicate-sys-stdout-to-a-log-file-in-python
 
         How to redirect stdout and stderr to logger in Python
         https://stackoverflow.com/questions/19425736/how-to-redirect-stdout-and-stderr-to-logger-in-python
+
+        Set a Read-Only Attribute in Python?
+        https://stackoverflow.com/questions/24497316/set-a-read-only-attribute-in-python
     """
     _stderr = None
     is_active = False
@@ -837,15 +847,15 @@ class TeeNoFile(object):
                 cls._stderr = sys.stderr
 
         if not cls.is_active:
-            cls.is_active = True
             logger_call = logger._log_clean
+            cls.is_active = True
 
             def write(data):
                 """
                     Suppress newline in Python logging module
                     https://stackoverflow.com/questions/7168790/suppress-newline-in-python-logging-module
                 """
-                cls._stderr_write( data )
+                cls._stderr.write( data )
                 file_handler = logger.file_handler
 
                 formatter = file_handler.formatter
@@ -859,8 +869,7 @@ class TeeNoFile(object):
                 file_handler.formatter = formatter
                 StreamHandler.terminator = terminator
 
-            cls._stderr_write = cls._stderr.write
-            cls._stderr.write = write
+            cls.write = write
 
         return cls
 
@@ -869,7 +878,7 @@ class TeeNoFile(object):
 
         if cls.is_active:
             cls.is_active = False
-            cls._stderr.write = cls._stderr_write
+            cls.write = cls._stderr.write
 
         return cls
 

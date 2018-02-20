@@ -2,6 +2,8 @@
 
 import re
 import io
+import os
+
 import sys
 import unittest
 
@@ -21,7 +23,7 @@ else:
 try:
     import sublime_plugin
 
-    from DebugTools.all.debug_tools.logger import getLogger
+    import debug_tools.logger
     from DebugTools.all.debug_tools.utilities import wrap_text
 
     # Import and reload the debugger
@@ -40,7 +42,7 @@ except ImportError:
     # Import the debug tools
     assert_path( os.path.join( os.path.dirname( os.path.dirname( os.path.dirname( os.path.realpath( __file__ ) ) ) ), 'all' ) )
 
-    from debug_tools.logger import getLogger
+    import debug_tools.logger
     from debug_tools.utilities import wrap_text
 
 
@@ -75,7 +77,9 @@ class TeeNoFile(object):
         self._contents.append( data )
 
     def contents(self, date_regex):
-        return self._process_contents( date_regex, "".join( self._contents ) )
+        contents = self._process_contents( date_regex, "".join( self._contents ) )
+        # print("Contents:\n`%s`" % contents)
+        return contents
 
     def file_contents(self, date_regex):
 
@@ -107,8 +111,18 @@ class TeeNoFile(object):
 # reference to the first `sys.strerr` it can get its hands on it.
 #
 # We could make the logger recreate the `stderr` output StreamHandler by passing `force=True` to
-# recreate the StreamHandler removing the old reference to `sys.stderr`.
+# to `Debugger.setup()`, removing the old reference to `sys.stderr`.
 stderr = TeeNoFile()
+
+
+def getLogger(debug_level=127, logger_name=None, **kwargs):
+    global log
+    global line
+    log = debug_tools.logger.getLogger( debug_level, logger_name, **kwargs )
+    stderr.clear()
+
+    frameinfo = getframeinfo( sys._getframe(1) )
+    line = frameinfo.lineno
 
 
 class MainUnitTests(unittest.TestCase):
@@ -122,23 +136,15 @@ class MainUnitTests(unittest.TestCase):
             how do I clear a stringio object?
             https://stackoverflow.com/questions/4330812/how-do-i-clear-a-stringio-object
         """
-        print("")
         self.maxDiff = None
+        sys.stderr.write("\n")
 
     def tearDown(self):
-        stderr.clear()
+        log.clear( True )
         log.reset()
 
-    def getLogger(self, debug_level=127, logger_name=None, **kwargs):
-        global log
-        global line
-        log = getLogger( debug_level, logger_name, **kwargs )
-
-        frameinfo = getframeinfo( sys._getframe(1) )
-        line = frameinfo.lineno
-
     def test_function_name(self):
-        self.getLogger( 127, "testing.main_unit_tests", date=True )
+        getLogger( 127, "testing.main_unit_tests", date=True )
 
         log( 1, "Bitwise" )
         log( 8, "Bitwise" )
@@ -179,7 +185,7 @@ class MainUnitTests(unittest.TestCase):
             ) ), output )
 
     def test_no_function_name_and_level(self):
-        self.getLogger( 127, "testing.main_unit_tests", date=True, function=False, level=True )
+        getLogger( 127, "testing.main_unit_tests", date=True, function=False, level=True )
 
         log( 1, "Bitwise" )
         log( 8, "Bitwise" )
@@ -199,7 +205,7 @@ class MainUnitTests(unittest.TestCase):
             output )
 
     def test_date_disabled(self):
-        self.getLogger( "testing.main_unit_tests", 127, function=False )
+        getLogger( "testing.main_unit_tests", 127, function=False )
 
         log( 1, "Bitwise" )
         log( 8, "Bitwise" )
@@ -219,7 +225,7 @@ class MainUnitTests(unittest.TestCase):
             output )
 
     def test_get_logger_empty(self):
-        self.getLogger( function=False )
+        getLogger( function=False )
 
         log( 1, "Bitwise" )
         log( 8, "Bitwise" )
@@ -259,7 +265,7 @@ class MainUnitTests(unittest.TestCase):
             output )
 
     def test_basic_formatter(self):
-        self.getLogger( 127, "testing.main_unit_tests" )
+        getLogger( 127, "testing.main_unit_tests" )
         log.setup_basic( function=True, separator=" " )
 
         log.basic( 1, "Debug" )
@@ -269,7 +275,7 @@ class MainUnitTests(unittest.TestCase):
         self.assertEqual( "testing.main_unit_tests.test_basic_formatter:{} Debug".format( line + 3 ), output )
 
     def test_exception_throwing(self):
-        self.getLogger( "testing.main_unit_tests", 127 )
+        getLogger( "testing.main_unit_tests", 127 )
 
         try:
             raise Exception( "Test Error" )
@@ -288,8 +294,8 @@ class MainUnitTests(unittest.TestCase):
                 Exception: Test Error            """.format( line + 5 ) ),
             regex_pattern.sub( "", output ) )
 
-    def test_exception_throwing_from_file(self):
-        self.getLogger( "testing.main_unit_tests", 127, file="debug_tools_log.txt" )
+    def test_exception_throwing_from_relative_file_path(self):
+        getLogger( "testing.main_unit_tests", 127, file="debug_tools_log_test_exception_throwing_from_relative_file_path.txt" )
 
         try:
             raise Exception( "Test Error" )
@@ -301,9 +307,29 @@ class MainUnitTests(unittest.TestCase):
         output = stderr.file_contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
 
         self.assertEqual( wrap_text( """\
-                testing.main_unit_tests.test_exception_throwing_from_file:{} - I am catching you
+                testing.main_unit_tests.test_exception_throwing_from_relative_file_path:{} - I am catching you
                 Traceback (most recent call last):
-                   in test_exception_throwing_from_file
+                   in test_exception_throwing_from_relative_file_path
+                    raise Exception( "Test Error" )
+                Exception: Test Error            """.format( line + 5 ) ),
+            regex_pattern.sub( "", output ) )
+
+    def test_exception_throwing_from_absolute_file_path(self):
+        getLogger( "testing.main_unit_tests", 127, file=os.path.abspath("debug_tools_log_test_exception_throwing_from_absolute_file_path.txt") )
+
+        try:
+            raise Exception( "Test Error" )
+        except Exception:
+            log.exception( "I am catching you" )
+            log.newline()
+
+        regex_pattern = re.compile( r"File \".*\", line \d+," )
+        output = stderr.file_contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+
+        self.assertEqual( wrap_text( """\
+                testing.main_unit_tests.test_exception_throwing_from_absolute_file_path:{} - I am catching you
+                Traceback (most recent call last):
+                   in test_exception_throwing_from_absolute_file_path
                     raise Exception( "Test Error" )
                 Exception: Test Error            """.format( line + 5 ) ),
             regex_pattern.sub( "", output ) )
