@@ -63,6 +63,7 @@ class TeeNoFile(object):
         self.close()
 
     def clear(self):
+        log.clear()
         del self._contents[:]
 
     def flush(self):
@@ -73,10 +74,19 @@ class TeeNoFile(object):
         self._contents.append( data )
 
     def contents(self, date_regex):
+        return self._process_contents( date_regex, "".join( self._contents ) )
+
+    def file_contents(self, date_regex):
+
+        with open( log.output_file, "r", encoding='utf-8' ) as file:
+            output = file.read()
+
+        return self._process_contents( date_regex, output )
+
+    def _process_contents(self, date_regex, output):
         clean_output = []
         date_regex_pattern = re.compile( date_regex )
 
-        output = "".join( self._contents )
         output = output.strip().split( "\n" )
 
         for line in output:
@@ -115,15 +125,15 @@ class MainUnitTests(unittest.TestCase):
         self.maxDiff = None
 
     def tearDown(self):
-        log.reset()
         stderr.clear()
+        log.reset()
 
     def getLogger(self, debug_level=127, logger_name=None, **kwargs):
         global log
         global line
-        frameinfo = getframeinfo( sys._getframe(1) )
-
         log = getLogger( debug_level, logger_name, **kwargs )
+
+        frameinfo = getframeinfo( sys._getframe(1) )
         line = frameinfo.lineno
 
     def test_function_name(self):
@@ -273,6 +283,26 @@ class MainUnitTests(unittest.TestCase):
                 testing.main_unit_tests.test_exception_throwing:{} - I am catching you
                 Traceback (most recent call last):
                    in test_exception_throwing
+                    raise Exception( "Test Error" )
+                Exception: Test Error            """.format( line + 5 ) ),
+            regex_pattern.sub( "", output ) )
+
+    def test_exception_throwing_from_file(self):
+        self.getLogger( "testing.main_unit_tests", 127, file="debug_tools_log.txt" )
+
+        try:
+            raise Exception( "Test Error" )
+        except Exception:
+            log.exception( "I am catching you" )
+            log.newline()
+
+        regex_pattern = re.compile( r"File \".*\", line \d+," )
+        output = stderr.file_contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+
+        self.assertEqual( wrap_text( """\
+                testing.main_unit_tests.test_exception_throwing_from_file:{} - I am catching you
+                Traceback (most recent call last):
+                   in test_exception_throwing_from_file
                     raise Exception( "Test Error" )
                 Exception: Test Error            """.format( line + 5 ) ),
             regex_pattern.sub( "", output ) )

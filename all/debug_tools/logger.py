@@ -271,10 +271,18 @@ class Debugger(Logger):
         """
             Clear the log file contents.
         """
+        active = self.active()
 
-        if self.output_file:
-            sys.stderr.write( "Cleaning the file: " + self.output_file + "\n" )
-            open( self.output_file, 'w' ).close()
+        if active and active.output_file:
+            sys.stderr.write( "Cleaning the file: %s\n" % active.output_file )
+
+            if active.file_handler:
+                active._create_file_handler( self.default_arguments['rotation'], self.default_arguments['mode'], True )
+
+            else:
+
+                with open( active.output_file, 'w' ) as file:
+                    file.truncate()
 
     def invert(self):
         """
@@ -418,31 +426,16 @@ class Debugger(Logger):
     def _setup_log_handlers(self):
         default_arguments = self.default_arguments
 
+        # import traceback
+        # traceback.print_stack()
+
         if default_arguments['file']:
-            rotation = default_arguments['rotation']
             self.output_file = self.get_debug_file_path( default_arguments['file'] )
 
             sys.stderr.write( "".join( self._get_time_prefix( datetime.datetime.now() ) )
-                    + "Logging `%s` to the file " % self.name + self.output_file + "\n" )
+                    + "Logging to the file %s\n" % self.output_file )
 
-            # import traceback
-            # traceback.print_stack()
-
-            if self.file_handler:
-                self.removeHandler( self.file_handler )
-
-            if rotation > 0:
-                backup_count = default_arguments['mode']
-                backup_count = abs( backup_count ) if isinstance( backup_count, int ) else 2
-
-                rotation = rotation * 1024 * 1024
-                self.file_handler = ConcurrentRotatingFileHandler( self.output_file, maxBytes=rotation, backupCount=backup_count )
-
-            else:
-                self.file_handler = logging.FileHandler( self.output_file, default_arguments['mode'] )
-
-            self.file_handler.setFormatter( self.full_formatter )
-            self.addHandler( self.file_handler )
+            self._create_file_handler( default_arguments['rotation'], default_arguments['mode'] )
 
             if default_arguments['delete'] \
                     and self.stream_handler:
@@ -456,7 +449,7 @@ class Debugger(Logger):
                 self.removeHandler( self.stream_handler )
 
             self.stream_handler = logging.StreamHandler()
-            self.stream_handler.setFormatter( self.full_formatter )
+            self.stream_handler.formatter = self.full_formatter
             self.addHandler( self.stream_handler )
 
             if default_arguments['delete'] \
@@ -465,6 +458,35 @@ class Debugger(Logger):
                 self.removeHandler( self.file_handler )
                 self.file_handler.close()
                 self.file_handler = None
+
+    def _create_file_handler(self, rotation, mode, clear=False):
+        backup_count = mode
+        mode = 'w' if clear else mode
+
+        if self.file_handler:
+            self.removeHandler( self.file_handler )
+            self.file_handler.close()
+
+            if clear:
+
+                with open( self.output_file, 'w' ) as file:
+                    file.truncate()
+
+        if rotation > 0:
+            rotation = rotation * 1024 * 1024
+
+            backup_count = abs( backup_count ) if isinstance( backup_count, int ) else 2
+            self.file_handler = ConcurrentRotatingFileHandler( self.output_file, maxBytes=rotation, backupCount=backup_count )
+
+        else:
+
+            if not isinstance( mode, str ):
+                raise ValueError( "The mode argument `%s` must be instance of string." % mode )
+
+            self.file_handler = logging.FileHandler( self.output_file, mode )
+
+        self.file_handler.formatter = self.full_formatter
+        self.addHandler( self.file_handler )
 
     def warn(self, msg, *args, **kwargs):
         """
@@ -558,6 +580,7 @@ class Debugger(Logger):
                 ":%07d " % currentTime.microsecond ]
 
     def removeHandlers(self):
+        self.output_file = None
         self.file_handler = None
         self.stream_handler = None
 
@@ -614,11 +637,7 @@ class Debugger(Logger):
             new_output = cls.remove_windows_driver_letter( output_file )
             new_output = "/mnt/" + new_output[0].lower() + new_output[1:]
 
-        if os.path.isabs( new_output ):
-            output_file = new_output
-
-        else:
-            output_file = output_file
+        output_file = os.path.abspath( new_output )
 
         # print( "Debugger, get_debug_file_path, output_file:   " + output_file )
         # print( "Debugger, get_debug_file_path, isabs:         " + str( os.path.isabs( output_file ) ) )
