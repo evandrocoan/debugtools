@@ -119,48 +119,6 @@ class Debugger(Logger):
         else:
             raise ValueError( "Error: The debug_level `%s` must be an integer!" % debug_level )
 
-    def __str__(self):
-        total_loggers = [0]
-        representations = []
-
-        place_holders = []
-        loggers = [self.root]
-        loggers_dict = Debugger.manager.loggerDict
-
-        def add(logger):
-            total_loggers[0] += 1
-            current_logger = "True_" if logger == self else "False"
-
-            if isinstance( logger, PlaceHolder ):
-                representations.append( "%2s. name(%s), %s" %
-                        ( str( total_loggers[0] ), current_logger, "".join(
-                                ["loggerMap(%s): %s" % (item.name, logger.loggerMap[item])
-                                for item in logger.loggerMap] ) ) )
-
-            else:
-                representations.append( "%2s. _debug_level: %3d, level: %2s, propagate: %5s, "
-                    "_frame_level: %2d, name(%s): %s, stream_handler: %s, file_handler: %s, default_arguments: %s" %
-                    ( str( total_loggers[0] ), logger._debug_level, logger.level, logger.propagate,
-                    logger._frame_level, current_logger, logger.name, logger.stream_handler, logger.file_handler,
-                    logger.default_arguments ) )
-
-        for logger_name in loggers_dict:
-            logger = loggers_dict[logger_name]
-
-            if isinstance( logger, PlaceHolder ):
-                place_holders.append( logger )
-
-            else:
-                loggers.append( logger )
-
-        loggers.sort( key=lambda item: item.name, reverse=True )
-        loggers.extend( place_holders )
-
-        for logger in loggers:
-            add( logger )
-
-        return "\n%s" % "\n".join( reversed( representations ) )
-
     def __call__(self, debug_level, msg, *args, **kwargs):
         """
             Log to the current active handlers its message based on the bitwise `self._debug_level`
@@ -680,6 +638,48 @@ class Debugger(Logger):
             logging module.
         """
         return cls.root
+
+    def __str__(self):
+        total_loggers = [0]
+        representations = []
+
+        place_holders = []
+        loggers = [self.root]
+        loggers_dict = Debugger.manager.loggerDict
+
+        def add(logger):
+            total_loggers[0] += 1
+            current_logger = "True_" if logger == self else "False"
+
+            if isinstance( logger, PlaceHolder ):
+                representations.append( "%2s. name(%s), %s" %
+                        ( str( total_loggers[0] ), current_logger, "".join(
+                                ["loggerMap(%s): %s" % (item.name, logger.loggerMap[item])
+                                for item in logger.loggerMap] ) ) )
+
+            else:
+                representations.append( "%2s. _debug_level: %3d, level: %2s, propagate: %5s, "
+                    "_frame_level: %2d, name(%s): %s, stream_handler: %s, file_handler: %s, default_arguments: %s" %
+                    ( str( total_loggers[0] ), logger._debug_level, logger.level, logger.propagate,
+                    logger._frame_level, current_logger, logger.name, logger.stream_handler, logger.file_handler,
+                    logger.default_arguments ) )
+
+        for logger_name in loggers_dict:
+            logger = loggers_dict[logger_name]
+
+            if isinstance( logger, PlaceHolder ):
+                place_holders.append( logger )
+
+            else:
+                loggers.append( logger )
+
+        loggers.sort( key=lambda item: item.name, reverse=True )
+        loggers.extend( place_holders )
+
+        for logger in loggers:
+            add( logger )
+
+        return "\n%s" % "\n".join( reversed( representations ) )
 
     def _setup_find_caller(self):
         """
