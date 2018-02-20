@@ -4,7 +4,7 @@ import sys
 import re
 import unittest
 
-from inspect import currentframe, getframeinfo
+from inspect import getframeinfo
 
 
 is_python2 = False
@@ -114,9 +114,20 @@ class MainUnitTests(unittest.TestCase):
         print("")
         self.maxDiff = None
 
-    def test_function_name(self):
+    def tearDown(self):
+        log.reset()
         stderr.clear()
-        log = getLogger( 127, "testing.main_unit_tests", date=True )
+
+    def getLogger(self, debug_level=127, logger_name=None, **kwargs):
+        global log
+        global line
+        frameinfo = getframeinfo( sys._getframe(1) )
+
+        log = getLogger( debug_level, logger_name, **kwargs )
+        line = frameinfo.lineno
+
+    def test_function_name(self):
+        self.getLogger( 127, "testing.main_unit_tests", date=True )
 
         log( 1, "Bitwise" )
         log( 8, "Bitwise" )
@@ -134,15 +145,10 @@ class MainUnitTests(unittest.TestCase):
             log.newline()
 
         function_name()
-        log.reset()
-
         output = stderr.contents( r"\d{4}\-\d{2}-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
 
-        frameinfo = getframeinfo(currentframe())
-        line      = frameinfo.lineno
-
-        offset1 = -21
-        offset2 = -18
+        offset1 = 1
+        offset2 = 4
 
         self.assertEqual( wrap_text( """\
             testing.main_unit_tests.test_function_name:{} - Bitwise
@@ -162,17 +168,14 @@ class MainUnitTests(unittest.TestCase):
             ) ), output )
 
     def test_no_function_name_and_level(self):
-        stderr.clear()
-        log = getLogger( 127, "testing.main_unit_tests", date=True, function=False, level=True )
+        self.getLogger( 127, "testing.main_unit_tests", date=True, function=False, level=True )
 
         log( 1, "Bitwise" )
         log( 8, "Bitwise" )
         log.warn( "Warn" )
         log.info( "Info" )
         log.debug( "Debug" )
-
         log.newline()
-        log.reset()
 
         output = stderr.contents( r"\d{4}\-\d{2}\-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
         self.assertEqual( wrap_text( """\
@@ -185,17 +188,14 @@ class MainUnitTests(unittest.TestCase):
             output )
 
     def test_date_disabled(self):
-        stderr.clear()
-        log = getLogger( "testing.main_unit_tests", 127, function=False )
+        self.getLogger( "testing.main_unit_tests", 127, function=False )
 
         log( 1, "Bitwise" )
         log( 8, "Bitwise" )
         log.warn( "Warn" )
         log.info( "Info" )
         log.debug( "Debug" )
-
         log.newline()
-        log.reset()
 
         output = stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
         self.assertEqual( wrap_text( """\
@@ -208,17 +208,14 @@ class MainUnitTests(unittest.TestCase):
             output )
 
     def test_get_logger_empty(self):
-        stderr.clear()
-        log = getLogger( function=False )
+        self.getLogger( function=False )
 
         log( 1, "Bitwise" )
         log( 8, "Bitwise" )
         log.warn( "Warn" )
         log.info( "Info" )
         log.debug( "Debug" )
-
         log.newline()
-        log.reset()
 
         output = stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
         self.assertEqual( wrap_text( """\
@@ -231,17 +228,14 @@ class MainUnitTests(unittest.TestCase):
             output )
 
     def test_get_logger_more_empty(self):
-        stderr.clear()
-        log = getLogger( function=False, name=False )
+        getLogger( function=False, name=False )
 
         log( 1, "Bitwise" )
         log( 8, "Bitwise" )
         log.warn( "Warn" )
         log.info( "Info" )
         log.debug( "Debug" )
-
         log.newline()
-        log.reset()
 
         output = stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
         self.assertEqual( wrap_text( """\
@@ -254,44 +248,32 @@ class MainUnitTests(unittest.TestCase):
             output )
 
     def test_basic_formatter(self):
-        stderr.clear()
-        log = getLogger( 127, "testing.main_unit_tests" )
+        self.getLogger( 127, "testing.main_unit_tests" )
         log.setup_basic( function=True, separator=" " )
 
         log.basic( 1, "Debug" )
-
         log.newline()
-        log.reset()
-
-        frameinfo = getframeinfo(currentframe())
-        line      = frameinfo.lineno
 
         output = stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
-        self.assertEqual( "testing.main_unit_tests.test_basic_formatter:{} Debug".format( line - 5 ), output )
+        self.assertEqual( "testing.main_unit_tests.test_basic_formatter:{} Debug".format( line + 3 ), output )
 
     def test_exception_throwing(self):
-        stderr.clear()
-        log = getLogger( "testing.main_unit_tests", 127 )
+        self.getLogger( "testing.main_unit_tests", 127 )
 
         try:
             raise Exception( "Test Error" )
         except Exception:
             log.exception( "I am catching you" )
-
-        log.newline()
-        log.reset()
-
-        frameinfo = getframeinfo(currentframe())
-        line      = frameinfo.lineno
+            log.newline()
 
         regex_pattern = re.compile( r"File \".*\", line \d+," )
-
         output = stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+
         self.assertEqual( wrap_text( """\
                 testing.main_unit_tests.test_exception_throwing:{} - I am catching you
                 Traceback (most recent call last):
                    in test_exception_throwing
                     raise Exception( "Test Error" )
-                Exception: Test Error            """.format( line - 5 ) ),
+                Exception: Test Error            """.format( line + 5 ) ),
             regex_pattern.sub( "", output ) )
 
