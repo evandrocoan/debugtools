@@ -78,7 +78,6 @@ class TeeNoFile(object):
 
     def contents(self, date_regex):
         contents = self._process_contents( date_regex, "".join( self._contents ) )
-        # print("Contents:\n`%s`" % contents)
         return contents
 
     def file_contents(self, date_regex):
@@ -86,7 +85,9 @@ class TeeNoFile(object):
         with io.open( log.output_file, "r", encoding='utf-8' ) as file:
             output = file.read()
 
-        return self._process_contents( date_regex, output )
+        contents = self._process_contents( date_regex, output )
+        print("Contents:\n`%s`" % contents)
+        return contents
 
     def _process_contents(self, date_regex, output):
         clean_output = []

@@ -624,11 +624,13 @@ class Debugger(Logger):
         platform_info = platform.platform( True ).lower()
 
         if is_absolute \
+                and not file_path.startswith( "/cygdrive/" ) \
                 and "cygwin" in platform_info:
 
             new_output = "/cygdrive/" + cls.remove_windows_driver_letter( file_path )
 
         elif is_absolute \
+                and not file_path.startswith( "/mnt/" ) \
                 and "linux" in platform_info \
                 and "microsoft" in platform_info:
 
@@ -852,10 +854,11 @@ class TeeNoFile(object):
                     return _stderr_default.__getattribute__( item )
 
                 except AttributeError:
-                    return super().__getattribute__( item )
+                    return super( _stderr_class_type, _stderr_default ).__getattribute__( item )
 
             def __del__(self):
                 global _stderr_default
+                global _stderr_singleton
 
                 if sys and _stderr_default:
                     sys.stderr = _stderr_default
@@ -918,6 +921,7 @@ class TeeNoFile(object):
 
             try:
                 _stderr_singleton = copy.copy( _stderr_default )
+                _stderr_singleton.write = _sys_stderr_write
 
             except TypeError:
                 _stderr_singleton = TeeNoFileHidden()
