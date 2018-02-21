@@ -6,6 +6,7 @@ import os
 
 import sys
 import unittest
+import traceback
 
 from inspect import getframeinfo
 
@@ -72,9 +73,11 @@ class TeeNoFile(object):
     def flush(self):
         self._stderr.flush()
 
-    def write(self, data):
-        self._stderr.write( data )
-        self._contents.append( data )
+    def write(self, *args, **kwargs):
+        # self._stderr.write( " 111111 %s" % self._stderr.write + str( args ), **kwargs )
+        # self._contents.append( " 555555" + str( args ), **kwargs )
+        self._stderr.write( *args, **kwargs )
+        self._contents.append( *args, **kwargs )
 
     def contents(self, date_regex):
         contents = self._process_contents( date_regex, "".join( self._contents ) )
@@ -124,6 +127,22 @@ def getLogger(debug_level=127, logger_name=None, **kwargs):
 
     frameinfo = getframeinfo( sys._getframe(1) )
     line = frameinfo.lineno
+
+
+def log_traceback(ex, ex_traceback=None):
+    """
+        Best way to log a Python exception
+        https://stackoverflow.com/questions/5191830/best-way-to-log-a-python-exception
+    """
+
+    if ex_traceback is None:
+        ex_traceback = ex.__traceback__
+
+    tb_lines = [ line.rstrip('\n') for line in
+                 traceback.format_exception(ex.__class__, ex, ex_traceback)]
+
+    # print( "\n".join( tb_lines ) )
+    sys.stderr.write( "\n".join( tb_lines ) )
 
 
 class MainUnitTests(unittest.TestCase):
@@ -297,41 +316,37 @@ class MainUnitTests(unittest.TestCase):
 
     def test_exception_throwing_from_relative_file_path(self):
         getLogger( "testing.main_unit_tests", 127, file="debug_tools_log_test_exception_throwing_from_relative_file_path.txt" )
-
-        try:
-            raise Exception( "Test Error" )
-        except Exception:
-            log.exception( "I am catching you" )
-            log.newline()
-
-        regex_pattern = re.compile( r"File \".*\", line \d+," )
-        output = stderr.file_contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
-
-        self.assertEqual( wrap_text( """\
-                testing.main_unit_tests.test_exception_throwing_from_relative_file_path:{} - I am catching you
-                Traceback (most recent call last):
-                   in test_exception_throwing_from_relative_file_path
-                    raise Exception( "Test Error" )
-                Exception: Test Error            """.format( line + 5 ) ),
-            regex_pattern.sub( "", output ) )
+        throw_file_exception( self )
 
     def test_exception_throwing_from_absolute_file_path(self):
         getLogger( "testing.main_unit_tests", 127, file=os.path.abspath("debug_tools_log_test_exception_throwing_from_absolute_file_path.txt") )
+        throw_file_exception( self )
 
-        try:
-            raise Exception( "Test Error" )
-        except Exception:
-            log.exception( "I am catching you" )
-            log.newline()
 
-        regex_pattern = re.compile( r"File \".*\", line \d+," )
-        output = stderr.file_contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+def throw_file_exception(self):
+    line = getframeinfo( sys._getframe(0) ).lineno
 
-        self.assertEqual( wrap_text( """\
-                testing.main_unit_tests.test_exception_throwing_from_absolute_file_path:{} - I am catching you
-                Traceback (most recent call last):
-                   in test_exception_throwing_from_absolute_file_path
-                    raise Exception( "Test Error" )
-                Exception: Test Error            """.format( line + 5 ) ),
-            regex_pattern.sub( "", output ) )
+    try:
+        log( 1, "I am catching you..." )
+        raise Exception( "Test Exception" )
+
+    except Exception as error:
+
+        if is_python2:
+            _, _, exception_traceback = sys.exc_info()
+            log_traceback( error, exception_traceback )
+
+        else:
+            log_traceback( error )
+
+    regex_pattern = re.compile( r"File \".*\"," )
+    output = stderr.file_contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+
+    self.assertEqual( wrap_text( """\
+            testing.main_unit_tests.throw_file_exception:{} - I am catching you...
+            Traceback (most recent call last):
+               line {}, in throw_file_exception
+                raise Exception( "Test Exception" )
+            Exception: Test Exception            """.format( line + 3, line + 4  ) ),
+        regex_pattern.sub( "", output ) )
 

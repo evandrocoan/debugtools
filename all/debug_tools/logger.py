@@ -305,10 +305,10 @@ class Debugger(Logger):
         """
 
         if enable:
-            self._stderr = TeeNoFile.lock( self )
+            self._stderr = StdErrReplament.lock( self )
 
         else:
-            self._stderr = TeeNoFile.unlock()
+            self._stderr = StdErrReplament.unlock()
 
     def disable(self, stream=False, file=False):
         """
@@ -804,7 +804,7 @@ class CleanLogRecord(object):
 _stderr_singleton = None
 
 
-class TeeNoFile(object):
+class StdErrReplament(object):
     """
         How do I duplicate sys.stdout to a log file in python?
         https://stackoverflow.com/questions/616645/how-do-i-duplicate-sys-stdout-to-a-log-file-in-python
@@ -829,22 +829,16 @@ class TeeNoFile(object):
             _stderr_class_type
 
         except NameError:
-
-            if sys.__stderr__:
-                _stderr_default = sys.__stderr__
-
-            else:
-                _stderr_default = sys.stderr
-
+            _stderr_default = sys.stderr
             _stderr_class_type = type( _stderr_default )
 
-        class TeeNoFileHidden(_stderr_class_type):
+        class StdErrReplamentHidden(_stderr_class_type):
 
             def __init__(self):
                 pass
 
             def __getattribute__(self, item):
-                print( "__getattribute__, item: %s, _sys_stderr_write: %s" % ( item, _sys_stderr_write ) )
+                # print( "__getattribute__, item: %s: %s" % ( item, _sys_stderr_write ) )
 
                 if item == 'write':
                     return _sys_stderr_write
@@ -863,7 +857,7 @@ class TeeNoFile(object):
                 if sys and _stderr_default:
                     sys.stderr = _stderr_default
                     _stderr_singleton = None
-                    TeeNoFile.is_active = False
+                    StdErrReplament.is_active = False
 
                     del _stderr_default
                     del _stderr_class_type
@@ -871,7 +865,7 @@ class TeeNoFile(object):
         # import inspect
         # print( "_stderr_default:", _stderr_default )
         # print( "_stderr_default.__dict__:", dir( _stderr_default ) )
-        # print( "_stderr_default.inspect:", inspect.getfullargspec( _stderr_default.__init__ ) )
+        # print( "(inspect) _stderr_default.__init__:", inspect.getfullargspec( _stderr_default.__init__ ) )
 
         if not cls.is_active:
             cls.is_active = True
@@ -898,7 +892,7 @@ class TeeNoFile(object):
                 """
 
                 try:
-                    _stderr_write( data )
+                    _stderr_write( *args, **kwargs )
                     file_handler = logger.file_handler
 
                     formatter = file_handler.formatter
@@ -907,7 +901,7 @@ class TeeNoFile(object):
                     terminator = StreamHandler.terminator
                     StreamHandler.terminator = ""
 
-                    logger_call( data )
+                    logger_call( *args, **kwargs )
 
                     file_handler.formatter = formatter
                     StreamHandler.terminator = terminator
@@ -917,17 +911,20 @@ class TeeNoFile(object):
                     cls.unlock()
 
         # Create the singleton instance
-        if _stderr_singleton:
+        if not _stderr_singleton:
 
             try:
                 _stderr_singleton = copy.copy( _stderr_default )
                 _stderr_singleton.write = _sys_stderr_write
 
             except TypeError:
-                _stderr_singleton = TeeNoFileHidden()
+                _stderr_singleton = StdErrReplamentHidden()
 
             sys.stderr = _stderr_singleton
 
+        # import inspect
+        # print( "(inspect):", inspect.getfullargspec( _stderr_singleton.write ) )
+        # print( "(_stderr_singleton 6):", _stderr_singleton )
         return _stderr_singleton
 
     @classmethod
