@@ -860,6 +860,7 @@ class StdErrReplament(object):
             def __del__(self):
                 global _stderr_default
                 global _stderr_singleton
+                global _stderr_class_type
 
                 if sys and _stderr_default:
                     sys.stderr = _stderr_default
