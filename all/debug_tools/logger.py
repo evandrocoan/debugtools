@@ -802,6 +802,7 @@ class CleanLogRecord(object):
 
 
 _stderr_singleton = None
+_stderr_overriden_methods = set()
 
 
 class StdErrReplament(object):
@@ -823,7 +824,8 @@ class StdErrReplament(object):
         global _stderr_singleton
         global _stderr_class_type
 
-        # On Sublime Text, the `sys.__stderr__` is None
+        # On Sublime Text, the `sys.__stderr__` is None, because they already replaced `sys.stderr`
+        # by some `_LogWriter()` class
         try:
             _stderr_default
             _stderr_class_type
@@ -835,12 +837,17 @@ class StdErrReplament(object):
         class StdErrReplamentHidden(_stderr_class_type):
 
             def __init__(self):
+                """
+                    Override any super class `_stderr_class_type` constructor, so we can instantiate
+                    any kind of `sys.stderr` replacement object, in case it was already replaced
+                    by something else like on Sublime Text with `_LogWriter()`.
+                """
                 pass
 
             def __getattribute__(self, item):
                 # print( "__getattribute__, item: %s: %s" % ( item, _sys_stderr_write ) )
 
-                if item == 'write':
+                if item in _stderr_overriden_methods:
                     return _sys_stderr_write
 
                 try:
@@ -859,6 +866,7 @@ class StdErrReplament(object):
                     _stderr_singleton = None
                     StdErrReplament.is_active = False
 
+                    # Force create the next singleton with the latest value available on `sys.stderr`
                     del _stderr_default
                     del _stderr_class_type
 
@@ -877,13 +885,8 @@ class StdErrReplament(object):
             global _sys_stderr_write
             global _sys_stderr_write_hidden
 
-            def _sys_stderr_write(*args, **kwargs):
-                """
-                    Hides the actual function pointer. This allow the external function pointer to
-                    be cached while the internal written can be exchanged between the standard
-                    `sys.stderr.write` and our custom wrapper around it.
-                """
-                return _sys_stderr_write_hidden( *args, **kwargs )
+            if sys.version_info <= (3,2):
+                logger.file_handler.terminator = '\n'
 
             def _sys_stderr_write_hidden(*args, **kwargs):
                 """
@@ -896,30 +899,39 @@ class StdErrReplament(object):
                     file_handler = logger.file_handler
 
                     formatter = file_handler.formatter
-                    file_handler.formatter = clean_formatter
+                    terminator = file_handler.terminator
 
-                    terminator = StreamHandler.terminator
-                    StreamHandler.terminator = ""
+                    file_handler.formatter = clean_formatter
+                    file_handler.terminator = ""
 
                     logger_call( *args, **kwargs )
 
                     file_handler.formatter = formatter
-                    StreamHandler.terminator = terminator
+                    file_handler.terminator = terminator
 
                 except Exception:
                     logger.exception( "Could not write to the file_handler" )
                     cls.unlock()
 
+            # Only ever create one `_sys_stderr_write` function pointer
+            try:
+                _sys_stderr_write
+
+            except Exception:
+
+                def _sys_stderr_write(*args, **kwargs):
+                    """
+                        Hides the actual function pointer. This allow the external function pointer to
+                        be cached while the internal written can be exchanged between the standard
+                        `sys.stderr.write` and our custom wrapper around it.
+                    """
+                    return _sys_stderr_write_hidden( *args, **kwargs )
+
+            _stderr_overriden_methods.add( 'write' )
+
         # Create the singleton instance
         if not _stderr_singleton:
-
-            try:
-                _stderr_singleton = copy.copy( _stderr_default )
-                _stderr_singleton.write = _sys_stderr_write
-
-            except TypeError:
-                _stderr_singleton = StdErrReplamentHidden()
-
+            _stderr_singleton = StdErrReplamentHidden()
             sys.stderr = _stderr_singleton
 
         # import inspect
