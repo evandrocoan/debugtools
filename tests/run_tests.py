@@ -17,6 +17,9 @@ runner = unittest.TextTestRunner(verbosity=2)
 
 # print( sys.path )
 results = runner.run( suite )
+
+print( "results: %s" % results )
+print( "results.wasSuccessful: %s" % results.wasSuccessful() )
 sys.exit( not results.wasSuccessful() )
 
 

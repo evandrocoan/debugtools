@@ -89,7 +89,7 @@ class TeeNoFile(object):
             output = file.read()
 
         contents = self._process_contents( date_regex, output )
-        print("Contents:\n`%s`" % contents)
+        self._stderr.write("\nContents:\n`%s`\n" % contents)
         return contents
 
     def _process_contents(self, date_regex, output):

@@ -96,6 +96,7 @@ class Debugger(Logger):
         # Initialize the first last tick as the current tick
         self.lastTick = timeit.default_timer()
 
+        self._stderr = None
         self.file_handler = None
         self.stream_handler = None
 
@@ -105,7 +106,6 @@ class Debugger(Logger):
         # Enable debug messages: (bitwise)
         # 0 - Disabled debugging
         # 1 - Errors messages
-        self._stderr = None
         self._frame_level = 4
         self._debug_level = 127
 
@@ -305,10 +305,13 @@ class Debugger(Logger):
         """
 
         if enable:
-            self._stderr = StdErrReplament.lock( self )
 
-        else:
-            self._stderr = StdErrReplament.unlock()
+            if not self.hasStreamHandlers():
+                self._stderr = StdErrReplament.lock( self )
+
+        elif self._stderr:
+            self._stderr = None
+            StdErrReplament.unlock()
 
     def disable(self, stream=False, file=False):
         """
@@ -576,11 +579,33 @@ class Debugger(Logger):
                 ":%02d" % currentTime.second,
                 ":%07d " % currentTime.microsecond ]
 
+    def addHandler(self, handler):
+        """
+            Override the super() method because, we cannot add a stream handler when if there is a
+            `sys.stderr` handler.
+
+            See logging::Logger::addHandler().
+        """
+
+        if "StreamHandler" in str( type( handler ) ):
+            self.handle_strerr( False )
+
+        super( Debugger, self ).addHandler( handler )
+
     def removeHandlers(self):
         self.disable( True, True )
 
         for handler in self.handlers:
             self.removeHandler( handler )
+
+    def hasStreamHandlers(self):
+
+        for handler in self.handlers:
+
+            if "StreamHandler" in str( type( handler ) ):
+                return True
+
+        return False
 
     def _fixChildren(self):
         """
@@ -948,8 +973,6 @@ class StdErrReplament(object):
 
             cls.is_active = False
             _sys_stderr_write_hidden = _stderr_default.write
-
-        return _stderr_singleton
 
 
 # Setup the alternate debugger, completely independent of the standard logging module Logger class
