@@ -172,9 +172,7 @@ class StdErrReplamentHidden(_stderr_default_class_type):
             return _stderr_default.__getattribute__( item )
 
         except AttributeError:
-
-            return super( _stderr_default_class_type,
-                    _stderr_default ).__getattribute__( item )
+            return super( _stderr_default_class_type, _stderr_default ).__getattribute__( item )
 
 
 def _do_my_stuff(*args, **kwargs):

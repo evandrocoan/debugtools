@@ -37,17 +37,19 @@ import platform
 import logging
 import logging.handlers
 
+from logging import getLevelName
+
 from logging import Logger
 from logging import Manager
 from logging import PlaceHolder
-from logging import StreamHandler
 
 from logging import DEBUG
 from logging import WARNING
 from logging import ERROR
 
 from logging import _srcfile
-from logging import getLevelName
+from logging import _acquireLock
+from logging import _releaseLock
 
 from concurrent_log_handler import ConcurrentRotatingFileHandler
 
@@ -100,14 +102,12 @@ class Debugger(Logger):
         self.file_handler = None
         self.stream_handler = None
 
-        self.reset()
-        self._setup_find_caller()
-
         # Enable debug messages: (bitwise)
         # 0 - Disabled debugging
         # 1 - Errors messages
         self._frame_level = 4
         self._debug_level = 127
+        self._reset()
 
     @property
     def output_file(self):
@@ -148,10 +148,13 @@ class Debugger(Logger):
             Call this if you want to reset to remove all handlers and set all parameters values to
             their default.
         """
-        self._arguments = self._formatter_arguments()
         self.removeHandlers()
+        self._reset()
 
+    def _reset(self):
+        self._arguments = self._formatter_arguments()
         self.full_formatter = self._setup_formatter( self._arguments )
+
         self.clean_formatter = logging.Formatter( "", "" )
         self.setup_basic( function=False, tick=False )
 
@@ -272,10 +275,10 @@ class Debugger(Logger):
             kwargs['debug_level'] = debug_level
             self._log( DEBUG, msg, args, **kwargs )
 
-            if self.stream_handler:
+            if stream_handler:
                 stream_handler.formatter = stream_handler_formatter
 
-            if self.file_handler:
+            if file_handler:
                 file_handler.formatter = file_handler_formatter
 
     def clear(self, delete=False):
@@ -303,34 +306,49 @@ class Debugger(Logger):
         """
             Register a exception hook if the logger is capable of logging then to alternate streams.
         """
+        _acquireLock()
 
-        if enable:
+        try:
 
-            if not self.hasStreamHandlers():
-                self._stderr = StdErrReplament.lock( self )
+            if enable:
 
-        elif self._stderr:
-            self._stderr = None
-            StdErrReplament.unlock()
+                if not self.hasStreamHandlers():
+                    self._stderr = StdErrReplament.lock( self )
 
-    def disable(self, stream=False, file=False):
+            elif self._stderr:
+                self._stderr = None
+                StdErrReplament.unlock()
+
+        except Exception:
+            self.exception( "Could not register the sys.stderr stream handler" )
+
+        finally:
+            _releaseLock()
+
+    def _disable(self, stream=False, file=False):
         """
             Delete all automatically setup handlers created by the automatic `setup()`.
         """
+        is_successful = False
 
         if stream \
                 and self.stream_handler:
 
             self.removeHandler( self.stream_handler )
+            is_successful = True
             self.stream_handler = None
 
         if file:
-            self.handle_strerr( False )
 
             if self.file_handler:
+                self.handle_strerr( False )
                 self.removeHandler( self.file_handler )
                 self.file_handler.close()
+
+                is_successful = True
                 self.file_handler = None
+
+        return is_successful
 
     def setup(self, file=EMPTY_KWARG, mode=EMPTY_KWARG, delete=EMPTY_KWARG, date=EMPTY_KWARG, level=EMPTY_KWARG,
             function=EMPTY_KWARG, name=EMPTY_KWARG, time=EMPTY_KWARG, msecs=EMPTY_KWARG, tick=EMPTY_KWARG,
@@ -444,23 +462,31 @@ class Debugger(Logger):
                     + "Logging to the file %s\n" % output_file )
 
             self._create_file_handler( output_file, arguments['rotation'], arguments['mode'] )
-            self.disable( stream=arguments['delete'] )
+            self._disable( stream=arguments['delete'] )
 
         else:
-            self.disable( stream=True )
+            self._disable( stream=True )
+            _acquireLock()
 
-            self.stream_handler = logging.StreamHandler()
-            self.stream_handler.formatter = self.full_formatter
+            try:
+
+                self.stream_handler = logging.StreamHandler()
+                self.stream_handler.formatter = self.full_formatter
+
+            except Exception:
+                self.exception( "Could not create the stream handler" )
+
+            finally:
+                _releaseLock()
 
             self.addHandler( self.stream_handler )
-            self.disable( file=arguments['delete'] )
+            self._disable( file=arguments['delete'] )
 
     def _create_file_handler(self, output_file, rotation, mode, clear=False, delete=False):
         backup_count = mode
         mode = 'w' if clear else mode
 
-        if self.file_handler:
-            self.disable( file=True )
+        if self._disable( file=True ):
 
             if delete:
                 os.remove( output_file )
@@ -475,17 +501,19 @@ class Debugger(Logger):
             rotation = rotation * 1024 * 1024
 
             backup_count = abs( backup_count ) if isinstance( backup_count, int ) else 2
-            self.file_handler = ConcurrentRotatingFileHandler( output_file, maxBytes=rotation, backupCount=backup_count )
+            file_handler = ConcurrentRotatingFileHandler( output_file, maxBytes=rotation, backupCount=backup_count )
 
         else:
 
             if not isinstance( mode, str ):
                 raise ValueError( "The mode argument `%s` must be instance of string." % mode )
 
-            self.file_handler = logging.FileHandler( output_file, mode )
+            file_handler = logging.FileHandler( output_file, mode )
 
-        self.file_handler.formatter = self.full_formatter
-        self.addHandler( self.file_handler )
+        file_handler.formatter = self.full_formatter
+        self.file_handler = file_handler
+
+        self.addHandler( file_handler )
         self.handle_strerr( True )
 
     def warn(self, msg, *args, **kwargs):
@@ -503,19 +531,27 @@ class Debugger(Logger):
         if self.isEnabledFor(ERROR):
             self._log(ERROR, msg, args, exc_info=True, **kwargs)
 
-    def _log(self, level, msg, args, exc_info=None, extra={}, stack_info=False, debug_level=0):
-        self.currentTick = timeit.default_timer()
+    if is_python2:
 
-        debug_level = "(%d)" % debug_level if debug_level else ""
-        extra.update( {"debugLevel": debug_level, "tickDifference": self.currentTick - self.lastTick} )
+        def _log(self, level, msg, args, exc_info=None, extra={}, stack_info=False, debug_level=0):
+            self.currentTick = timeit.default_timer()
 
-        if is_python2:
+            debug_level = "(%d)" % debug_level if debug_level else ""
+            extra.update( {"debugLevel": debug_level, "tickDifference": self.currentTick - self.lastTick} )
+
             super( Debugger, self )._log( level, msg, args, exc_info, extra )
+            self.lastTick = self.currentTick
 
-        else:
-            super( Debugger, self )._log( level, msg, args, exc_info, extra, stack_info )
+    else:
 
-        self.lastTick = self.currentTick
+        def _log(self, level, msg, args, exc_info=None, extra={}, stack_info=False, debug_level=0):
+            self.currentTick = timeit.default_timer()
+
+            debug_level = "(%d)" % debug_level if debug_level else ""
+            extra.update( {"debugLevel": debug_level, "tickDifference": self.currentTick - self.lastTick} )
+
+            super()._log( level, msg, args, exc_info, extra, stack_info )
+            self.lastTick = self.currentTick
 
     def _log_clean(self, msg):
         record = CleanLogRecord( self.level, self.name, msg )
@@ -593,7 +629,8 @@ class Debugger(Logger):
         super( Debugger, self ).addHandler( handler )
 
     def removeHandlers(self):
-        self.disable( True, True )
+        sys.stderr.write( "Removing all handlers from %s...\n" % self.name )
+        self._disable( True, True )
 
         for handler in self.handlers:
             self.removeHandler( handler )
@@ -727,18 +764,35 @@ class Debugger(Logger):
 
         return "\n%s" % "\n".join( reversed( representations ) )
 
-    def _setup_find_caller(self):
-        """
-            Copied from the python 3.6.3 and 2.7.14 implementation, only changing the `sys._getframe(3)`
-            to `sys._getframe(4)` because due the inheritance, we need to take a higher frame to get
-            the correct function name, otherwise the result would always be `__call__`, which is the
-            internal function we use here.
+    # Copied from the python 3.6.3 and 2.7.14 implementation, only changing the `sys._getframe(3)`
+    # to `sys._getframe(4)` because due the inheritance, we need to take a higher frame to get
+    # the correct function name, otherwise the result would always be `__call__`, which is the
+    # internal function we use here.
+    #
+    # Find the stack frame of the caller so that we can note the source file name, line number
+    # and function name.
+    if is_python2:
 
-            Find the stack frame of the caller so that we can note the source file name, line number
-            and function name.
-        """
+        def findCaller(self):
+            f = currentframe(self._frame_level)
+            #On some versions of IronPython, currentframe() returns None if
+            #IronPython isn't run with -X:Frames.
+            if f is not None:
+                f = f.f_back
+            rv = "(unknown file)", 0, "(unknown function)"
+            while hasattr(f, "f_code"):
+                co = f.f_code
+                filename = os.path.normcase(co.co_filename)
+                if filename == _srcfile:
+                    f = f.f_back
+                    continue
+                rv = (co.co_filename, f.f_lineno, co.co_name)
+                break
+            return rv
 
-        def findCallerPython3(stack_info=False):
+    else:
+
+        def findCaller(self, stack_info=False):
             f = currentframe(self._frame_level)
             #On some versions of IronPython, currentframe() returns None if
             #IronPython isn't run with -X:Frames.
@@ -763,29 +817,6 @@ class Debugger(Logger):
                 rv = (co.co_filename, f.f_lineno, co.co_name, sinfo)
                 break
             return rv
-
-        def findCallerPython2():
-            f = currentframe(self._frame_level)
-            #On some versions of IronPython, currentframe() returns None if
-            #IronPython isn't run with -X:Frames.
-            if f is not None:
-                f = f.f_back
-            rv = "(unknown file)", 0, "(unknown function)"
-            while hasattr(f, "f_code"):
-                co = f.f_code
-                filename = os.path.normcase(co.co_filename)
-                if filename == _srcfile:
-                    f = f.f_back
-                    continue
-                rv = (co.co_filename, f.f_lineno, co.co_name)
-                break
-            return rv
-
-        if is_python2:
-            self.findCaller = findCallerPython2
-
-        else:
-            self.findCaller = findCallerPython3
 
 
 class CleanLogRecord(object):
@@ -826,12 +857,15 @@ class CleanLogRecord(object):
         return str( self.msg )
 
 
-_stderr_singleton = None
-_stderr_overriden_methods = set()
-
-
 class StdErrReplament(object):
     """
+        In case of reloading this module, never recapture the current `sys.stderr`.
+
+        When disabling this with unlock, it will only restore the standard behavior of the `stderr`
+        stream. However, the attached logger will cannot be detached never because someone else can
+        have a reference to its older version. This is why this is a global singleton which can
+        never dies.
+
         How do I duplicate sys.stdout to a log file in python?
         https://stackoverflow.com/questions/616645/how-do-i-duplicate-sys-stdout-to-a-log-file-in-python
 
@@ -845,62 +879,30 @@ class StdErrReplament(object):
 
     @classmethod
     def lock(cls, logger):
+        """
+            Attach this singleton logger to the `sys.stderr` permanently.
+        """
         global _stderr_default
-        global _stderr_singleton
-        global _stderr_class_type
+        global _stderr_default_class_type
 
         # On Sublime Text, the `sys.__stderr__` is None, because they already replaced `sys.stderr`
-        # by some `_LogWriter()` class
+        # by some `_LogWriter()` class, then just save the current one over there.
+        if not sys.__stderr__:
+            sys.__stderr__ = sys.stderr
+
         try:
             _stderr_default
-            _stderr_class_type
+            _stderr_default_class_type
 
         except NameError:
+            # sys.stdout.write( "Assigning sys.stderr to _stderr_default\n" )
+
             _stderr_default = sys.stderr
-            _stderr_class_type = type( _stderr_default )
+            _stderr_default_class_type = type( _stderr_default )
 
-        class StdErrReplamentHidden(_stderr_class_type):
+            # sys.stdout.write( "Assigned  sys.stderr to _stderr_default: %s, %s\n" % ( _stderr_default, _stderr_default_class_type ) )
 
-            def __init__(self):
-                """
-                    Override any super class `_stderr_class_type` constructor, so we can instantiate
-                    any kind of `sys.stderr` replacement object, in case it was already replaced
-                    by something else like on Sublime Text with `_LogWriter()`.
-                """
-                pass
-
-            def __getattribute__(self, item):
-                # print( "__getattribute__, item: %s: %s" % ( item, _sys_stderr_write ) )
-
-                if item in _stderr_overriden_methods:
-                    return _sys_stderr_write
-
-                try:
-
-                    return _stderr_default.__getattribute__( item )
-
-                except AttributeError:
-                    return super( _stderr_class_type, _stderr_default ).__getattribute__( item )
-
-            def __del__(self):
-                global _stderr_default
-                global _stderr_singleton
-                global _stderr_class_type
-
-                if sys and _stderr_default:
-                    sys.stderr = _stderr_default
-                    _stderr_singleton = None
-                    StdErrReplament.is_active = False
-
-                    # Force create the next singleton with the latest value available on `sys.stderr`
-                    del _stderr_default
-                    del _stderr_class_type
-
-        # import inspect
-        # print( "_stderr_default:", _stderr_default )
-        # print( "_stderr_default.__dict__:", dir( _stderr_default ) )
-        # print( "(inspect) _stderr_default.__init__:", inspect.getfullargspec( _stderr_default.__init__ ) )
-
+        # Recreate the sys.stderr logger when it was reset by `unlock()`
         if not cls.is_active:
             cls.is_active = True
             _stderr_write = _stderr_default.write
@@ -914,6 +916,7 @@ class StdErrReplament(object):
             if sys.version_info <= (3,2):
                 logger.file_handler.terminator = '\n'
 
+            # Always recreate/override the internal write function used by `_sys_stderr_write`
             def _sys_stderr_write_hidden(*args, **kwargs):
                 """
                     Suppress newline in Python logging module
@@ -939,11 +942,11 @@ class StdErrReplament(object):
                     logger.exception( "Could not write to the file_handler" )
                     cls.unlock()
 
-            # Only ever create one `_sys_stderr_write` function pointer
+            # Only create one `_sys_stderr_write` function pointer ever
             try:
                 _sys_stderr_write
 
-            except Exception:
+            except NameError:
 
                 def _sys_stderr_write(*args, **kwargs):
                     """
@@ -951,22 +954,217 @@ class StdErrReplament(object):
                         be cached while the internal written can be exchanged between the standard
                         `sys.stderr.write` and our custom wrapper around it.
                     """
-                    return _sys_stderr_write_hidden( *args, **kwargs )
-
-            _stderr_overriden_methods.add( 'write' )
-
-        # Create the singleton instance
-        if not _stderr_singleton:
-            _stderr_singleton = StdErrReplamentHidden()
-            sys.stderr = _stderr_singleton
+                    _sys_stderr_write_hidden( *args, **kwargs )
 
         # import inspect
-        # print( "(inspect):", inspect.getfullargspec( _stderr_singleton.write ) )
-        # print( "(_stderr_singleton 6):", _stderr_singleton )
-        return _stderr_singleton
+        # import traceback
+        # sys.stdout.write( "_stderr_default: %s\n" % _stderr_default )
+        # sys.stdout.write( "_stderr_default.__dict__: %s\n" % dir( _stderr_default ) )
+        # sys.stdout.write( "(inspect) _stderr_default.__init__: %s\n" % str( inspect.getfullargspec( _stderr_default.__init__ ) ) )
+
+        # sys.stdout.write( "_stderr_default: %s\n" % _stderr_default )
+        # sys.stdout.write( " inspect.getmro(): %s\n" % str( inspect.getmro( type( _stderr_default ) ) ) )
+        # sys.stdout.write( " inspect.getmro(): %s\n" % str( inspect.getmro( StdErrReplamentHidden ) ) )
+        # sys.stdout.write( " traceback.format_stack(): %s\n" % traceback.format_stack() )
+
+        class StdErrReplamentHidden(_stderr_default_class_type):
+            """
+                Which special methods bypasses __getattribute__ in Python?
+                https://stackoverflow.com/questions/12872695/which-special-methods-bypasses-getattribute-in-python
+            """
+
+            if hasattr( _stderr_default, "__abstractmethods__" ):
+                __abstractmethods__ = _stderr_default.__abstractmethods__
+
+            if hasattr( _stderr_default, "__base__" ):
+                __base__ = _stderr_default.__base__
+
+            if hasattr( _stderr_default, "__bases__" ):
+                __bases__ = _stderr_default.__bases__
+
+            if hasattr( _stderr_default, "__basicsize__" ):
+                __basicsize__ = _stderr_default.__basicsize__
+
+            if hasattr( _stderr_default, "__call__" ):
+                __call__ = _stderr_default.__call__
+
+            if hasattr( _stderr_default, "__class__" ):
+                __class__ = _stderr_default.__class__
+
+            if hasattr( _stderr_default, "__delattr__" ):
+                __delattr__ = _stderr_default.__delattr__
+
+            if hasattr( _stderr_default, "__dict__" ):
+                __dict__ = _stderr_default.__dict__
+
+            if hasattr( _stderr_default, "__dictoffset__" ):
+                __dictoffset__ = _stderr_default.__dictoffset__
+
+            if hasattr( _stderr_default, "__dir__" ):
+                __dir__ = _stderr_default.__dir__
+
+            if hasattr( _stderr_default, "__doc__" ):
+                __doc__ = _stderr_default.__doc__
+
+            if hasattr( _stderr_default, "__eq__" ):
+                __eq__ = _stderr_default.__eq__
+
+            if hasattr( _stderr_default, "__flags__" ):
+                __flags__ = _stderr_default.__flags__
+
+            if hasattr( _stderr_default, "__format__" ):
+                __format__ = _stderr_default.__format__
+
+            if hasattr( _stderr_default, "__ge__" ):
+                __ge__ = _stderr_default.__ge__
+
+            if hasattr( _stderr_default, "__getattribute__" ):
+                __getattribute__ = _stderr_default.__getattribute__
+
+            if hasattr( _stderr_default, "__gt__" ):
+                __gt__ = _stderr_default.__gt__
+
+            if hasattr( _stderr_default, "__hash__" ):
+                __hash__ = _stderr_default.__hash__
+
+            if hasattr( _stderr_default, "__init__" ):
+                __init__ = _stderr_default.__init__
+
+            if hasattr( _stderr_default, "__init_subclass__" ):
+                __init_subclass__ = _stderr_default.__init_subclass__
+
+            if hasattr( _stderr_default, "__instancecheck__" ):
+                __instancecheck__ = _stderr_default.__instancecheck__
+
+            if hasattr( _stderr_default, "__itemsize__" ):
+                __itemsize__ = _stderr_default.__itemsize__
+
+            if hasattr( _stderr_default, "__le__" ):
+                __le__ = _stderr_default.__le__
+
+            if hasattr( _stderr_default, "__lt__" ):
+                __lt__ = _stderr_default.__lt__
+
+            if hasattr( _stderr_default, "__module__" ):
+                __module__ = _stderr_default.__module__
+
+            if hasattr( _stderr_default, "__mro__" ):
+                __mro__ = _stderr_default.__mro__
+
+            if hasattr( _stderr_default, "__name__" ):
+                __name__ = _stderr_default.__name__
+
+            if hasattr( _stderr_default, "__ne__" ):
+                __ne__ = _stderr_default.__ne__
+
+            if hasattr( _stderr_default, "__new__" ):
+                __new__ = _stderr_default.__new__
+
+            if hasattr( _stderr_default, "__prepare__" ):
+                __prepare__ = _stderr_default.__prepare__
+
+            if hasattr( _stderr_default, "__qualname__" ):
+                __qualname__ = _stderr_default.__qualname__
+
+            if hasattr( _stderr_default, "__reduce__" ):
+                __reduce__ = _stderr_default.__reduce__
+
+            if hasattr( _stderr_default, "__reduce_ex__" ):
+                __reduce_ex__ = _stderr_default.__reduce_ex__
+
+            if hasattr( _stderr_default, "__repr__" ):
+                __repr__ = _stderr_default.__repr__
+
+            if hasattr( _stderr_default, "__setattr__" ):
+                __setattr__ = _stderr_default.__setattr__
+
+            if hasattr( _stderr_default, "__sizeof__" ):
+                __sizeof__ = _stderr_default.__sizeof__
+
+            if hasattr( _stderr_default, "__str__" ):
+                __str__ = _stderr_default.__str__
+
+            if hasattr( _stderr_default, "__subclasscheck__" ):
+                __subclasscheck__ = _stderr_default.__subclasscheck__
+
+            if hasattr( _stderr_default, "__subclasses__" ):
+                __subclasses__ = _stderr_default.__subclasses__
+
+            if hasattr( _stderr_default, "__subclasshook__" ):
+                __subclasshook__ = _stderr_default.__subclasshook__
+
+            if hasattr( _stderr_default, "__text_signature__" ):
+                __text_signature__ = _stderr_default.__text_signature__
+
+            if hasattr( _stderr_default, "__weakrefoffset__" ):
+                __weakrefoffset__ = _stderr_default.__weakrefoffset__
+
+            if hasattr( _stderr_default, "mro" ):
+                mro = _stderr_default.mro
+
+            def __init__(self):
+                """
+                    Assures all attributes were statically replaced just above. This should happen in case
+                    some new attribute is added to the python language.
+
+                    This also ignores the only two methods which are not equal, `__init__()` and `__getattribute__()`.
+                """
+                different_methods = ("__init__", "__getattribute__")
+                attributes_to_check = set( dir( object ) + dir( type ) )
+
+                for attribute in attributes_to_check:
+
+                    if attribute not in different_methods \
+                            and hasattr( _stderr_default, attribute ):
+
+                        base_class_attribute = super( _stderr_default_class_type, self ).__getattribute__( attribute )
+                        target_class_attribute = _stderr_default.__getattribute__( attribute )
+
+                        if base_class_attribute != target_class_attribute:
+                            sys.stderr.write( "    The base class attribute `%s` is different from the target class:\n%s\n%s\n\n" % (
+                                    attribute, base_class_attribute, target_class_attribute ) )
+
+            def __getattribute__(self, item):
+                # sys.stdout.write( "__getattribute__, item: %s: %s\n" % ( item, _sys_stderr_write ) )
+
+                if item == 'write':
+                    return _sys_stderr_write
+
+                try:
+                    return _stderr_default.__getattribute__( item )
+
+                except AttributeError:
+                    return super( _stderr_default_class_type, _stderr_default ).__getattribute__( item )
+
+        # Only create the singleton instance ever
+        try:
+            global _stderr_singleton
+            _stderr_singleton
+
+        except NameError:
+            # sys.stdout.write( "_stderr_default: %s\n" % _stderr_default )
+
+            # Override any super class `type( _stderr_default )` constructor, so we can instantiate
+            # any kind of `sys.stderr` replacement object, in case it was already replaced
+            # by something else like on Sublime Text with `_LogWriter()`.
+            _stderr_singleton = StdErrReplamentHidden.__new__( StdErrReplamentHidden )
+
+            # sys.stdout.write( "_stderr_singleton: ")
+            # sys.stdout.write( "%s\n" % _stderr_singleton )
+            sys.stderr = _stderr_singleton
+
+            import inspect
+            # sys.stdout.write( "(inspect):", inspect.getfullargspec( _stderr_singleton.write ) )
+            # sys.stdout.write( "(_stderr_singleton 6):", _stderr_singleton )
+
+        return cls
 
     @classmethod
     def unlock(cls):
+        """
+            Detach this `stderr` writer from `sys.stderr` and allow the next call to `lock()` create
+            a new writer for the stderr.
+        """
 
         if cls.is_active:
             global _sys_stderr_write_hidden
@@ -1026,7 +1224,7 @@ def _getLogger(debug_level=127, logger_name=None, **kwargs):
         logger.setLevel( level )
 
     if kwargs.pop( "setup", True ) == True:
-        logger._setup( _fix_children=True, **kwargs )
+        logger.setup( _fix_children=True, **kwargs )
 
     return logger
 
