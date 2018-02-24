@@ -108,7 +108,7 @@ class Debugger(Logger):
         # 0 - Disabled debugging
         # 1 - Errors messages
         self._frame_level = 4
-        self._debug_level = 127
+        self._debugger_level = 127
         self._reset()
 
     @property
@@ -120,26 +120,93 @@ class Debugger(Logger):
         return None
 
     @property
+    def active(self):
+        """
+            Works accordingly with super::hasHandlers(), except that this returns the activate
+            logger object if it has some activate handler, or None if there are not loggers with
+            active handlers.
+
+            The root logger is not returned, unless it is already setup with handlers.
+        """
+        current = self
+
+        while current:
+
+            if current.handlers:
+                return current
+
+            if not current.propagate:
+                break
+
+            else:
+                current = current.parent
+
+        return None
+
+    @property
     def debug_level(self):
-        return self._debug_level
+        """
+            Return this logger active debug level.
+        """
+        return self._debugger_level
+
+    @property
+    def _debug_level(self):
+        """
+            The same as Debugger::debug_level, return this logger active debug level.
+
+            This only exists for consistency with the setter Debugger::_debug_level().
+        """
+        return self._debugger_level
 
     @debug_level.setter
     def debug_level(self, value):
+        """
+            Set this current logger object active debug level.
+        """
 
         if isinstance( value, int ):
-            self._debug_level = value
+            self._debugger_level = value
 
         else:
             raise ValueError( "Error: The debug_level `%s` must be an integer!" % debug_level )
 
+    @_debug_level.setter
+    def _debug_level(self, value):
+        """
+            Set this current logger object and all other relatives loggers' active debug level.
+
+            Useful to set a uniform debug level across all related loggers. A logger is considered
+            related if it is one of its parents or some of its children.
+        """
+        current = self
+        last_parent = self
+
+        def set_level(logger):
+            logger.debug_level = value
+
+        # Process its parents
+        while current:
+            last_parent = current
+            current.debug_level = value
+
+            if not current.propagate:
+                break
+
+            else:
+                current = current.parent
+
+        # Process its children
+        self.active.fix_children( set_level )
+
     def __call__(self, debug_level, msg, *args, **kwargs):
         """
-            Log to the current active handlers its message based on the bitwise `self._debug_level`
+            Log to the current active handlers its message based on the bitwise `self._debugger_level`
             value. Note, differently from the standard logging level, each logger object has its own
             bitwise logging level, instead of all sharing the main `level`.
         """
 
-        if self._debug_level & debug_level != 0:
+        if self._debugger_level & debug_level != 0:
             kwargs['debug_level'] = debug_level
             self._log( DEBUG, msg, args, **kwargs )
 
@@ -188,29 +255,6 @@ class Debugger(Logger):
             "msecs": True,
         }
 
-    def active(self):
-        """
-            Works accordingly with super::hasHandlers(), except that this returns the activate
-            logger object if it has some activate handler, or None if there are not loggers with
-            active handlers.
-
-            The root logger is not returned, unless it is already setup with handlers.
-        """
-        current = self
-
-        while current:
-
-            if current.handlers:
-                return current
-
-            if not current.propagate:
-                break
-
-            else:
-                current = current.parent
-
-        return None
-
     def newline(self, level=1, count=1):
         """
             Prints a clean new line, without any formatter header.
@@ -231,7 +275,7 @@ class Debugger(Logger):
             https://stackoverflow.com/questions/20111758/how-to-insert-newline-in-python-logging
         """
 
-        if self._debug_level & debug_level != 0:
+        if self._debugger_level & debug_level != 0:
             file_handler = self.file_handler
             stream_handler = self.stream_handler
 
@@ -262,7 +306,7 @@ class Debugger(Logger):
             the basic formatter.
         """
 
-        if self._debug_level & debug_level != 0:
+        if self._debugger_level & debug_level != 0:
             file_handler = self.file_handler
             stream_handler = self.stream_handler
 
@@ -290,7 +334,7 @@ class Debugger(Logger):
             @param `delete` if True, the log file will also be removed/deleted and the current file
                 handler will be removed.
         """
-        active = self.active()
+        active = self.active
 
         if active and active.output_file:
             output_file = active.output_file
@@ -313,7 +357,7 @@ class Debugger(Logger):
         try:
 
             if enable:
-                print( "name: %s, hasStreamHandlers: %s" % ( self.name, self.hasStreamHandlers() ) )
+                # print( "name: %s, hasStreamHandlers: %s" % ( self.name, self.hasStreamHandlers() ) )
 
                 if not self.hasStreamHandlers():
                     StdErrReplament.lock( self )
@@ -425,7 +469,7 @@ class Debugger(Logger):
         force = kwargs.pop( 'force', False )
         _fix_children = kwargs.pop( '_fix_children', False )
 
-        active = self.active()
+        active = self.active
         logger = active or self if kwargs.pop( 'active', True ) else self
 
         has_changes = False
@@ -446,7 +490,7 @@ class Debugger(Logger):
                     and not logger.file_handler ):
 
             if _fix_children:
-                logger._fixChildren()
+                logger.fix_children( lambda logger: logger.removeHandlers() )
 
             logger.full_formatter = logger._setup_formatter( logger._arguments )
             logger._setup_log_handlers()
@@ -665,7 +709,7 @@ class Debugger(Logger):
 
         return False
 
-    def _fixChildren(self):
+    def fix_children(self, callable_action):
         """
             When automatically creating loggers, some children logger can be setup before the
             parent logger, if the children logger is instantiated on module level and its module
@@ -691,7 +735,7 @@ class Debugger(Logger):
 
                 # i.e., if logger.parent.name.startswith( parent_name )
                 if logger.parent.name[:parent_name_length] == parent_name:
-                    logger.removeHandlers()
+                    callable_action( logger )
 
     @classmethod
     def get_debug_file_path(cls, file_path):
@@ -762,9 +806,9 @@ class Debugger(Logger):
                                 for item in logger.loggerMap] ) ) )
 
             else:
-                representations.append( "%2s. _debug_level: %3d, level: %2s, propagate: %5s, "
+                representations.append( "%2s. _debugger_level: %3d, level: %2s, propagate: %5s, "
                     "_frame_level: %2d, name(%s): %s, stream_handler: %s, file_handler: %s, arguments: %s" %
-                    ( str( total_loggers[0] ), logger._debug_level, logger.level, logger.propagate,
+                    ( str( total_loggers[0] ), logger._debugger_level, logger.level, logger.propagate,
                     logger._frame_level, current_logger, logger.name, logger.stream_handler, logger.file_handler,
                     logger._arguments ) )
 
@@ -918,10 +962,9 @@ class StdErrReplament(object):
 
         except NameError:
             # sys.stdout.write( "Assigning sys.stderr to _stderr_default\n" )
-
             _stderr_default = sys.stderr
-            _stderr_default_class_type = type( _stderr_default )
 
+            _stderr_default_class_type = type( _stderr_default )
             # sys.stdout.write( "Assigned  sys.stderr to _stderr_default: %s, %s\n" % ( _stderr_default, _stderr_default_class_type ) )
 
         # Recreate the sys.stderr logger when it was reset by `unlock()`

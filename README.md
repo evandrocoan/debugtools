@@ -122,10 +122,14 @@ log( 1, "..." )
 If you want to reload the debug tools code on the fly, you can use this to import it:
 ```python
 import imp
-from debug_tools.logger import getLogger
+import debug_tools.logger
 
 imp.reload( debug_tools.logger )
+from debug_tools.logger import Debugger
 from debug_tools.logger import getLogger
+
+Debugger.deleteAllLoggers()
+log = getLogger(1, "LSP")
 ```
 
 If you want to load the logger configuration from a file, you need to replace the standard logging
