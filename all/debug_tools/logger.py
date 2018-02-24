@@ -98,7 +98,6 @@ class Debugger(Logger):
         # Initialize the first last tick as the current tick
         self.lastTick = timeit.default_timer()
 
-        self._stderr = None
         self.file_handler = None
         self.stream_handler = None
 
@@ -311,12 +310,12 @@ class Debugger(Logger):
         try:
 
             if enable:
+                print( "name: %s, hasStreamHandlers: %s" % ( self.name, self.hasStreamHandlers() ) )
 
                 if not self.hasStreamHandlers():
-                    self._stderr = StdErrReplament.lock( self )
+                    StdErrReplament.lock( self )
 
-            elif self._stderr:
-                self._stderr = None
+            else:
                 StdErrReplament.unlock()
 
         except Exception:
@@ -463,6 +462,7 @@ class Debugger(Logger):
 
             self._create_file_handler( output_file, arguments['rotation'], arguments['mode'] )
             self._disable( stream=arguments['delete'] )
+            self.handle_strerr( True )
 
         else:
             self._disable( stream=True )
@@ -512,9 +512,7 @@ class Debugger(Logger):
 
         file_handler.formatter = self.full_formatter
         self.file_handler = file_handler
-
         self.addHandler( file_handler )
-        self.handle_strerr( True )
 
     def warn(self, msg, *args, **kwargs):
         """
@@ -628,7 +626,23 @@ class Debugger(Logger):
 
         super( Debugger, self ).addHandler( handler )
 
+    @classmethod
+    def deleteAllLoggers(cls):
+        """
+            Delete all loggers created by `getLogger()` calls.
+        """
+        _acquireLock()
+
+        try:
+            cls.manager.loggerDict.clear()
+
+        finally:
+            _releaseLock()
+
     def removeHandlers(self):
+        """
+            Delete all handlers registered to the current logger.
+        """
         sys.stderr.write( "Removing all handlers from %s...\n" % self.name )
         self._disable( True, True )
 
@@ -636,8 +650,12 @@ class Debugger(Logger):
             self.removeHandler( handler )
 
     def hasStreamHandlers(self):
+        """
+            Return True if the current logger has some stream handler defined.
+        """
 
         for handler in self.handlers:
+            # print( "Name: %s, handler: %s" % ( self.name, type( handler ) ) )
 
             if "StreamHandler" in str( type( handler ) ):
                 return True
