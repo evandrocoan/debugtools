@@ -34,6 +34,9 @@ import timeit
 import datetime
 import platform
 
+import inspect
+import traceback
+
 import logging
 import logging.handlers
 
@@ -900,6 +903,7 @@ class StdErrReplament(object):
         """
             Attach this singleton logger to the `sys.stderr` permanently.
         """
+        global _stderr_singleton
         global _stderr_default
         global _stderr_default_class_type
 
@@ -974,16 +978,9 @@ class StdErrReplament(object):
                     """
                     _sys_stderr_write_hidden( *args, **kwargs )
 
-        # import inspect
-        # import traceback
         # sys.stdout.write( "_stderr_default: %s\n" % _stderr_default )
         # sys.stdout.write( "_stderr_default.__dict__: %s\n" % dir( _stderr_default ) )
         # sys.stdout.write( "(inspect) _stderr_default.__init__: %s\n" % str( inspect.getfullargspec( _stderr_default.__init__ ) ) )
-
-        # sys.stdout.write( "_stderr_default: %s\n" % _stderr_default )
-        # sys.stdout.write( " inspect.getmro(): %s\n" % str( inspect.getmro( type( _stderr_default ) ) ) )
-        # sys.stdout.write( " inspect.getmro(): %s\n" % str( inspect.getmro( StdErrReplamentHidden ) ) )
-        # sys.stdout.write( " traceback.format_stack(): %s\n" % traceback.format_stack() )
 
         class StdErrReplamentHidden(_stderr_default_class_type):
             """
@@ -1154,9 +1151,14 @@ class StdErrReplament(object):
                 except AttributeError:
                     return super( _stderr_default_class_type, _stderr_default ).__getattribute__( item )
 
-        # Only create the singleton instance ever
+        # sys.stdout.write( "_stderr_default: %s\n" % _stderr_default )
+        # sys.stdout.write( "inspect.getmro(_stderr_default): %s\n" % str( inspect.getmro( type( _stderr_default ) ) ) )
+        # sys.stdout.write( "inspect.getmro(StdErrReplament): %s\n" % str( inspect.getmro( StdErrReplamentHidden ) ) )
+        # sys.stdout.write( " traceback.format_stack(): %s\n" % "".join( traceback.format_stack() ) )
+
         try:
-            global _stderr_singleton
+            # Only create the singleton instance ever
+            # del _stderr_singleton
             _stderr_singleton
 
         except NameError:
@@ -1171,9 +1173,8 @@ class StdErrReplament(object):
             # sys.stdout.write( "%s\n" % _stderr_singleton )
             sys.stderr = _stderr_singleton
 
-            import inspect
-            # sys.stdout.write( "(inspect):", inspect.getfullargspec( _stderr_singleton.write ) )
-            # sys.stdout.write( "(_stderr_singleton 6):", _stderr_singleton )
+            # sys.stdout.write( "(inspect): %s" % str( inspect.getfullargspec( _stderr_singleton.write ) ) )
+            # sys.stdout.write( "(_stderr_singleton 6): %s\n" % _stderr_singleton )
 
         return cls
 
