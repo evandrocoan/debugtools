@@ -174,30 +174,18 @@ class Debugger(Logger):
     @_debug_level.setter
     def _debug_level(self, value):
         """
-            Set this current logger object and all other relatives loggers' active debug level.
+            Set this current logger object and all other relative loggers' active debug level.
 
             Useful to set a uniform debug level across all related loggers. A logger is considered
-            related if it is one of its parents or some of its children.
+            related if it is the active parent or some of its children.
         """
-        current = self
-        last_parent = self
+        active = self.active
 
         def set_level(logger):
             logger.debug_level = value
 
-        # Process its parents
-        while current:
-            last_parent = current
-            current.debug_level = value
-
-            if not current.propagate:
-                break
-
-            else:
-                current = current.parent
-
-        # Process its children
-        self.active.fix_children( set_level )
+        set_level( active )
+        active.fix_children( set_level )
 
     def __call__(self, debug_level, msg, *args, **kwargs):
         """
