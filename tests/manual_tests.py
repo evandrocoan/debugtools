@@ -2,7 +2,7 @@
 
 try:
     # To run this file, run on the Sublime Text console:
-    # import imp; import DebugTools.tests.testing.manual_tests; imp.reload( DebugTools.tests.testing.manual_tests )
+    # import imp; import DebugTools.tests.manual_tests; imp.reload( DebugTools.tests.manual_tests )
     import sublime_plugin
 
 except (ImportError):
