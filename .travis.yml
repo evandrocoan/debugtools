@@ -99,8 +99,9 @@ install:
     # install Package Control and package dependencies
     - if [ -z "$TOXENV" ]; then
             sh travis.sh bootstrap;
-            sh travis.sh clone_git_package https://github.com/evandroforks/PortalockerFiles PortalockerFiles;
-            sh travis.sh clone_git_package https://github.com/evandroforks/ConcurrentLogHandler ConcurrentLogHandler;
+            sh travis.sh clone_git_package "https://github.com/evandroforks/PortalockerFiles" "PortalockerFiles";
+            sh travis.sh clone_git_package "https://github.com/evandroforks/ConcurrentLogHandler" "ConcurrentLogHandler";
+            sh travis.sh clone_git_package "https://github.com/evandroforks/python-pywin32" "python-pywin32";
             sh travis.sh install_package_control;
       fi
 
