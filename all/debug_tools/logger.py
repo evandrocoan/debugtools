@@ -101,6 +101,7 @@ class Debugger(Logger):
         # Initialize the first last tick as the current tick
         self.lastTick = timeit.default_timer()
 
+        self._stderr = False
         self.file_handler = None
         self.stream_handler = None
 
@@ -326,9 +327,10 @@ class Debugger(Logger):
 
         if active and active.output_file:
             output_file = active.output_file
+            sys.stderr.write( "Cleaning %s (delete=%s) the file: %s\n" % ( self.name, delete, output_file ) )
 
-            sys.stderr.write( "Cleaning (delete=%s) the file: %s\n" % ( delete, output_file ) )
             active._create_file_handler( output_file, active._arguments['rotation'], active._arguments['mode'], True, delete )
+            self.handle_stderr( self._stderr and not delete )
 
     def invert(self):
         """
@@ -336,7 +338,7 @@ class Debugger(Logger):
         """
         self.basic_formatter, self.full_formatter = self.full_formatter, self.basic_formatter
 
-    def handle_strerr(self, enable=True):
+    def handle_stderr(self, enable=True):
         """
             Register a exception hook if the logger is capable of logging then to alternate streams.
         """
@@ -347,7 +349,12 @@ class Debugger(Logger):
             if enable:
                 # print( "name: %s, hasStreamHandlers: %s" % ( self.name, self.hasStreamHandlers() ) )
 
-                if not self.hasStreamHandlers():
+                if self.hasStreamHandlers():
+                    sys.stderr.write( "Error on `%s`:\n" % self.name )
+                    sys.stderr.write( "Cannot set to handler `sys.stderr` while there is a StreamHandler.\n" )
+                    sys.stderr.write( "traceback.format_stack(): %s\n" % "".join( traceback.format_stack() ) )
+
+                else:
                     StdErrReplament.lock( self )
 
             else:
@@ -365,17 +372,16 @@ class Debugger(Logger):
         """
         is_successful = False
 
-        if stream \
-                and self.stream_handler:
-
+        if stream and self.stream_handler:
             self.removeHandler( self.stream_handler )
+
             is_successful = True
             self.stream_handler = None
 
         if file:
+            self.handle_stderr( False )
 
             if self.file_handler:
-                self.handle_strerr( False )
                 self.removeHandler( self.file_handler )
                 self.file_handler.close()
 
@@ -410,7 +416,7 @@ class Debugger(Logger):
             Override a method at instance level
             https://stackoverflow.com/questions/394770/override-a-method-at-instance-level
 
-            @param `file`  a relative or absolute path to the log file. If empty the output
+            @param `file`       a relative or absolute path to the log file. If empty the output
                                 will be sent to the standard output stream.
 
             @param `mode`       the file write mode on the file system. It can be `a` to append to the
@@ -441,6 +447,9 @@ class Debugger(Logger):
                                 even if there are not changes on the current saved default parameters.
                                 Its value is not saved between calls to this setup().
 
+            @param `stderr`     if True (default True), it will install a listener to the `sys.stderr`
+                                console output. This is useful for logging not handled exceptions.
+
             @param `active`     if True (default True), it will search for any other active logger in
                                 the current logger hierarchy and do the setup call on him. If no active
                                 logger is found, it will do the setup on the current logger object,
@@ -455,6 +464,7 @@ class Debugger(Logger):
             Allow to pass positional arguments to `setup()`.
         """
         force = kwargs.pop( 'force', False )
+        self._stderr = kwargs.pop( 'stderr', True )
         _fix_children = kwargs.pop( '_fix_children', False )
 
         active = self.active
@@ -497,7 +507,7 @@ class Debugger(Logger):
 
             self._create_file_handler( output_file, arguments['rotation'], arguments['mode'] )
             self._disable( stream=arguments['delete'] )
-            self.handle_strerr( True )
+            self.handle_stderr( self._stderr )
 
         else:
             self._disable( stream=True )
@@ -657,7 +667,10 @@ class Debugger(Logger):
         """
 
         if "StreamHandler" in str( type( handler ) ):
-            self.handle_strerr( False )
+            sys.stderr.write( "Warning on Debugger::addHandler for %s\n" % self.name )
+            sys.stderr.write( "You cannot add a StreamHandler while the `sys.stderr` handling is enabled.\n" )
+            sys.stderr.write( "Therefore, the `sys.stderr` handling is being disabled right now.\n" )
+            self.handle_stderr( False )
 
         super( Debugger, self ).addHandler( handler )
 
@@ -1185,7 +1198,7 @@ class StdErrReplament(object):
         # sys.stdout.write( "_stderr_default: %s\n" % _stderr_default )
         # sys.stdout.write( "inspect.getmro(_stderr_default): %s\n" % str( inspect.getmro( type( _stderr_default ) ) ) )
         # sys.stdout.write( "inspect.getmro(StdErrReplament): %s\n" % str( inspect.getmro( StdErrReplamentHidden ) ) )
-        # sys.stdout.write( " traceback.format_stack(): %s\n" % "".join( traceback.format_stack() ) )
+        # sys.stdout.write( "traceback.format_stack(): %s\n" % "".join( traceback.format_stack() ) )
 
         try:
             # Only create the singleton instance ever
@@ -1204,9 +1217,11 @@ class StdErrReplament(object):
             # sys.stdout.write( "%s\n" % _stderr_singleton )
             sys.stderr = _stderr_singleton
 
-            # sys.stdout.write( "(inspect): %s" % str( inspect.getfullargspec( _stderr_singleton.write ) ) )
+            # sys.stdout.write( "(inspect) signature:   %s\n" % str( inspect.signature( _stderr_singleton.write ) ) )
+            # sys.stdout.write( "(inspect) fullargspec: %s\n" % str( inspect.getfullargspec( _stderr_singleton.write ) ) )
             # sys.stdout.write( "(_stderr_singleton 6): %s\n" % _stderr_singleton )
 
+        sys.stdout.write( "Locking...\n" )
         return cls
 
     @classmethod
@@ -1217,11 +1232,11 @@ class StdErrReplament(object):
         """
 
         if cls.is_active:
-            global _sys_stderr_write_hidden
-
+            sys.stdout.write( "Unlocking...\n" )
             cls.is_active = False
-            _sys_stderr_write_hidden = _stderr_default.write
 
+            global _sys_stderr_write_hidden
+            _sys_stderr_write_hidden = _stderr_default.write
 
 # Setup the alternate debugger, completely independent of the standard logging module Logger class
 root = Debugger( "root_debugger", "WARNING" )
