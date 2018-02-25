@@ -28,7 +28,6 @@
 import os
 import io
 import sys
-import copy
 
 import timeit
 import datetime
@@ -673,8 +672,9 @@ class Debugger(Logger):
             if std_err_replament.is_active:
                 sys.stderr.write( "Warning on Debugger::addHandler for %s\n" % self.name )
                 sys.stderr.write( "You cannot add a StreamHandler while the `sys.stderr` handling is enabled.\n" )
-                sys.stderr.write( "Therefore, the `sys.stderr` handling is being disabled right now.\n" )
-                self.handle_stderr( False )
+                sys.stderr.write( "Therefore, your stream handler `%s` is not being added.\n" % handler )
+                sys.stderr.write( "traceback.format_stack(): %s\n" % "".join( traceback.format_stack() ) )
+                return
 
         super( Debugger, self ).addHandler( handler )
 
