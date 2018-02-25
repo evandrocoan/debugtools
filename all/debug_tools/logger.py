@@ -667,10 +667,12 @@ class Debugger(Logger):
         """
 
         if "StreamHandler" in str( type( handler ) ):
-            sys.stderr.write( "Warning on Debugger::addHandler for %s\n" % self.name )
-            sys.stderr.write( "You cannot add a StreamHandler while the `sys.stderr` handling is enabled.\n" )
-            sys.stderr.write( "Therefore, the `sys.stderr` handling is being disabled right now.\n" )
-            self.handle_stderr( False )
+
+            if StdErrReplament.is_active:
+                sys.stderr.write( "Warning on Debugger::addHandler for %s\n" % self.name )
+                sys.stderr.write( "You cannot add a StreamHandler while the `sys.stderr` handling is enabled.\n" )
+                sys.stderr.write( "Therefore, the `sys.stderr` handling is being disabled right now.\n" )
+                self.handle_stderr( False )
 
         super( Debugger, self ).addHandler( handler )
 
@@ -1026,187 +1028,186 @@ class StdErrReplament(object):
         # sys.stdout.write( "_stderr_default.__dict__: %s\n" % dir( _stderr_default ) )
         # sys.stdout.write( "(inspect) _stderr_default.__init__: %s\n" % str( inspect.getfullargspec( _stderr_default.__init__ ) ) )
 
-        class StdErrReplamentHidden(_stderr_default_class_type):
-            """
-                Which special methods bypasses __getattribute__ in Python?
-                https://stackoverflow.com/questions/12872695/which-special-methods-bypasses-getattribute-in-python
-            """
-
-            if hasattr( _stderr_default, "__abstractmethods__" ):
-                __abstractmethods__ = _stderr_default.__abstractmethods__
-
-            if hasattr( _stderr_default, "__base__" ):
-                __base__ = _stderr_default.__base__
-
-            if hasattr( _stderr_default, "__bases__" ):
-                __bases__ = _stderr_default.__bases__
-
-            if hasattr( _stderr_default, "__basicsize__" ):
-                __basicsize__ = _stderr_default.__basicsize__
-
-            if hasattr( _stderr_default, "__call__" ):
-                __call__ = _stderr_default.__call__
-
-            if hasattr( _stderr_default, "__class__" ):
-                __class__ = _stderr_default.__class__
-
-            if hasattr( _stderr_default, "__delattr__" ):
-                __delattr__ = _stderr_default.__delattr__
-
-            if hasattr( _stderr_default, "__dict__" ):
-                __dict__ = _stderr_default.__dict__
-
-            if hasattr( _stderr_default, "__dictoffset__" ):
-                __dictoffset__ = _stderr_default.__dictoffset__
-
-            if hasattr( _stderr_default, "__dir__" ):
-                __dir__ = _stderr_default.__dir__
-
-            if hasattr( _stderr_default, "__doc__" ):
-                __doc__ = _stderr_default.__doc__
-
-            if hasattr( _stderr_default, "__eq__" ):
-                __eq__ = _stderr_default.__eq__
-
-            if hasattr( _stderr_default, "__flags__" ):
-                __flags__ = _stderr_default.__flags__
-
-            if hasattr( _stderr_default, "__format__" ):
-                __format__ = _stderr_default.__format__
-
-            if hasattr( _stderr_default, "__ge__" ):
-                __ge__ = _stderr_default.__ge__
-
-            if hasattr( _stderr_default, "__getattribute__" ):
-                __getattribute__ = _stderr_default.__getattribute__
-
-            if hasattr( _stderr_default, "__gt__" ):
-                __gt__ = _stderr_default.__gt__
-
-            if hasattr( _stderr_default, "__hash__" ):
-                __hash__ = _stderr_default.__hash__
-
-            if hasattr( _stderr_default, "__init__" ):
-                __init__ = _stderr_default.__init__
-
-            if hasattr( _stderr_default, "__init_subclass__" ):
-                __init_subclass__ = _stderr_default.__init_subclass__
-
-            if hasattr( _stderr_default, "__instancecheck__" ):
-                __instancecheck__ = _stderr_default.__instancecheck__
-
-            if hasattr( _stderr_default, "__itemsize__" ):
-                __itemsize__ = _stderr_default.__itemsize__
-
-            if hasattr( _stderr_default, "__le__" ):
-                __le__ = _stderr_default.__le__
-
-            if hasattr( _stderr_default, "__lt__" ):
-                __lt__ = _stderr_default.__lt__
-
-            if hasattr( _stderr_default, "__module__" ):
-                __module__ = _stderr_default.__module__
-
-            if hasattr( _stderr_default, "__mro__" ):
-                __mro__ = _stderr_default.__mro__
-
-            if hasattr( _stderr_default, "__name__" ):
-                __name__ = _stderr_default.__name__
-
-            if hasattr( _stderr_default, "__ne__" ):
-                __ne__ = _stderr_default.__ne__
-
-            if hasattr( _stderr_default, "__new__" ):
-                __new__ = _stderr_default.__new__
-
-            if hasattr( _stderr_default, "__prepare__" ):
-                __prepare__ = _stderr_default.__prepare__
-
-            if hasattr( _stderr_default, "__qualname__" ):
-                __qualname__ = _stderr_default.__qualname__
-
-            if hasattr( _stderr_default, "__reduce__" ):
-                __reduce__ = _stderr_default.__reduce__
-
-            if hasattr( _stderr_default, "__reduce_ex__" ):
-                __reduce_ex__ = _stderr_default.__reduce_ex__
-
-            if hasattr( _stderr_default, "__repr__" ):
-                __repr__ = _stderr_default.__repr__
-
-            if hasattr( _stderr_default, "__setattr__" ):
-                __setattr__ = _stderr_default.__setattr__
-
-            if hasattr( _stderr_default, "__sizeof__" ):
-                __sizeof__ = _stderr_default.__sizeof__
-
-            if hasattr( _stderr_default, "__str__" ):
-                __str__ = _stderr_default.__str__
-
-            if hasattr( _stderr_default, "__subclasscheck__" ):
-                __subclasscheck__ = _stderr_default.__subclasscheck__
-
-            if hasattr( _stderr_default, "__subclasses__" ):
-                __subclasses__ = _stderr_default.__subclasses__
-
-            if hasattr( _stderr_default, "__subclasshook__" ):
-                __subclasshook__ = _stderr_default.__subclasshook__
-
-            if hasattr( _stderr_default, "__text_signature__" ):
-                __text_signature__ = _stderr_default.__text_signature__
-
-            if hasattr( _stderr_default, "__weakrefoffset__" ):
-                __weakrefoffset__ = _stderr_default.__weakrefoffset__
-
-            if hasattr( _stderr_default, "mro" ):
-                mro = _stderr_default.mro
-
-            def __init__(self):
-                """
-                    Assures all attributes were statically replaced just above. This should happen in case
-                    some new attribute is added to the python language.
-
-                    This also ignores the only two methods which are not equal, `__init__()` and `__getattribute__()`.
-                """
-                different_methods = ("__init__", "__getattribute__")
-                attributes_to_check = set( dir( object ) + dir( type ) )
-
-                for attribute in attributes_to_check:
-
-                    if attribute not in different_methods \
-                            and hasattr( _stderr_default, attribute ):
-
-                        base_class_attribute = super( _stderr_default_class_type, self ).__getattribute__( attribute )
-                        target_class_attribute = _stderr_default.__getattribute__( attribute )
-
-                        if base_class_attribute != target_class_attribute:
-                            sys.stderr.write( "    The base class attribute `%s` is different from the target class:\n%s\n%s\n\n" % (
-                                    attribute, base_class_attribute, target_class_attribute ) )
-
-            def __getattribute__(self, item):
-                # sys.stdout.write( "__getattribute__, item: %s: %s\n" % ( item, _sys_stderr_write ) )
-
-                if item == 'write':
-                    return _sys_stderr_write
-
-                try:
-                    return _stderr_default.__getattribute__( item )
-
-                except AttributeError:
-                    return super( _stderr_default_class_type, _stderr_default ).__getattribute__( item )
-
-        # sys.stdout.write( "_stderr_default: %s\n" % _stderr_default )
-        # sys.stdout.write( "inspect.getmro(_stderr_default): %s\n" % str( inspect.getmro( type( _stderr_default ) ) ) )
-        # sys.stdout.write( "inspect.getmro(StdErrReplament): %s\n" % str( inspect.getmro( StdErrReplamentHidden ) ) )
-        # sys.stdout.write( "traceback.format_stack(): %s\n" % "".join( traceback.format_stack() ) )
-
         try:
             # Only create the singleton instance ever
             # del _stderr_singleton
             _stderr_singleton
 
         except NameError:
+
+            class StdErrReplamentHidden(_stderr_default_class_type):
+                """
+                    Which special methods bypasses __getattribute__ in Python?
+                    https://stackoverflow.com/questions/12872695/which-special-methods-bypasses-getattribute-in-python
+                """
+
+                if hasattr( _stderr_default, "__abstractmethods__" ):
+                    __abstractmethods__ = _stderr_default.__abstractmethods__
+
+                if hasattr( _stderr_default, "__base__" ):
+                    __base__ = _stderr_default.__base__
+
+                if hasattr( _stderr_default, "__bases__" ):
+                    __bases__ = _stderr_default.__bases__
+
+                if hasattr( _stderr_default, "__basicsize__" ):
+                    __basicsize__ = _stderr_default.__basicsize__
+
+                if hasattr( _stderr_default, "__call__" ):
+                    __call__ = _stderr_default.__call__
+
+                if hasattr( _stderr_default, "__class__" ):
+                    __class__ = _stderr_default.__class__
+
+                if hasattr( _stderr_default, "__delattr__" ):
+                    __delattr__ = _stderr_default.__delattr__
+
+                if hasattr( _stderr_default, "__dict__" ):
+                    __dict__ = _stderr_default.__dict__
+
+                if hasattr( _stderr_default, "__dictoffset__" ):
+                    __dictoffset__ = _stderr_default.__dictoffset__
+
+                if hasattr( _stderr_default, "__dir__" ):
+                    __dir__ = _stderr_default.__dir__
+
+                if hasattr( _stderr_default, "__doc__" ):
+                    __doc__ = _stderr_default.__doc__
+
+                if hasattr( _stderr_default, "__eq__" ):
+                    __eq__ = _stderr_default.__eq__
+
+                if hasattr( _stderr_default, "__flags__" ):
+                    __flags__ = _stderr_default.__flags__
+
+                if hasattr( _stderr_default, "__format__" ):
+                    __format__ = _stderr_default.__format__
+
+                if hasattr( _stderr_default, "__ge__" ):
+                    __ge__ = _stderr_default.__ge__
+
+                if hasattr( _stderr_default, "__getattribute__" ):
+                    __getattribute__ = _stderr_default.__getattribute__
+
+                if hasattr( _stderr_default, "__gt__" ):
+                    __gt__ = _stderr_default.__gt__
+
+                if hasattr( _stderr_default, "__hash__" ):
+                    __hash__ = _stderr_default.__hash__
+
+                if hasattr( _stderr_default, "__init__" ):
+                    __init__ = _stderr_default.__init__
+
+                if hasattr( _stderr_default, "__init_subclass__" ):
+                    __init_subclass__ = _stderr_default.__init_subclass__
+
+                if hasattr( _stderr_default, "__instancecheck__" ):
+                    __instancecheck__ = _stderr_default.__instancecheck__
+
+                if hasattr( _stderr_default, "__itemsize__" ):
+                    __itemsize__ = _stderr_default.__itemsize__
+
+                if hasattr( _stderr_default, "__le__" ):
+                    __le__ = _stderr_default.__le__
+
+                if hasattr( _stderr_default, "__lt__" ):
+                    __lt__ = _stderr_default.__lt__
+
+                if hasattr( _stderr_default, "__module__" ):
+                    __module__ = _stderr_default.__module__
+
+                if hasattr( _stderr_default, "__mro__" ):
+                    __mro__ = _stderr_default.__mro__
+
+                if hasattr( _stderr_default, "__name__" ):
+                    __name__ = _stderr_default.__name__
+
+                if hasattr( _stderr_default, "__ne__" ):
+                    __ne__ = _stderr_default.__ne__
+
+                if hasattr( _stderr_default, "__new__" ):
+                    __new__ = _stderr_default.__new__
+
+                if hasattr( _stderr_default, "__prepare__" ):
+                    __prepare__ = _stderr_default.__prepare__
+
+                if hasattr( _stderr_default, "__qualname__" ):
+                    __qualname__ = _stderr_default.__qualname__
+
+                if hasattr( _stderr_default, "__reduce__" ):
+                    __reduce__ = _stderr_default.__reduce__
+
+                if hasattr( _stderr_default, "__reduce_ex__" ):
+                    __reduce_ex__ = _stderr_default.__reduce_ex__
+
+                if hasattr( _stderr_default, "__repr__" ):
+                    __repr__ = _stderr_default.__repr__
+
+                if hasattr( _stderr_default, "__setattr__" ):
+                    __setattr__ = _stderr_default.__setattr__
+
+                if hasattr( _stderr_default, "__sizeof__" ):
+                    __sizeof__ = _stderr_default.__sizeof__
+
+                if hasattr( _stderr_default, "__str__" ):
+                    __str__ = _stderr_default.__str__
+
+                if hasattr( _stderr_default, "__subclasscheck__" ):
+                    __subclasscheck__ = _stderr_default.__subclasscheck__
+
+                if hasattr( _stderr_default, "__subclasses__" ):
+                    __subclasses__ = _stderr_default.__subclasses__
+
+                if hasattr( _stderr_default, "__subclasshook__" ):
+                    __subclasshook__ = _stderr_default.__subclasshook__
+
+                if hasattr( _stderr_default, "__text_signature__" ):
+                    __text_signature__ = _stderr_default.__text_signature__
+
+                if hasattr( _stderr_default, "__weakrefoffset__" ):
+                    __weakrefoffset__ = _stderr_default.__weakrefoffset__
+
+                if hasattr( _stderr_default, "mro" ):
+                    mro = _stderr_default.mro
+
+                def __init__(self):
+                    """
+                        Assures all attributes were statically replaced just above. This should happen in case
+                        some new attribute is added to the python language.
+
+                        This also ignores the only two methods which are not equal, `__init__()` and `__getattribute__()`.
+                    """
+                    different_methods = ("__init__", "__getattribute__")
+                    attributes_to_check = set( dir( object ) + dir( type ) )
+
+                    for attribute in attributes_to_check:
+
+                        if attribute not in different_methods \
+                                and hasattr( _stderr_default, attribute ):
+
+                            base_class_attribute = super( _stderr_default_class_type, self ).__getattribute__( attribute )
+                            target_class_attribute = _stderr_default.__getattribute__( attribute )
+
+                            if base_class_attribute != target_class_attribute:
+                                sys.stderr.write( "    The base class attribute `%s` is different from the target class:\n%s\n%s\n\n" % (
+                                        attribute, base_class_attribute, target_class_attribute ) )
+
+                def __getattribute__(self, item):
+                    # sys.stdout.write( "__getattribute__, item: %s: %s\n" % ( item, _sys_stderr_write ) )
+
+                    if item == 'write':
+                        return _sys_stderr_write
+
+                    try:
+                        return _stderr_default.__getattribute__( item )
+
+                    except AttributeError:
+                        return super( _stderr_default_class_type, _stderr_default ).__getattribute__( item )
+
             # sys.stdout.write( "_stderr_default: %s\n" % _stderr_default )
+            # sys.stdout.write( "inspect.getmro(_stderr_default): %s\n" % str( inspect.getmro( type( _stderr_default ) ) ) )
+            # sys.stdout.write( "inspect.getmro(StdErrReplament): %s\n" % str( inspect.getmro( StdErrReplamentHidden ) ) )
+            # sys.stdout.write( "traceback.format_stack(): %s\n" % "".join( traceback.format_stack() ) )
 
             # Override any super class `type( _stderr_default )` constructor, so we can instantiate
             # any kind of `sys.stderr` replacement object, in case it was already replaced
@@ -1221,7 +1222,7 @@ class StdErrReplament(object):
             # sys.stdout.write( "(inspect) fullargspec: %s\n" % str( inspect.getfullargspec( _stderr_singleton.write ) ) )
             # sys.stdout.write( "(_stderr_singleton 6): %s\n" % _stderr_singleton )
 
-        sys.stdout.write( "Locking...\n" )
+        # sys.stdout.write( "Locking...   _sys_stderr_write_hidden: %s\n" % _sys_stderr_write_hidden )
         return cls
 
     @classmethod
@@ -1232,11 +1233,12 @@ class StdErrReplament(object):
         """
 
         if cls.is_active:
-            sys.stdout.write( "Unlocking...\n" )
-            cls.is_active = False
-
             global _sys_stderr_write_hidden
+            # sys.stdout.write( "Unlocking... _sys_stderr_write_hidden: %s\n" % _sys_stderr_write_hidden )
+
+            cls.is_active = False
             _sys_stderr_write_hidden = _stderr_default.write
+
 
 # Setup the alternate debugger, completely independent of the standard logging module Logger class
 root = Debugger( "root_debugger", "WARNING" )

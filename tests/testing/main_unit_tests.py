@@ -6,6 +6,7 @@ import os
 
 import sys
 import unittest
+import inspect
 import traceback
 
 from inspect import getframeinfo
@@ -58,6 +59,9 @@ class TeeNoFile(object):
 
         self._stderr = sys.stderr
         sys.stderr = self
+
+        # sys.stdout.write( "inspect.getmro(sys.stderr):  %s\n" % str( inspect.getmro( type( sys.stderr ) ) ) )
+        # sys.stdout.write( "inspect.getmro(self.stderr): %s\n" % str( inspect.getmro( type( self._stderr ) ) ) )
 
     def __del__(self):
         """
@@ -158,6 +162,7 @@ class MainUnitTests(unittest.TestCase):
         """
         self.maxDiff = None
         sys.stderr.write("\n")
+        sys.stderr.write("\n")
 
     def tearDown(self):
         log.clear( True )
@@ -179,7 +184,6 @@ class MainUnitTests(unittest.TestCase):
             log.warn( "Warn" )
             log.info( "Info" )
             log.debug( "Debug" )
-            log.newline()
 
         function_name()
         output = stderr.contents( r"\d{4}\-\d{2}-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
@@ -212,7 +216,6 @@ class MainUnitTests(unittest.TestCase):
         log.warn( "Warn" )
         log.info( "Info" )
         log.debug( "Debug" )
-        log.newline()
 
         output = stderr.contents( r"\d{4}\-\d{2}\-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
         self.assertEqual( wrap_text( """\
@@ -232,7 +235,6 @@ class MainUnitTests(unittest.TestCase):
         log.warn( "Warn" )
         log.info( "Info" )
         log.debug( "Debug" )
-        log.newline()
 
         output = stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
         self.assertEqual( wrap_text( """\
@@ -252,7 +254,6 @@ class MainUnitTests(unittest.TestCase):
         log.warn( "Warn" )
         log.info( "Info" )
         log.debug( "Debug" )
-        log.newline()
 
         output = stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
         self.assertEqual( wrap_text( """\
@@ -272,7 +273,6 @@ class MainUnitTests(unittest.TestCase):
         log.warn( "Warn" )
         log.info( "Info" )
         log.debug( "Debug" )
-        log.newline()
 
         output = stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
         self.assertEqual( wrap_text( """\
@@ -289,7 +289,6 @@ class MainUnitTests(unittest.TestCase):
         log.setup_basic( function=True, separator=" " )
 
         log.basic( 1, "Debug" )
-        log.newline()
 
         output = stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
         self.assertEqual( "testing.main_unit_tests.test_basic_formatter:{} Debug".format( line + 3 ), output )
@@ -301,7 +300,6 @@ class MainUnitTests(unittest.TestCase):
             raise Exception( "Test Error" )
         except Exception:
             log.exception( "I am catching you" )
-            log.newline()
 
         regex_pattern = re.compile( r"File \".*\", line \d+," )
         output = stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
