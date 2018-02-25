@@ -1007,7 +1007,7 @@ class StdErrReplament(object):
                     file_handler.terminator = terminator
 
                 except Exception:
-                    logger.exception( "Could not write to the file_handler" )
+                    logger.exception( "Could not write to the file_handler %s(%s)", file_handler, logger )
                     cls.unlock()
 
             # Only create one `_sys_stderr_write` function pointer ever
@@ -1172,6 +1172,10 @@ class StdErrReplament(object):
 
                 def __init__(self):
                     """
+                        Override any super class `type( _stderr_default )` constructor, so we can
+                        instantiate any kind of `sys.stderr` replacement object, in case it was
+                        already replaced by something else like on Sublime Text with `_LogWriter()`.
+
                         Assures all attributes were statically replaced just above. This should happen in case
                         some new attribute is added to the python language.
 
@@ -1208,11 +1212,7 @@ class StdErrReplament(object):
             # sys.stdout.write( "inspect.getmro(_stderr_default): %s\n" % str( inspect.getmro( type( _stderr_default ) ) ) )
             # sys.stdout.write( "inspect.getmro(StdErrReplament): %s\n" % str( inspect.getmro( StdErrReplamentHidden ) ) )
             # sys.stdout.write( "traceback.format_stack(): %s\n" % "".join( traceback.format_stack() ) )
-
-            # Override any super class `type( _stderr_default )` constructor, so we can instantiate
-            # any kind of `sys.stderr` replacement object, in case it was already replaced
-            # by something else like on Sublime Text with `_LogWriter()`.
-            _stderr_singleton = StdErrReplamentHidden.__new__( StdErrReplamentHidden )
+            _stderr_singleton = StdErrReplamentHidden()
 
             # sys.stdout.write( "_stderr_singleton: ")
             # sys.stdout.write( "%s\n" % _stderr_singleton )
