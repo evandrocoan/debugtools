@@ -1,7 +1,6 @@
 # -*- coding: UTF-8 -*-
 
 import re
-import io
 import os
 
 import sys
@@ -9,18 +8,11 @@ import unittest
 import inspect
 import traceback
 
-from inspect import getframeinfo
-
 
 is_python2 = False
 
 if sys.version_info[0] < 3:
     is_python2 = True
-    from StringIO import StringIO
-
-else:
-    from io import StringIO
-
 
 try:
     import sublime_plugin
@@ -48,88 +40,22 @@ except ImportError:
     from debug_tools.utilities import wrap_text
 
 
-class TeeNoFile(object):
-    """
-        How do I duplicate sys.stdout to a log file in python?
-        https://stackoverflow.com/questions/616645/how-do-i-duplicate-sys-stdout-to-a-log-file-in-python
-    """
-
-    def __init__(self):
-        self._contents = []
-
-        self._stderr = sys.stderr
-        sys.stderr = self
-
-        # sys.stdout.write( "inspect.getmro(sys.stderr):  %s\n" % str( inspect.getmro( type( sys.stderr ) ) ) )
-        # sys.stdout.write( "inspect.getmro(self.stderr): %s\n" % str( inspect.getmro( type( self._stderr ) ) ) )
-
-    def __del__(self):
-        """
-            python Exception AttributeError: “'NoneType' object has no attribute 'var'”
-            https://stackoverflow.com/questions/9750308/python-exception-attributeerror-nonetype-object-has-no-attribute-var
-        """
-        self.close()
-
-    def clear(self):
-        log.clear()
-        del self._contents[:]
-
-    def flush(self):
-        self._stderr.flush()
-
-    def write(self, *args, **kwargs):
-        # self._stderr.write( " 111111 %s" % self._stderr.write + str( args ), **kwargs )
-        # self._contents.append( " 555555" + str( args ), **kwargs )
-        self._stderr.write( *args, **kwargs )
-        self._contents.append( *args, **kwargs )
-
-    def contents(self, date_regex):
-        contents = self._process_contents( date_regex, "".join( self._contents ) )
-        return contents
-
-    def file_contents(self, date_regex):
-
-        with io.open( log.output_file, "r", encoding='utf-8' ) as file:
-            output = file.read()
-
-        contents = self._process_contents( date_regex, output )
-        self._stderr.write("\nContents:\n`%s`\n" % contents)
-        return contents
-
-    def _process_contents(self, date_regex, output):
-        clean_output = []
-        date_regex_pattern = re.compile( date_regex )
-
-        output = output.strip().split( "\n" )
-
-        for line in output:
-            clean_output.append( date_regex_pattern.sub( "", line ) )
-
-        return "\n".join( clean_output )
-
-    def close(self):
-
-        # On shutdown `__del__`, the sys module can be already set to None.
-        if sys and self._stderr:
-            sys.stderr = self._stderr
-            self._stderr = None
-
-
 # We need to keep a global reference to this because the logging module internally grabs an
 # reference to the first `sys.strerr` it can get its hands on it.
 #
 # We could make the logger recreate the `stderr` output StreamHandler by passing `force=True` to
 # to `Debugger.setup()`, removing the old reference to `sys.stderr`.
-stderr = TeeNoFile()
+from .std_err_capture import TeeNoFile
+_stderr = TeeNoFile()
 
 
 def getLogger(debug_level=127, logger_name=None, **kwargs):
     global log
     global line
     log = debug_tools.logger.getLogger( debug_level, logger_name, **kwargs )
-    stderr.clear()
+    _stderr.clear( log )
 
-    frameinfo = getframeinfo( sys._getframe(1) )
+    frameinfo = inspect.getframeinfo( sys._getframe(1) )
     line = frameinfo.lineno
 
 
@@ -156,10 +82,6 @@ class MainUnitTests(unittest.TestCase):
     """
 
     def setUp(self):
-        """
-            how do I clear a stringio object?
-            https://stackoverflow.com/questions/4330812/how-do-i-clear-a-stringio-object
-        """
         self.maxDiff = None
         sys.stderr.write("\n")
         sys.stderr.write("\n")
@@ -167,6 +89,12 @@ class MainUnitTests(unittest.TestCase):
     def tearDown(self):
         log.clear( True )
         log.reset()
+
+    def contents(self, date_regex):
+        return _stderr.contents( date_regex )
+
+    def file_contents(self, date_regex):
+        return _stderr.file_contents( date_regex, log )
 
     def test_function_name(self):
         getLogger( 127, "testing.main_unit_tests", date=True )
@@ -186,7 +114,7 @@ class MainUnitTests(unittest.TestCase):
             log.debug( "Debug" )
 
         function_name()
-        output = stderr.contents( r"\d{4}\-\d{2}-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+        output = self.contents( r"\d{4}\-\d{2}-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
 
         offset1 = 1
         offset2 = 4
@@ -217,7 +145,7 @@ class MainUnitTests(unittest.TestCase):
         log.info( "Info" )
         log.debug( "Debug" )
 
-        output = stderr.contents( r"\d{4}\-\d{2}\-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+        output = self.contents( r"\d{4}\-\d{2}\-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
         self.assertEqual( wrap_text( """\
             testing.main_unit_tests DEBUG(1) - Bitwise
             testing.main_unit_tests DEBUG(8) - Bitwise
@@ -236,7 +164,7 @@ class MainUnitTests(unittest.TestCase):
         log.info( "Info" )
         log.debug( "Debug" )
 
-        output = stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+        output = self.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
         self.assertEqual( wrap_text( """\
             testing.main_unit_tests - Bitwise
             testing.main_unit_tests - Bitwise
@@ -255,7 +183,7 @@ class MainUnitTests(unittest.TestCase):
         log.info( "Info" )
         log.debug( "Debug" )
 
-        output = stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+        output = self.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
         self.assertEqual( wrap_text( """\
             logger - Bitwise
             logger - Bitwise
@@ -274,7 +202,7 @@ class MainUnitTests(unittest.TestCase):
         log.info( "Info" )
         log.debug( "Debug" )
 
-        output = stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+        output = self.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
         self.assertEqual( wrap_text( """\
             Bitwise
             Bitwise
@@ -290,7 +218,7 @@ class MainUnitTests(unittest.TestCase):
 
         log.basic( 1, "Debug" )
 
-        output = stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+        output = self.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
         self.assertEqual( "testing.main_unit_tests.test_basic_formatter:{} Debug".format( line + 3 ), output )
 
     def test_exception_throwing(self):
@@ -302,7 +230,7 @@ class MainUnitTests(unittest.TestCase):
             log.exception( "I am catching you" )
 
         regex_pattern = re.compile( r"File \".*\", line \d+," )
-        output = stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+        output = self.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
 
         self.assertEqual( wrap_text( """\
                 testing.main_unit_tests.test_exception_throwing:{} - I am catching you
@@ -322,7 +250,7 @@ class MainUnitTests(unittest.TestCase):
 
 
 def throw_file_exception(self):
-    line = getframeinfo( sys._getframe(0) ).lineno
+    line = inspect.getframeinfo( sys._getframe(0) ).lineno
 
     try:
         log( 1, "I am catching you..." )
@@ -338,7 +266,7 @@ def throw_file_exception(self):
             log_traceback( error )
 
     regex_pattern = re.compile( r"File \".*\"," )
-    output = stderr.file_contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+    output = self.file_contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
 
     self.assertEqual( wrap_text( """\
             testing.main_unit_tests.throw_file_exception:{} - I am catching you...

@@ -85,7 +85,7 @@ class std_err_replament(object):
                     file_handler.terminator = terminator
 
                 except Exception:
-                    logger.exception( "Could not write to the file_handler %s(%s)", file_handler, logger )
+                    logger.exception( "Could not write to the file_handler: %s(%s)", file_handler, logger )
                     cls.unlock()
 
             # Only create one `_sys_stderr_write` function pointer ever
@@ -107,7 +107,7 @@ class std_err_replament(object):
         # sys.stdout.write( "(inspect) _stderr_default.__init__: %s\n" % str( inspect.getfullargspec( _stderr_default.__init__ ) ) )
 
         try:
-            # Only create the singleton instance ever
+            # Only create one singleton instance ever
             # del _stderr_singleton
             _stderr_singleton
 
