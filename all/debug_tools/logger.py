@@ -181,7 +181,7 @@ class Debugger(Logger):
             Useful to set a uniform debug level across all related loggers. A logger is considered
             related if it is the active parent or some of its children.
         """
-        active = self.active
+        active = self.active or self
 
         def set_level(logger):
             logger.debug_level = value
