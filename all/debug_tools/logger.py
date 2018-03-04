@@ -267,7 +267,6 @@ class Debugger(Logger):
 
         if self._debugger_level & debug_level != 0:
             self = self.active or self
-
             file_handler = self.file_handler
             stream_handler = self.stream_handler
 
@@ -299,6 +298,7 @@ class Debugger(Logger):
         """
 
         if self._debugger_level & debug_level != 0:
+            self = self.active or self
             file_handler = self.file_handler
             stream_handler = self.stream_handler
 
