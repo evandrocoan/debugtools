@@ -259,7 +259,7 @@ class std_err_replament(object):
 
                         This also ignores the only two methods which are not equal, `__init__()` and `__getattribute__()`.
                     """
-                    different_methods = ("__init__", "__getattribute__")
+                    different_methods = ("__init__", "__class__", "__getattribute__")
                     attributes_to_check = set( dir( object ) + dir( type ) )
 
                     for attribute in attributes_to_check:
