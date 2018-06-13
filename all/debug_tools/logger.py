@@ -88,6 +88,7 @@ class Debugger(Logger):
         https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
     """
     logger = None
+    log_handlers = False
 
     def __init__(self, logger_name, logger_level=None):
         """
@@ -697,7 +698,10 @@ class Debugger(Logger):
         """
             Delete all handlers registered to the current logger.
         """
-        sys.stderr.write( "Removing all handlers from %s...\n" % self.name )
+
+        if self.log_handlers:
+            sys.stderr.write( "Removing all handlers from %s...\n" % self.name )
+
         self._disable( True, True )
 
         for handler in self.handlers:
@@ -956,6 +960,8 @@ def getLogger(debug_level=127, logger_name=None,
 
     @param `setup` if True (default), ensure there is at least one handler enabled in the hierarchy,
         then the current created active Logger setup method will be called.
+
+    @param `log_handlers` if True, log to the `stderr` when logging handlers are removed.
     """
     return _getLogger( debug_level, logger_name,
             file=file, mode=mode, delete=delete, date=date, level=level,
@@ -968,6 +974,11 @@ def _getLogger(debug_level=127, logger_name=None, **kwargs):
         Allow to pass positional arguments to `getLogger()`.
     """
     level = kwargs.get( "level", EMPTY_KWARG )
+    log_handlers = kwargs.get( "log_handlers", False )
+
+    if log_handlers:
+        Debugger.log_handlers = True
+
     debug_level, logger_name = _get_debug_level( debug_level, logger_name )
 
     logger = Debugger.manager.getLogger( logger_name )
