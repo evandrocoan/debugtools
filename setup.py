@@ -9,36 +9,28 @@ except ImportError:
     from setuptools import setup
 
     #
-    # Release process
+    # Release process setup see:
+    # https://github.com/pypa/twine
     #
-    # Setup:
-    # vim ~/.pypirc
-    # .pypirc file contents
+    # Run pip install --user keyring
     #
-    # [distutils]
-    # index-servers =
-    #   pypi
-    #   pypitest
-    #
-    # [pypi]
-    # username: YOUR_USERNAME_HERE
-    # password: YOUR_PASSWORD_HERE
-    #
-    # [pypitest]
-    # username: YOUR_USERNAME_HERE
-    # password: YOUR_PASSWORD_HERE
+    # Run on cmd.exe, not mintty.exe and then type your password when prompted
+    # keyring set https://upload.pypi.org/legacy/ your-username
     #
     # Run this to build the `dist/PACKAGE_NAME-xxx.tar.gz` file
-    #     python setup.pyc sdist
+    #     rm -r ./dist && python setup.py sdist
     #
-    # Run this to build & upload it to `pypi`:
-    #     python setup.pyc sdist upload -r pypi
+    # Run this to build & upload it to `pypi`, type addons_zz when prompted.
+    #     twine upload dist/*
+    #
+    # All in one command:
+    #     rm -r ./dist && python setup.py sdist && twine upload dist/*
     #
 
     setup \
     (
         name='debug_tools',
-        version = '3.0.0',
+        version = '2.1.6',
         description = 'Python Distribution Logger, Debugger and Utilities',
         author = 'Evandro Coan',
         license = "GPLv3",
@@ -56,6 +48,7 @@ except ImportError:
             'concurrent-log-handler',
         ],
         long_description = open('README.md').read(),
+        long_description_content_type='text/markdown',
         classifiers=[
             'Development Status :: 5 - Production/Stable',
             'Environment :: Console',
