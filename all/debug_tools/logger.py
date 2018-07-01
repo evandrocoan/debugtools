@@ -4,7 +4,7 @@
 ####################### Licensing #######################################################
 #
 # Debug Tools, Logging utilities
-# Copyright (C) 2017 Evandro Coan <https://github.com/evandrocoan>
+# Copyright (C) 2018 Evandro Coan <https://github.com/evandrocoan>
 #
 #   Originally written on:
 #   https://github.com/evandrocoan/SublimeAMXX_Editor/blob/888c6822047d84e2370348b6cf5f4ac509f77b32/AMXXEditor.py#L1741-L1804

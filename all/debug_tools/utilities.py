@@ -3,7 +3,7 @@
 
 ####################### Licensing #######################################################
 #
-#   Copyright 2017 @ Evandro Coan
+#   Copyright 2018 @ Evandro Coan
 #   Helper functions and classes
 #
 #  This program is free software; you can redistribute it and/or modify it
