@@ -53,7 +53,21 @@ from logging import _srcfile
 from logging import _acquireLock
 from logging import _releaseLock
 
-from concurrent_log_handler import ConcurrentRotatingFileHandler
+
+try:
+    from concurrent_log_handler import ConcurrentRotatingFileHandler
+
+except( ImportError, ValueError ):
+    from logging import FileHandler
+
+    class ConcurrentRotatingFileHandler(FileHandler):
+        """
+            Fall back with the basic file logger when ConcurrentRotatingFileHandler is not available.
+        """
+
+        def __init__(self, output_file, maxBytes=0, backupCount=0):
+            super( ConcurrentRotatingFileHandler, self ).__init__( output_file )
+
 
 from .stream_replacement_model import std_err_replament
 
