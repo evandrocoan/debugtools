@@ -432,6 +432,20 @@ class Debugger(Logger):
 
         return is_successful
 
+    def _configure_force(self, force_debug_, active):
+        """
+            Configure the force debug level feature.
+        """
+        if force_debug_:
+            active.force_debug = force_debug_
+            self._debug_level = force_debug_
+
+        elif force_debug_ != None:
+            active.force_debug = None
+
+        if active.force_debug:
+            self.debug_level = active.force_debug
+
     def setup(self, file=EMPTY_KWARG, mode=EMPTY_KWARG, delete=EMPTY_KWARG, date=EMPTY_KWARG, level=EMPTY_KWARG,
             function=EMPTY_KWARG, name=EMPTY_KWARG, time=EMPTY_KWARG, msecs=EMPTY_KWARG, tick=EMPTY_KWARG,
             separator=EMPTY_KWARG, formatter=EMPTY_KWARG, rotation=EMPTY_KWARG, **kwargs):
@@ -492,6 +506,7 @@ class Debugger(Logger):
             @param `stderr`     if True (default True), it will install a listener to the `sys.stderr`
                                 console output. This is useful for logging not handled exceptions.
 
+            @param `force`      if an integer, set the `debug_level` into all created loggers hierarchy.
             @param `active`     if True (default True), it will search for any other active logger in
                                 the current logger hierarchy and do the setup call on him. If no active
                                 logger is found, it will do the setup on the current logger object,
@@ -507,10 +522,19 @@ class Debugger(Logger):
         """
         force = kwargs.pop( 'handlers', False )
         self._stderr = kwargs.pop( 'stderr', True )
-        _fix_children = kwargs.pop( '_fix_children', False )
+        force_debug_ = kwargs.pop( "force", None )
 
-        active = self.active
-        logger = active or self if kwargs.pop( 'active', True ) else self
+        _fix_children = kwargs.pop( '_fix_children', False )
+        _active = kwargs.pop( 'active', True )
+
+        if _active:
+            active = self.active
+            logger = active or self
+            self._configure_force( force_debug_, logger)
+
+        else:
+            logger = self
+            self._configure_force( force_debug_, self.active or self)
 
         has_changes = False
         arguments = logger._arguments
@@ -994,7 +1018,6 @@ def getLogger(debug_level=127, logger_name=None,
     @param `setup` if True (default), ensure there is at least one handler enabled in the hierarchy,
             then the current created active Logger setup method will be called.
     @param `log_handlers` if True, log to the `stderr` when logging handlers are removed.
-    @param `force` if True, for the `debug_level` into all created loggers hierarchy.
     """
     return _getLogger( debug_level, logger_name,
             file=file, mode=mode, delete=delete, date=date, level=level,
@@ -1007,7 +1030,6 @@ def _getLogger(debug_level=127, logger_name=None, **kwargs):
         Allow to pass positional arguments to `getLogger()`.
     """
     level = kwargs.get( "level", EMPTY_KWARG )
-    force_debug_ = kwargs.pop( "force", None )
     log_handlers = kwargs.get( "log_handlers", False )
 
     if log_handlers:
@@ -1026,18 +1048,6 @@ def _getLogger(debug_level=127, logger_name=None, **kwargs):
 
     if kwargs.pop( "setup", True ) == True:
         logger.setup( _fix_children=True, **kwargs )
-
-    active = logger.active
-
-    if force_debug_:
-        active.force_debug = force_debug_
-        logger._debug_level = force_debug_
-
-    elif force_debug_ != None:
-        active.force_debug = None
-
-    if active.force_debug:
-        logger.debug_level = active.force_debug
 
     # print('active %s' % active)
     # print('force_debug_ %s' % force_debug_)

@@ -31,7 +31,7 @@ except ImportError:
     setup \
     (
         name='debug_tools',
-        version = '2.2.0',
+        version = '2.2.1',
         description = 'Python Distribution Logger, Debugger and Utilities',
         author = 'Evandro Coan',
         license = "GPLv3",
