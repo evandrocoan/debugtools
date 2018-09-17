@@ -124,7 +124,7 @@ class Debugger(Logger):
             https://stackoverflow.com/questions/682504/what-is-a-clean-pythonic-way-to-have-multiple-constructors-in-python
 
             @param `logger_name` the name of this logger accordingly with the standard logging.Logger() documentation.
-            @param `logger_level` an integer with the current bitwise enabled log level
+            @param `logger_level` an integer/string with the enabled log level from logging module
         """
         super( Debugger, self ).__init__( logger_name, logger_level or "DEBUG" )
 
@@ -134,6 +134,9 @@ class Debugger(Logger):
         self._stderr = False
         self.file_handler = None
         self.stream_handler = None
+
+        # Forces this debug_level into all children
+        self.force_debug = None
 
         # Enable debug messages: (bitwise)
         # 0 - Disabled debugging
@@ -229,6 +232,13 @@ class Debugger(Logger):
             kwargs['debug_level'] = debug_level
             self._log( DEBUG, msg, args, **kwargs )
 
+    def traceback(self, **kwargs):
+        """
+            Prints the stack trace (traceback) until the current function call.
+        """
+        kwargs['debug_level'] = 1
+        self._log( DEBUG, "traceback.format_stack(): \n%s\n\n", "".join( traceback.format_stack() ) )
+
     def reset(self):
         """
             Reset all remembered parameters values set on the subsequent calls to `setup()`.
@@ -248,9 +258,9 @@ class Debugger(Logger):
 
     def setup_basic(self, **kwargs):
         """
-            Configure the `basic_formatter` used by `Debugger.basic` logging function.
+            Configure the `basic_formatter` used by `basic()` logging function.
 
-            @param `**kwargs` the same formatting arguments passed to `Debugger.setup`
+            @param `**kwargs` the same formatting arguments passed to `setup()`
         """
         basic_arguments = self._formatter_arguments()
         basic_arguments.update( kwargs )
@@ -372,7 +382,7 @@ class Debugger(Logger):
 
     def handle_stderr(self, enable=True):
         """
-            Register a exception hook if the logger is capable of logging then to alternate streams.
+            Register a exception hook if the logger is capable of logging them to alternate streams.
         """
         _acquireLock()
 
@@ -384,7 +394,7 @@ class Debugger(Logger):
                 if self.hasStreamHandlers():
                     sys.stderr.write( "Error on `%s`:\n" % self.name )
                     sys.stderr.write( "Cannot set to handler `sys.stderr` while there is a StreamHandler.\n" )
-                    sys.stderr.write( "traceback.format_stack(): %s\n" % "".join( traceback.format_stack() ) )
+                    self.traceback()
 
                 else:
                     std_err_replament.lock( self )
@@ -475,8 +485,8 @@ class Debugger(Logger):
                                 in Mega Bytes instead of FileHandler when creating a log file by the
                                 `file` option. See logging::handlers::RotatingFileHandler for more information.
 
-            @param `force`      if True (default False), it will force to create the handlers,
-                                even if there are not changes on the current saved default parameters.
+            @param `handlers`   if True (default False), it will force to create the handlers,
+                                even if there are no changes on the current saved default parameters.
                                 Its value is not saved between calls to this setup().
 
             @param `stderr`     if True (default True), it will install a listener to the `sys.stderr`
@@ -495,7 +505,7 @@ class Debugger(Logger):
         """
             Allow to pass positional arguments to `setup()`.
         """
-        force = kwargs.pop( 'force', False )
+        force = kwargs.pop( 'handlers', False )
         self._stderr = kwargs.pop( 'stderr', True )
         _fix_children = kwargs.pop( '_fix_children', False )
 
@@ -976,20 +986,15 @@ def getLogger(debug_level=127, logger_name=None,
     """
     Return a logger with the specified name, creating it if necessary. If no name is specified,
     return a new logger based on the main logger file name. See also logging::Manager::getLogger()
-
     It has the same parameters as Debugger::setup with the addition of the following parameters:
-
     @param `debug_level` and `logger_name` are the same parameters passed to the Debugger::__init__() constructor.
-
     @param `level` if True, add to the `full_formatter` the log levels. If not a boolean,
-        it should be the initial logging level accordingly to logging::Logger::setLevel(level)
-
+            it should be the initial logging level accordingly to logging::Logger::setLevel(level)
     @param from `file` until `**kwargs` are the named parameters passed to the Debugger.setup() member function.
-
     @param `setup` if True (default), ensure there is at least one handler enabled in the hierarchy,
-        then the current created active Logger setup method will be called.
-
+            then the current created active Logger setup method will be called.
     @param `log_handlers` if True, log to the `stderr` when logging handlers are removed.
+    @param `force` if True, for the `debug_level` into all created loggers hierarchy.
     """
     return _getLogger( debug_level, logger_name,
             file=file, mode=mode, delete=delete, date=date, level=level,
@@ -1002,6 +1007,7 @@ def _getLogger(debug_level=127, logger_name=None, **kwargs):
         Allow to pass positional arguments to `getLogger()`.
     """
     level = kwargs.get( "level", EMPTY_KWARG )
+    force_debug_ = kwargs.pop( "force", None )
     log_handlers = kwargs.get( "log_handlers", False )
 
     if log_handlers:
@@ -1021,6 +1027,22 @@ def _getLogger(debug_level=127, logger_name=None, **kwargs):
     if kwargs.pop( "setup", True ) == True:
         logger.setup( _fix_children=True, **kwargs )
 
+    active = logger.active
+
+    if force_debug_:
+        active.force_debug = force_debug_
+        logger._debug_level = force_debug_
+
+    elif force_debug_ != None:
+        active.force_debug = None
+
+    if active.force_debug:
+        logger.debug_level = active.force_debug
+
+    # print('active %s' % active)
+    # print('force_debug_ %s' % force_debug_)
+    # print('active.force_debug %s' % active.force_debug)
+    # print('logger.debug_level %s' % logger.debug_level)
     return logger
 
 
