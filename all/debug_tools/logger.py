@@ -432,19 +432,22 @@ class Debugger(Logger):
 
         return is_successful
 
-    def _configure_force(self, force_debug_, active):
+    def _configure_force(self, _force_debug, active):
         """
             Configure the force debug level feature.
         """
-        if force_debug_:
-            active.force_debug = force_debug_
-            self._debug_level = force_debug_
+        if _force_debug:
+            active.force_debug = _force_debug
+            self._debug_level = _force_debug
 
-        elif force_debug_ != None:
+        elif _force_debug != None:
             active.force_debug = None
 
         if active.force_debug:
             self.debug_level = active.force_debug
+
+        # print('active.force_debug %s' % active.force_debug)
+        # print('logger.debug_level %s' % logger.debug_level)
 
     def setup(self, file=EMPTY_KWARG, mode=EMPTY_KWARG, delete=EMPTY_KWARG, date=EMPTY_KWARG, level=EMPTY_KWARG,
             function=EMPTY_KWARG, name=EMPTY_KWARG, time=EMPTY_KWARG, msecs=EMPTY_KWARG, tick=EMPTY_KWARG,
@@ -522,19 +525,18 @@ class Debugger(Logger):
         """
         force = kwargs.pop( 'handlers', False )
         self._stderr = kwargs.pop( 'stderr', True )
-        force_debug_ = kwargs.pop( "force", None )
 
+        _force_debug = kwargs.pop( "force", None )
         _fix_children = kwargs.pop( '_fix_children', False )
-        _active = kwargs.pop( 'active', True )
 
-        if _active:
+        if kwargs.pop( 'active', True ):
             active = self.active
             logger = active or self
-            self._configure_force( force_debug_, logger)
+            self._configure_force( _force_debug, logger)
 
         else:
             logger = self
-            self._configure_force( force_debug_, self.active or self)
+            self._configure_force( _force_debug, self.active or self)
 
         has_changes = False
         arguments = logger._arguments
@@ -1049,10 +1051,6 @@ def _getLogger(debug_level=127, logger_name=None, **kwargs):
     if kwargs.pop( "setup", True ) == True:
         logger.setup( _fix_children=True, **kwargs )
 
-    # print('active %s' % active)
-    # print('force_debug_ %s' % force_debug_)
-    # print('active.force_debug %s' % active.force_debug)
-    # print('logger.debug_level %s' % logger.debug_level)
     return logger
 
 
