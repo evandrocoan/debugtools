@@ -5,6 +5,7 @@ try:
     import sublime_api
 
 except ImportError:
+    import sys
 
     # https://setuptools.readthedocs.io/en/latest/setuptools.html
     from setuptools import setup
@@ -28,6 +29,14 @@ except ImportError:
     #     rm -r ./dist && python setup.py sdist && twine upload dist/*
     #
 
+    install_requires=[
+        'portalocker; python_version>"3.4"',
+        'concurrent-log-handler; python_version>"3.4"',
+    ]
+
+    if sys.platform.startswith("win"):
+        install_requires.append('pypiwin32;python_version>"3.4"'),
+
     setup \
     (
         name='debug_tools',
@@ -36,18 +45,20 @@ except ImportError:
         author = 'Evandro Coan',
         license = "GPLv3",
         url = 'https://github.com/evandrocoan/debug_tools',
-        package_dir = {'': 'all'},
+
+        package_dir = {
+            '': 'all'
+        },
+
         packages = [
             'debug_tools',
         ],
+
         data_files = [
             ("", ["LICENSE.txt"]),
         ],
-        install_requires=[
-            'pypiwin32;platform_system=="Windows"',
-            'portalocker',
-            'concurrent-log-handler',
-        ],
+
+        install_requires = install_requires,
         long_description = open('README.md').read(),
         long_description_content_type='text/markdown',
         classifiers=[
