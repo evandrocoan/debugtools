@@ -22,11 +22,6 @@ matrix:
           env: TOXENV=py27
 
         - os: linux
-          python: 3.3
-          language: python
-          env: TOXENV=py33
-
-        - os: linux
           python: 3.4
           language: python
           env: TOXENV=py34

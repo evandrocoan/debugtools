@@ -7,7 +7,6 @@ environment:
           SUBLIME_TEXT_VERSION : "3"
 
         - TOXENV: py27
-        - TOXENV: py33
         - TOXENV: py34
         - TOXENV: py35
         - TOXENV: py36
