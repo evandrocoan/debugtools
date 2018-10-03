@@ -279,7 +279,8 @@ class MainUnitTests(unittest.TestCase):
                 Traceback (most recent call last):
                    in test_exception_throwing
                     raise Exception( "Test Error" )
-                Exception: Test Error            """.format( line + 5 ) ),
+                Exception: Test Error
+            """.format( line + 5 ) ),
             regex_pattern.sub( "", output ) )
 
     def test_exception_throwing_from_relative_file_path(self):
@@ -315,6 +316,7 @@ def throw_file_exception(self):
             Traceback (most recent call last):
                line {}, in throw_file_exception
                 raise Exception( "Test Exception" )
-            Exception: Test Exception            """.format( line + 3, line + 4  ) ),
+            Exception: Test Exception
+            """.format( line + 3, line + 4  ) ),
         regex_pattern.sub( "", output ) )
 
