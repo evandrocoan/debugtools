@@ -325,7 +325,7 @@ class std_err_replament(object):
             # sys.stdout.write( "_stderr_default: %s\n" % _stderr_default )
             # sys.stdout.write( "inspect.getmro(_stderr_default): %s\n" % str( inspect.getmro( type( _stderr_default ) ) ) )
             # sys.stdout.write( "inspect.getmro(std_err_replament): %s\n" % str( inspect.getmro( std_err_replament_hidden ) ) )
-            # sys.stdout.write( "traceback.format_stack(): %s\n" % "".join( traceback.format_stack() ) )
+            # sys.stdout.write( "traceback.format_stack():\n%s\n" % "".join( traceback.format_stack() ) )
             _stderr_singleton = std_err_replament_hidden()
 
             # sys.stdout.write( "_stderr_singleton: ")

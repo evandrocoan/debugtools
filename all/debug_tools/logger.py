@@ -237,7 +237,7 @@ class Debugger(Logger):
             Prints the stack trace (traceback) until the current function call.
         """
         kwargs['debug_level'] = 1
-        self._log( DEBUG, "traceback.format_stack(): \n%s\n\n", "".join( traceback.format_stack() ) )
+        self._log( DEBUG, "traceback.format_stack():\n%s\n\n", "".join( traceback.format_stack() ) )
 
     def reset(self):
         """
@@ -740,7 +740,7 @@ class Debugger(Logger):
                 sys.stderr.write( "Warning on Debugger::addHandler for %s\n" % self.name )
                 sys.stderr.write( "You cannot add a StreamHandler while the `sys.stderr` handling is enabled.\n" )
                 sys.stderr.write( "Therefore, your stream handler `%s` is not being added.\n" % handler )
-                sys.stderr.write( "traceback.format_stack(): %s\n" % "".join( traceback.format_stack() ) )
+                sys.stderr.write( "traceback.format_stack():\n%s\n" % "".join( traceback.format_stack() ) )
                 return
 
         super( Debugger, self ).addHandler( handler )
