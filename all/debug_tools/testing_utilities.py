@@ -50,7 +50,7 @@ class TestingUtilities(unittest.TestCase):
         diffMode = kwargs.pop('diffMode', -1)
         if diffMode > -1: self.diffMode = diffMode
 
-        super(TestingUtilities, self).__init__(*args, *kwargs)
+        super(TestingUtilities, self).__init__(*args, **kwargs)
 
     def setUp(self):
 
