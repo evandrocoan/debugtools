@@ -38,8 +38,8 @@
 
 import re
 import os
-
 import sys
+
 import unittest
 import inspect
 import traceback
@@ -61,8 +61,6 @@ try:
     sublime_plugin.reload_plugin( "debug_tools.utilities" )
 
 except ImportError:
-    import os
-    import sys
 
     def assert_path(module):
 
