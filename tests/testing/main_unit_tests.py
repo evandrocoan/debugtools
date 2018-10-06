@@ -54,7 +54,7 @@ try:
     import sublime_plugin
 
     import debug_tools.logger
-    from DebugTools.all.debug_tools.utilities import wrap_text
+    from debug_tools.utilities import wrap_text
 
     # Import and reload the debugger
     sublime_plugin.reload_plugin( "debug_tools.logger" )
