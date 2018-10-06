@@ -22,8 +22,9 @@
 #
 
 import os
-import difflib
+import re
 
+import difflib
 import unittest
 
 from debug_tools import getLogger
@@ -39,23 +40,48 @@ class TestingUtilities(unittest.TestCase):
     """
         Holds common features across all Unit Tests.
     """
+    ## Set the maximum size of the assertion error message when Unit Test fail
+    maxDiff = None
+
+    ## Whether `characters diff=0`, `words diff=1` or `lines diff=2` will be used
+    diffMode = 1
+
+    def __init__(self, *args, **kwargs):
+        diffMode = kwargs.pop('diffMode', -1)
+        if diffMode > -1: self.diffMode = diffMode
+
+        super(TestingUtilities, self).__init__(*args, *kwargs)
 
     def setUp(self):
-        """
-            Called right before each Unit Test is ran, to setup new setting values.
-        """
-        ## Set the maximum size of the assertion error message when Unit Test fail
-        self.maxDiff = None
 
         if diff_match_patch:
             self.addTypeEqualityFunc(str, self.myAssertEquals)
 
     def myAssertEquals(self, expected, actual, msg=""):
+        """
+            How to wrap correctly the unit testing diff?
+            https://stackoverflow.com/questions/52682351/how-to-wrap-correctly-the-unit-testing-diff
+        """
 
         if expected != actual:
-            diff_match_patch = DiffMatchPatch()
-            diff = diff_match_patch.diff_main(expected, actual)
-            self.fail( '%s\n' % msg + diff_match_patch.diff_prettyText(diff) )
+            diff_match = DiffMatchPatch()
+
+            if self.diffMode == 0:
+                diffs = diff_match.diff_main(expected, actual)
+
+            else:
+                diff_struct = diff_match.diff_linesToWords(expected, actual,
+                        re.compile(r'\b') if self.diffMode == 1 else re.compile(r'\n') )
+
+                lineText1 = diff_struct[0] # .chars1;
+                lineText2 = diff_struct[1] # .chars2;
+                lineArray = diff_struct[2] # .lineArray;
+
+                diffs = diff_match.diff_main(lineText1, lineText2, False);
+                diff_match.diff_charsToLines(diffs, lineArray);
+                diff_match.diff_cleanupSemantic(diffs)
+
+            self.fail( '%s\n' % msg + diff_match.diff_prettyText(diffs) )
 
     def tearDown(self):
         """
