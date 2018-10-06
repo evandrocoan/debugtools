@@ -81,6 +81,7 @@ class TestingUtilities(unittest.TestCase):
                 diff_match.diff_charsToLines(diffs, lineArray);
                 diff_match.diff_cleanupSemantic(diffs)
 
+            if not msg: msg = ""
             self.fail( '%s\n' % msg + diff_match.diff_prettyText(diffs) )
 
     def tearDown(self):
