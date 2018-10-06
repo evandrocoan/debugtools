@@ -54,6 +54,12 @@ except( ImportError, ValueError ):
     def natsorted(*args, **kwargs):
         raise RuntimeError( "The library natsort is required to run this function.\nYou can install it with `pip install natsort`" )
 
+try:
+    import diff_match_patch
+
+except( ImportError, ValueError ):
+    diff_match_patch = None
+
 
 if sys.version_info[0] < 3:
     Event = threading._Event
@@ -82,6 +88,30 @@ class SleepEvent(Event):
 
     def disableSleepCall(self):
         self.set()
+
+
+if diff_match_patch:
+
+    class DiffMatchPatch(diff_match_patch.diff_match_patch):
+
+        def diff_prettyText(self, diffs):
+            """Convert a diff array into a pretty Text report.
+            Args:
+              diffs: Array of diff tuples.
+            Returns:
+              Text representation.
+            """
+            results_diff = []
+            # print(diffs)
+            for (op, data) in diffs:
+                text = data
+                if op == self.DIFF_INSERT:
+                    results_diff.append("\n+ %s" % (text if text != '\n' else ""))
+                elif op == self.DIFF_DELETE:
+                    results_diff.append("\n- %s" % (text if text != '\n' else ""))
+                elif op == self.DIFF_EQUAL:
+                    results_diff.append(textwrap.indent("%s" % text, "  "))
+            return "".join(results_diff)
 
 
 # An unique identifier for any created object

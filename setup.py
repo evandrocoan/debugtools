@@ -60,7 +60,7 @@ except ImportError:
 
         # To install use: pip install -e .[full]
         extras_require = {
-            'full':  ["natsort"]
+            'full':  ["natsort", "diff_match_patch"]
         },
 
         install_requires = install_requires,

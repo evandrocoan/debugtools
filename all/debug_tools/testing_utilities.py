@@ -23,12 +23,15 @@
 
 import os
 import difflib
+
 import unittest
 
 from debug_tools import getLogger
 log = getLogger( 127, __name__ )
 
-from debug_tools.utilities import wrap_text
+from .utilities import wrap_text
+from .utilities import DiffMatchPatch
+from .utilities import diff_match_patch
 from .lockable_type import LockableType
 
 
@@ -41,9 +44,18 @@ class TestingUtilities(unittest.TestCase):
         """
             Called right before each Unit Test is ran, to setup new setting values.
         """
-
         ## Set the maximum size of the assertion error message when Unit Test fail
         self.maxDiff = None
+
+        if diff_match_patch:
+            self.addTypeEqualityFunc(str, self.myAssertEquals)
+
+    def myAssertEquals(self, expected, actual, msg=""):
+
+        if expected != actual:
+            diff_match_patch = DiffMatchPatch()
+            diff = diff_match_patch.diff_main(expected, actual)
+            self.fail( '%s\n' % msg + diff_match_patch.diff_prettyText(diff) )
 
     def tearDown(self):
         """
