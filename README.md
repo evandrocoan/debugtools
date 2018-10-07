@@ -1,7 +1,7 @@
 # Python Debug Tools
 
 [![Build Status](https://travis-ci.org/evandrocoan/DebugTools.svg?branch=master)](https://travis-ci.org/evandrocoan/DebugTools)
-[![Build status](https://ci.appveyor.com/api/projects/status/github/evandrocoan/DebugTools?branch=master&svg=true)](https://ci.appveyor.com/project/evandrocoan/DebugTools/branch/master)
+[![Build status](https://ci.appveyor.com/api/projects/status/github/evandrocoan/DebugTools?branch=master&svg=true)](https://ci.appveyor.com/project/evandrocoan/PythonDebugTools/branch/master)
 [![codecov](https://codecov.io/gh/evandrocoan/DebugTools/branch/master/graph/badge.svg)](https://codecov.io/gh/evandrocoan/DebugTools)
 [![Coverage Status](https://coveralls.io/repos/github/evandrocoan/DebugTools/badge.svg?branch=master)](https://coveralls.io/github/evandrocoan/DebugTools?branch=master)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/3ab71bdcf0114065b5273dbed6c89779)](https://www.codacy.com/app/evandrocoan/DebugTools?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=evandrocoan/DebugTools&amp;utm_campaign=Badge_Grade)
