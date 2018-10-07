@@ -102,31 +102,40 @@ if diff_match_patch:
               Text representation.
             """
             results_diff = []
+            cut_next_new_line = [False]
+            # print('\ndiffs:\n%s\n' % diffs)
 
             def parse(sign):
-                new = text
+                # print('new1:', text.encode( 'ascii' ))
 
-                # print('new1:', new.encode( 'ascii' ))
+                if text:
+                    new = text
+
+                else:
+                    return ''
+
                 new = textwrap.indent( "%s" % new, sign, lambda line: True )
 
+                # force the diff change to show up on a new line for highlighting
                 if len(results_diff) > 0:
-                    last_result = results_diff[-1]
-
-                    if last_result:
-                        if last_result[-1] != '\n': new = '\n' + new
-
-                    else:
-                        new = '\n' + new
+                    new = '\n' + new
 
                 if new and new[-1] == '\n':
-                    if sign == '+ ': new = new[0:-1]
-                    if sign == '- ': new = new[0:-1] + '\\n\n'
+
+                    if sign == '+ ' and next_text and new[-1] == '\n' and next_text[0] == '\n':
+                        cut_next_new_line[0] = True;
+
+                        # Avoids a double plus sign showing up when the diff has the element (1, '\n')
+                        if len(text) > 1: new = new + '%s\n' % sign
+
+                    if sign == '- ': new = new[0:-1] + '\n'
 
                 # print('new2:', new.encode( 'ascii' ))
                 return new
 
-            # print(diffs)
-            for (op, text) in diffs:
+            for index in range(len(diffs)):
+                op, text = diffs[index]
+                if index < len(diffs) - 1: next_op, next_text = diffs[index+1]
 
                 if op == self.DIFF_INSERT:
                     results_diff.append( parse( "+ " ) )
@@ -135,10 +144,15 @@ if diff_match_patch:
                     results_diff.append( parse( "- " ) )
 
                 elif op == self.DIFF_EQUAL:
-                    # print('new1:', text.encode( 'ascii' ))
+                    # print('new3:', text.encode( 'ascii' ))
                     text = textwrap.indent(text, "  ")
+
+                    if cut_next_new_line[0]:
+                        cut_next_new_line[0] = False
+                        text = text[1:]
+
                     results_diff.append(text)
-                    # print('new2:', text.encode( 'ascii' ))
+                    # print('new4:', text.encode( 'ascii' ))
 
             return "".join(results_diff)
 

@@ -86,6 +86,7 @@ class UtilitiesUnitTests(testing_utilities.TestingUtilities):
 
         self.assertTextEqual(
         r"""
+            The strings does not match...
               1. Duplicated target language name defined in your grammar on:
             - [@-1,63:87='
             + free_input_string
@@ -99,7 +100,6 @@ class UtilitiesUnitTests(testing_utilities.TestingUtilities):
             - '<__ANON_3>,5:20]
         """, error.exception, trim_plus=False)
 
-    @unittest.skip("Not sure how to fix this")
     def test_wordsDiffModeExample1(self):
         self.diffMode = 1
         expected = "1. Duplicated target language name defined in your grammar on: [@-1,63:87='Abstract Machine Language'<__ANON_3>,3:19]\n" \
@@ -116,6 +116,7 @@ class UtilitiesUnitTests(testing_utilities.TestingUtilities):
 
         self.assertTextEqual(
         r"""
+            The strings does not match...
               1. Duplicated target language name defined in your grammar on:
             - [@-1,63:87='Abstract Machine Language'<__ANON_3>,3:19]
             + free_input_string
@@ -143,6 +144,7 @@ class UtilitiesUnitTests(testing_utilities.TestingUtilities):
 
         self.assertTextEqual(
         r"""
+            The strings does not match...
             - 1. Duplicated target language name defined in your grammar on: [@-1,63:87='Abstract Machine Language'<__ANON_3>,3:19]
             - 2. Duplicated master scope name defined in your grammar on: [@-1,138:147='source.sma'<__ANON_3>,5:20]
             + 1. Duplicated target language name defined in your grammar on: free_input_string

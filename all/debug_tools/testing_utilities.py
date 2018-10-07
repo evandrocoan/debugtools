@@ -53,11 +53,9 @@ class TestingUtilities(unittest.TestCase):
         super(TestingUtilities, self).__init__(*args, **kwargs)
 
     def setUp(self):
+        if diff_match_patch: self.addTypeEqualityFunc(str, self.myAssertEqual)
 
-        if diff_match_patch:
-            self.addTypeEqualityFunc(str, self.myAssertEquals)
-
-    def myAssertEquals(self, expected, actual, msg=""):
+    def myAssertEqual(self, expected, actual, msg=""):
         """
             How to wrap correctly the unit testing diff?
             https://stackoverflow.com/questions/52682351/how-to-wrap-correctly-the-unit-testing-diff
@@ -81,8 +79,13 @@ class TestingUtilities(unittest.TestCase):
                 diff_match.diff_charsToLines(diffs, lineArray);
                 diff_match.diff_cleanupSemantic(diffs)
 
-            if not msg: msg = ""
-            self.fail( '%s\n' % msg + diff_match.diff_prettyText(diffs) )
+            if msg:
+                msg += '\n'
+
+            else:
+                msg = "The strings does not match...\n"
+
+            self.fail( msg + diff_match.diff_prettyText(diffs) )
 
     def tearDown(self):
         """
@@ -104,7 +107,7 @@ class TestingUtilities(unittest.TestCase):
         # print( results.encode( 'ascii' ) )
         # self.unidiff_output( goal, results )
         if diff_match_patch:
-            self.myAssertEquals( goal, results )
+            self.myAssertEqual( goal, results )
 
     def unidiff_output(self, expected, actual):
         """
