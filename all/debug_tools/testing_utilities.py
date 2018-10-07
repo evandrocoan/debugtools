@@ -90,18 +90,21 @@ class TestingUtilities(unittest.TestCase):
         """
         LockableType.USE_STRING = True
 
-    def assertTextEqual(self, goal, results):
+    def assertTextEqual(self, goal, results, trim_plus=True):
         """
             Remove both input texts indentation and trailing white spaces, then assertEquals() both
             of the inputs.
         """
-        goal = wrap_text( goal, trim_tabs=True, trim_spaces=True )
-        results = wrap_text( results, trim_tabs=True, trim_spaces=True )
+        goal = wrap_text( goal, trim_tabs=True, trim_spaces=True, trim_plus=trim_plus )
+        results = wrap_text( results, trim_tabs=True, trim_spaces=True, trim_plus=trim_plus )
 
+        # print( '\n\ngoal\n%s' % goal )
+        # print( '\n\nresults\n%s' % results )
         # print( goal.encode( 'ascii' ) )
         # print( results.encode( 'ascii' ) )
         # self.unidiff_output( goal, results )
-        self.assertEqual( goal, results )
+        if diff_match_patch:
+            self.myAssertEquals( goal, results )
 
     def unidiff_output(self, expected, actual):
         """

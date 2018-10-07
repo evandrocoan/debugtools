@@ -104,25 +104,41 @@ if diff_match_patch:
             results_diff = []
 
             def parse(sign):
-                new = textwrap.indent( "%s" % text, sign, lambda line: True )
-                # heuristics to attempt to fix textwrap sometimes not indenting if the line ends with a new line
-                if len(new) > 4:
-                    if new[-1] == '\n':
-                        if new[-4:-1] != sign:
-                            new = new + sign + '\n'
-                return "\n" if len(results_diff) else "", new
+                new = text
+
+                # print('new1:', new.encode( 'ascii' ))
+                new = textwrap.indent( "%s" % new, sign, lambda line: True )
+
+                if len(results_diff) > 0:
+                    last_result = results_diff[-1]
+
+                    if last_result:
+                        if last_result[-1] != '\n': new = '\n' + new
+
+                    else:
+                        new = '\n' + new
+
+                if new and new[-1] == '\n':
+                    if sign == '+ ': new = new[0:-1]
+                    if sign == '- ': new = new[0:-1] + '\\n\n'
+
+                # print('new2:', new.encode( 'ascii' ))
+                return new
 
             # print(diffs)
             for (op, text) in diffs:
 
                 if op == self.DIFF_INSERT:
-                    results_diff.append( "%s%s" % parse( "+ " ) )
+                    results_diff.append( parse( "+ " ) )
 
                 elif op == self.DIFF_DELETE:
-                    results_diff.append( "%s%s" % parse( "- " ) )
+                    results_diff.append( parse( "- " ) )
 
                 elif op == self.DIFF_EQUAL:
-                    results_diff.append(textwrap.indent("%s" % text.strip('\n'), "  "))
+                    # print('new1:', text.encode( 'ascii' ))
+                    text = textwrap.indent(text, "  ")
+                    results_diff.append(text)
+                    # print('new2:', text.encode( 'ascii' ))
 
             return "".join(results_diff)
 
@@ -428,12 +444,15 @@ def getCleanSpaces(inputText, minimumLength=0, lineCutTrigger="", keepSpaceSepat
     return clean_lines
 
 
-def wrap_text(text, wrap=0, trim_tabs=False, trim_spaces=False, trim_lines=False, indent=""):
+def wrap_text(text, wrap=0, trim_tabs=False, trim_spaces=False, trim_lines=False, indent="", trim_plus=True):
     """
         1. Remove input text leading common indentation, trailing white spaces
         2. If `wrap`, wraps big lists on 80 characters.
-        3. If `trim_spaces`, remove leading '+' symbols and if `trim_tabs` replace tabs with 2 spaces.
-        4. If `trim_lines`, remove all new line characters.
+        3. if `trim_tabs` replace tabs with 2 spaces.
+        4. If `trim_spaces`, remove leading ' ' symbols
+        5. If `trim_lines`, remove all new line characters.
+        5. If `indent`, the subsequent indent to use.
+        6. If `trim_plus`, remove leading '+' symbols and if `trim_tabs` replace tabs with 2 spaces.
     """
     clean_lines = []
 
@@ -445,12 +464,25 @@ def wrap_text(text, wrap=0, trim_tabs=False, trim_spaces=False, trim_lines=False
 
     dedent_lines = textwrap.dedent( text ).strip( '\n' )
 
-    if trim_spaces:
+    if trim_spaces and trim_plus:
 
         for line in dedent_lines.split( '\n' ):
             line = line.rstrip( ' ' ).lstrip( '+' )
             clean_lines.append( line )
 
+    elif trim_spaces:
+
+        for line in dedent_lines.split( '\n' ):
+            line = line.rstrip( ' ' )
+            clean_lines.append( line )
+
+    elif trim_plus:
+
+        for line in dedent_lines.split( '\n' ):
+            line = line.lstrip( '+' )
+            clean_lines.append( line )
+
+    if trim_spaces or trim_plus:
         dedent_lines = textwrap.dedent( "\n".join( clean_lines ) )
 
     if wrap:
