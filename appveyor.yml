@@ -13,15 +13,23 @@ environment:
 
 
 install:
-    - IF NOT "%TOXENV%"=="" (C:\Python27\python -m pip install --pre -U tox)
+    - python --version
+    - dir
+    - pip list
+    - IF NOT "%TOXENV%"=="" (C:\Python27\python -m pip install --disable-pip-version-check --pre -U tox)
+    - IF NOT "%TOXENV%"=="" (pip install --disable-pip-version-check -e .[full])
+    - IF NOT "%TOXENV%"=="" (pip install --disable-pip-version-check diff-match-patch)
+    - IF NOT "%TOXENV%"=="" (pip install --disable-pip-version-check diff_match_patch)
 
     - ps: If(!$env:toxenv) {appveyor DownloadFile "https://raw.githubusercontent.com/evandroforks/UnitTesting/master/sbin/appveyor.ps1"}
     - ps: If(!$env:toxenv) {.\appveyor.ps1 "bootstrap" -verbose}
     - ps: If(!$env:toxenv) {.\appveyor.ps1 "clone_git_package" "https://github.com/evandroforks/PortalockerFiles" "PortalockerFiles" -verbose}
+    - ps: If(!$env:toxenv) {.\appveyor.ps1 "clone_git_package" "https://github.com/evandroforks/DiffMatchPatch" "DiffMatchPatch" -verbose}
     - ps: If(!$env:toxenv) {.\appveyor.ps1 "clone_git_package" "https://github.com/evandroforks/ConcurrentLogHandler" "ConcurrentLogHandler" -verbose}
     - ps: If(!$env:toxenv) {.\appveyor.ps1 "clone_git_package" "https://github.com/evandroforks/python-pywin32" "python-pywin32" -verbose}
-    - ps: If(!$env:toxenv) {pip install coverage codacy-coverage}
+    - ps: If(!$env:toxenv) {pip install --disable-pip-version-check coverage codacy-coverage}
     - ps: If(!$env:toxenv) {.\appveyor.ps1 "install_package_control" -verbose}
+    - pip list
 
 
 build: off
@@ -35,7 +43,7 @@ test_script:
 on_finish:
     - IF "%TOXENV%"=="" (SET PYTHON=C:\\Python33)
     - IF "%TOXENV%"=="" (SETLOCAL ENABLEDELAYEDEXPANSION && SET PATH=!PYTHON!;!PYTHON!\\Scripts;!PATH!)
-    - IF "%TOXENV%"=="" (pip install codecov)
+    - IF "%TOXENV%"=="" (pip install --disable-pip-version-check codecov)
     - IF "%TOXENV%"=="" (codecov)
     - IF "%TOXENV%"=="" (python --version)
     - IF "%TOXENV%"=="" (SETLOCAL ENABLEDELAYEDEXPANSION && echo !PATH!)
