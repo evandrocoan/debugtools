@@ -40,7 +40,7 @@ except ImportError:
     setup \
     (
         name='debug_tools',
-        version = '2.4.0',
+        version = '2.4.1',
         description = 'Python Distribution Logger, Debugger and Utilities',
         author = 'Evandro Coan',
         license = "GPLv3",

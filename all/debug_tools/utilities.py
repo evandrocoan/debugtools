@@ -128,8 +128,8 @@ if diff_match_patch:
             """
             results_diff = []
             cut_next_new_line = [False]
-            # print('\ndiffs:\n%s\n' % diffs)
 
+            # print('\ndiffs:\n%s\n' % diffs)
             operations = (self.DIFF_INSERT, self.DIFF_DELETE)
 
             def parse(sign):
@@ -163,7 +163,10 @@ if diff_match_patch:
 
             for index in range(len(diffs)):
                 op, text = diffs[index]
-                if index < len(diffs) - 1: next_op, next_text = diffs[index+1]
+                if index < len(diffs) - 1:
+                    next_op, next_text = diffs[index+1]
+                else:
+                    next_op, next_text = (0, "")
 
                 if op == self.DIFF_INSERT:
                     results_diff.append( parse( "+ " ) )
