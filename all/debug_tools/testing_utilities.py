@@ -60,7 +60,13 @@ class TestingUtilities(unittest.TestCase):
             How to wrap correctly the unit testing diff?
             https://stackoverflow.com/questions/52682351/how-to-wrap-correctly-the-unit-testing-diff
         """
+        # print( '\n\nexpected\n%s' % expected )
+        # print( '\n\nactual\n%s' % actual )
 
+        # print( goal.encode( 'ascii' ) )
+        # print( results.encode( 'ascii' ) )
+
+        # self.unidiff_output( goal, results )
         if expected != actual:
             diff_match = DiffMatchPatch()
 
@@ -101,11 +107,6 @@ class TestingUtilities(unittest.TestCase):
         goal = wrap_text( goal, trim_tabs=True, trim_spaces=True, trim_plus=trim_plus )
         results = wrap_text( results, trim_tabs=True, trim_spaces=True, trim_plus=trim_plus )
 
-        # print( '\n\ngoal\n%s' % goal )
-        # print( '\n\nresults\n%s' % results )
-        # print( goal.encode( 'ascii' ) )
-        # print( results.encode( 'ascii' ) )
-        # self.unidiff_output( goal, results )
         if diff_match_patch:
             self.myAssertEqual( goal, results )
 

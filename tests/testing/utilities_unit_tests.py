@@ -90,13 +90,15 @@ class UtilitiesUnitTests(testing_utilities.TestingUtilities):
               1. Duplicated target language name defined in your grammar on:
             - [@-1,63:87='
             + free_input_string
-            +   text_chunk_end    Abstract Machine Language
+            +   text_chunk_end
+              Abstract Machine Language
             - '<__ANON_3>,3:19]
             +
               2. Duplicated master scope name defined in your grammar on:
             - [@-1,138:147='
             + free_input_string
-            +   text_chunk_end    source.sma
+            +   text_chunk_end
+              source.sma
             - '<__ANON_3>,5:20]
         """, error.exception, trim_plus=False)
 
