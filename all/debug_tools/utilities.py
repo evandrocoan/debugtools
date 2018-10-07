@@ -61,7 +61,10 @@ except( ImportError, ValueError ):
     diff_match_patch = None
 
 
+is_python2 = False
+
 if sys.version_info[0] < 3:
+    is_python2 = True
     Event = threading._Event
 
 else:
@@ -90,6 +93,28 @@ class SleepEvent(Event):
         self.set()
 
 
+if is_python2:
+    # Based on Python 3's textwrap.indent
+    def textwrap_indent(text, prefix, predicate=None):
+        """Adds 'prefix' to the beginning of selected lines in 'text'.
+        If 'predicate' is provided, 'prefix' will only be added to the lines
+        where 'predicate(line)' is True. If 'predicate' is not provided,
+        it will default to adding 'prefix' to all non-empty lines that do not
+        consist solely of whitespace characters.
+        """
+        if predicate is None:
+            def predicate(line):
+                return line.strip()
+
+        def prefixed_lines():
+            for line in text.splitlines(True):
+                yield (prefix + line if predicate(line) else line)
+        return u"".join(prefixed_lines())
+
+else:
+    textwrap_indent = textwrap.indent
+
+
 if diff_match_patch:
 
     class DiffMatchPatch(diff_match_patch.diff_match_patch):
@@ -116,7 +141,7 @@ if diff_match_patch:
                 else:
                     return ''
 
-                new = textwrap.indent( "%s" % new, sign, lambda line: True )
+                new = textwrap_indent( "%s" % new, sign, lambda line: True )
 
                 # force the diff change to show up on a new line for highlighting
                 if len(results_diff) > 0:
@@ -148,7 +173,7 @@ if diff_match_patch:
 
                 elif op == self.DIFF_EQUAL:
                     # print('new3:', text.encode( 'ascii' ))
-                    text = textwrap.indent(text, "  ")
+                    text = textwrap_indent(text, "  ")
 
                     if cut_next_new_line[0]:
                         cut_next_new_line[0] = False
