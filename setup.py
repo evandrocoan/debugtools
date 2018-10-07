@@ -26,7 +26,7 @@ except ImportError:
     #     twine upload dist/*
     #
     # All in one command:
-    #     rm -rf ./dist && python setup.py sdist && twine upload dist/*
+    #     rm -rf ./dist && python setup.py sdist && twine upload dist/* && rm -rf ./dist
     #
 
     install_requires=[
@@ -40,7 +40,7 @@ except ImportError:
     setup \
     (
         name='debug_tools',
-        version = '2.3.0',
+        version = '2.4.0',
         description = 'Python Distribution Logger, Debugger and Utilities',
         author = 'Evandro Coan',
         license = "GPLv3",
@@ -60,7 +60,7 @@ except ImportError:
 
         # To install use: pip install -e .[full]
         extras_require = {
-            'full':  ["natsort", "diff_match_patch"]
+            'full':  ["natsort", "diff_match_patch", "diff-match-patch"]
         },
 
         install_requires = install_requires,
