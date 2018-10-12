@@ -171,6 +171,15 @@ this `dependencies.json` file on the root of your Package:
 ```
 
 
+## Update estimated_time_left from upstream
+
+To update the subtree `all/debug_tools/estimated_time_left`,
+from upstream updates you can use the command:
+```shell
+git subtree pull --prefix=all/debug_tools/estimated_time_left https://github.com/evandrocoan/EstimatedTimeLeft master
+```
+
+
 # License
 
 See the file [LICENSE.txt](LICENSE.txt)
