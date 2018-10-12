@@ -179,6 +179,11 @@ from upstream updates you can use the command:
 git subtree pull --prefix=all/debug_tools/estimated_time_left https://github.com/evandrocoan/EstimatedTimeLeft master
 ```
 
+To send updates back to the upstream, use the following command:
+```shell
+git subtree push --prefix=all/debug_tools/estimated_time_left https://github.com/evandrocoan/EstimatedTimeLeft master
+```
+
 
 # License
 
