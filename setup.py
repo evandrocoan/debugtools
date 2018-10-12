@@ -28,7 +28,6 @@ except ImportError:
     # All in one command:
     #     rm -rf ./dist && python setup.py sdist && twine upload dist/* && rm -rf ./dist
     #
-
     install_requires=[
         'portalocker; python_version>"3.4"',
         'concurrent-log-handler; python_version>"3.4"',
