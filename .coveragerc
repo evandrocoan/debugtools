@@ -1,5 +1,0 @@
-[run]
-source = all/debug_tools
-omit =
-    */home/travis/virtualenv/*
-    */tests/*
