@@ -28,18 +28,39 @@ except ImportError:
     # All in one command:
     #     rm -rf ./dist && python setup.py sdist && twine upload dist/* && rm -rf ./dist
     #
+    version = '2.4.2'
+
     install_requires=[
-        'portalocker; python_version>"3.4"',
-        'concurrent-log-handler; python_version>"3.4"',
     ]
 
+    # To install use: pip install -e .[full]
+    extras_require = {
+        'full': [
+            "natsort",
+            "diff-match-patch",
+            'portalocker; python_version>"3.4"',
+            'concurrent-log-handler; python_version>"3.4"',
+        ],
+        'diff': [
+            "diff-match-patch",
+        ],
+        'sort': [
+            "natsort",
+        ],
+        'lock': [
+            'portalocker; python_version>"3.4"',
+            'concurrent-log-handler; python_version>"3.4"',
+        ],
+    }
+
     if sys.platform.startswith("win"):
-        install_requires.append('pypiwin32;python_version>"3.4"'),
+        extras_require['full'].append('pypiwin32;python_version>"3.4"')
+        extras_require['lock'].append('pypiwin32;python_version>"3.4"')
 
     setup \
     (
         name='debug_tools',
-        version = '2.4.1',
+        version = version,
         description = 'Python Distribution Logger, Debugger and Utilities',
         author = 'Evandro Coan',
         license = "GPLv3",
@@ -57,11 +78,7 @@ except ImportError:
             ("", ["LICENSE.txt"]),
         ],
 
-        # To install use: pip install -e .[full]
-        extras_require = {
-            'full':  ["natsort", "diff_match_patch", "diff-match-patch"]
-        },
-
+        extras_require = extras_require,
         install_requires = install_requires,
         long_description = open('README.md').read(),
         long_description_content_type='text/markdown',
