@@ -81,3 +81,9 @@ Time in seconds the generator has been running.
     ProgressInfo.time_remaining()
 
 Estimated time remaining of the loop.
+
+
+## License
+See the [LICENSE](LICENSE) file under this repository.
+
+
