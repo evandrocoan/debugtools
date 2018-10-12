@@ -65,7 +65,7 @@ def sequence_timer(sequence, info_frequency=0):
         if now - if_counter < info_frequency:
             yield elem, None
         else:
-            pi = ProgressInfo(now - start, float(i)/length)
+            pi = ProgressInfo(now - start, float(i)/length, i, length)
             if_counter += info_frequency
             yield elem, pi
         i += 1
@@ -87,7 +87,7 @@ def file_timer(in_file, info_frequency=0):
         if now - if_counter < info_frequency:
             yield line, None
         else:
-            pi = ProgressInfo(now - start, float(in_file.tell())/length)
+            pi = ProgressInfo(now - start, float(in_file.tell())/length, i, length)
             if_counter += info_frequency
             yield line, pi
         i += 1
