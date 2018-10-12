@@ -2,9 +2,11 @@ import time
 import math
 
 class ProgressInfo:
-    def __init__(self, elapsed_time, progress):
+    def __init__(self, elapsed_time, progress, index, count):
         self.elapsed_time = elapsed_time
         self.progress = progress
+        self.index = index
+        self.count = count
 
     def time_remaining(self):
         if (self.progress > 0):
@@ -46,7 +48,7 @@ def range(n, info_frequency=0):
     while i < n:
         now = time.time()
         if now - if_counter > info_frequency:
-            pi = ProgressInfo(now - start, float(i)/n)
+            pi = ProgressInfo(now - start, float(i)/n, i, n)
             if_counter += info_frequency
         else:
             pi = None
