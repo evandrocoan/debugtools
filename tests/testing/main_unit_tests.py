@@ -87,6 +87,7 @@ except (ImportError, ValueError, SystemError):
 # We could make the logger recreate the `stderr` output StreamHandler by passing `force=True` to
 # to `Debugger.setup()`, removing the old reference to `sys.stderr`.
 _stderr = TeeNoFile()
+_stdout = TeeNoFile(stdout=True)
 
 
 def getLogger(debug_level=127, logger_name=None, **kwargs):
@@ -94,6 +95,7 @@ def getLogger(debug_level=127, logger_name=None, **kwargs):
     global line
     log = debug_tools.logger.getLogger( debug_level, logger_name, **kwargs )
     _stderr.clear( log )
+    _stdout.clear( log )
 
     frameinfo = inspect.getframeinfo( sys._getframe(1) )
     line = frameinfo.lineno
@@ -115,7 +117,7 @@ def log_traceback(ex, ex_traceback=None):
     sys.stderr.write( "\n".join( tb_lines ) )
 
 
-class MainUnitTests(unittest.TestCase):
+class StdErrUnitTests(unittest.TestCase):
     """
         How to assert output with nosetest/unittest in python?
         https://stackoverflow.com/questions/4219717/how-to-assert-output-with-nosetest-unittest-in-python
@@ -317,4 +319,29 @@ def throw_file_exception(self):
             Exception: Test Exception
             """.format( line + 3, line + 4  ) ),
         regex_pattern.sub( "", output ) )
+
+class StdOutUnitTests(unittest.TestCase):
+
+    def setUp(self):
+        self.maxDiff = None
+        sys.stderr.write("\n")
+        sys.stderr.write("\n")
+
+    def tearDown(self):
+        log.clear( True )
+        log.reset()
+
+    def contents(self, date_regex):
+        return _stdout.contents( date_regex )
+
+    def file_contents(self, date_regex):
+        return _stdout.file_contents( date_regex, log )
+
+    def test_helloWordToStdOut(self):
+        getLogger( 127, "testing.main_unit_tests", date=True, stdout=True )
+
+        print("Std out logging capture test!")
+        output = self.contents( r"\d{4}\-\d{2}-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+
+        self.assertEqual( "Std out logging capture test!", output )
 

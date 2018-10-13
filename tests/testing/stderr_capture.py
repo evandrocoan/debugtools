@@ -50,14 +50,20 @@ class TeeNoFile(object):
         https://stackoverflow.com/questions/616645/how-do-i-duplicate-sys-stdout-to-a-log-file-in-python
     """
 
-    def __init__(self):
+    def __init__(self, stdout=False):
         self._contents = []
+        self.stdout_type = stdout
 
-        self._stderr = sys.stderr
-        sys.stderr = self
+        if stdout:
+            self._std_original = sys.stdout
+            sys.stdout = self
+
+        else:
+            self._std_original = sys.stderr
+            sys.stderr = self
 
         # sys.stdout.write( "inspect.getmro(sys.stderr):  %s\n" % str( inspect.getmro( type( sys.stderr ) ) ) )
-        # sys.stdout.write( "inspect.getmro(self.stderr): %s\n" % str( inspect.getmro( type( self._stderr ) ) ) )
+        # sys.stdout.write( "inspect.getmro(self.stderr): %s\n" % str( inspect.getmro( type( self._std_original ) ) ) )
 
     def __del__(self):
         """
@@ -71,12 +77,12 @@ class TeeNoFile(object):
         del self._contents[:]
 
     def flush(self):
-        self._stderr.flush()
+        self._std_original.flush()
 
     def write(self, *args, **kwargs):
-        # self._stderr.write( " 111111 %s" % self._stderr.write + str( args ), **kwargs )
+        # self._std_original.write( " 111111 %s" % self._std_original.write + str( args ), **kwargs )
         # self._contents.append( " 555555" + str( args ), **kwargs )
-        self._stderr.write( *args, **kwargs )
+        self._std_original.write( *args, **kwargs )
         self._contents.append( *args, **kwargs )
 
     def contents(self, date_regex):
@@ -89,7 +95,7 @@ class TeeNoFile(object):
             output = file.read()
 
         contents = self._process_contents( date_regex, output )
-        self._stderr.write("\nContents:\n`%s`\n" % contents)
+        self._std_original.write("\nContents:\n`%s`\n" % contents)
         return contents
 
     def _process_contents(self, date_regex, output):
@@ -106,7 +112,13 @@ class TeeNoFile(object):
     def close(self):
 
         # On shutdown `__del__`, the sys module can be already set to None.
-        if sys and self._stderr:
-            sys.stderr = self._stderr
-            self._stderr = None
+        if sys and self._std_original:
+
+            if self.stdout_type:
+                sys.stdout = self._std_original
+                self._std_original = None
+
+            else:
+                sys.stderr = self._std_original
+                self._std_original = None
 
