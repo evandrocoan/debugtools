@@ -83,7 +83,14 @@ except( ImportError, ValueError ):
             super( ConcurrentRotatingFileHandler, self ).__init__( output_file )
 
 
-from .stream_replacement_model import std_err_replament
+from .stream_replacement_model import stderr_replament
+
+# Uncoment this temporarily to create update the `stream_replacement_model_stdout.py` after changes
+# on `stream_replacement_model.py`
+#
+# While developing, you can reload/test your changes to ``create_stdout_handler with:
+#     import imp; imp.reload( debug_tools.logger );
+# from .utilities import _create_stdout_handler; _create_stdout_handler();
 
 
 is_python2 = False
@@ -397,10 +404,10 @@ class Debugger(Logger):
                     self.traceback()
 
                 else:
-                    std_err_replament.lock( self )
+                    stderr_replament.lock( self )
 
             else:
-                std_err_replament.unlock()
+                stderr_replament.unlock()
 
         except Exception:
             self.exception( "Could not register the sys.stderr stream handler" )
@@ -736,7 +743,7 @@ class Debugger(Logger):
 
         if "StreamHandler" in str( type( handler ) ):
 
-            if std_err_replament.is_active:
+            if stderr_replament.is_active:
                 sys.stderr.write( "Warning on Debugger::addHandler for %s\n" % self.name )
                 sys.stderr.write( "You cannot add a StreamHandler while the `sys.stderr` handling is enabled.\n" )
                 sys.stderr.write( "Therefore, your stream handler `%s` is not being added.\n" % handler )
