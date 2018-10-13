@@ -60,13 +60,6 @@ before_install:
             curl -OL https://raw.githubusercontent.com/evandroforks/UnitTesting/master/sbin/travis.sh;
       fi
 
-    - if [ -z "$TOXENV" ] && [ "$TRAVIS_OS_NAME" == "linux" ]; then
-            python --version;
-            pip install --disable-pip-version-check python-coveralls;
-            pip install --disable-pip-version-check codecov;
-            pip install --disable-pip-version-check coverage codacy-coverage;
-      fi
-
     - if [ -z "$TOXENV" ] && [ "$TRAVIS_OS_NAME" == "osx" ]; then
             brew update > /dev/null;
             python --version;
@@ -74,8 +67,6 @@ before_install:
             brew upgrade python;
             python --version;
             python3 --version;
-            pip3 install --disable-pip-version-check python-coveralls;
-            pip3 install --disable-pip-version-check codecov;
       fi
 
     # enable gui, see https://docs.travis-ci.com/user/gui-and-headless-browsers
@@ -126,29 +117,16 @@ install:
 script:
     # run tests with test coverage report
     - if [ -z "$TOXENV" ]; then
-            sh travis.sh run_tests --coverage;
+            sh travis.sh run_tests;
       fi
-
-    # # testing syntax_test files
-    # - if [ -z "$TOXENV" ]; then
-    #         sh travis.sh run_syntax_tests;
-    #   fi
 
     - if ! [ -z "$TOXENV" ]; then
             tox;
       fi
 
-    # remove the following if `coveralls` is not needed
-    - if [ -z "$TOXENV" ] && [ "$TRAVIS_OS_NAME" == "linux" ]; then
-            coveralls;
-            codecov;
-            coverage xml -o coverage.xml;
-            python-codacy-coverage;
-      fi
-
 
 after_success:
-    - echo
+    - echo AFTER SUCCESS
 
 
 notifications:
