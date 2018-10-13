@@ -103,7 +103,6 @@ install:
             sh travis.sh clone_git_package "https://github.com/evandroforks/PortalockerFiles" "PortalockerFiles";
             sh travis.sh clone_git_package "https://github.com/evandroforks/DiffMatchPatch" "DiffMatchPatch";
             sh travis.sh clone_git_package "https://github.com/evandroforks/ConcurrentLogHandler" "ConcurrentLogHandler";
-            sh travis.sh clone_git_package "https://github.com/evandroforks/python-pywin32" "python-pywin32";
             echo "first1 ls"; ls;
             echo "first2 ls"; ls ../;
             echo "first3 ls"; ls ../../;

@@ -117,6 +117,17 @@ else:
 
 if diff_match_patch:
 
+    if is_python2:
+        # Bail out at 65535 because unichr(65536) throws.
+        _g_maximum_lines = 40000
+        _g_char_limit = 65535
+    else:
+        unichr = chr
+
+        # Bail out at 1114111 because unichr(1114112) throws.
+        _g_maximum_lines = 666666
+        _g_char_limit = 1114111
+
     class DiffMatchPatch(diff_match_patch.diff_match_patch):
 
         def diff_prettyText(self, diffs):
@@ -246,22 +257,22 @@ if diff_match_patch:
                     line = text[lineStart:lineEnd + 1]
 
                     if line in lineHash:
-                        chars.append(chr(lineHash[line]))
+                        chars.append(unichr(lineHash[line]))
                     else:
                         if len(lineArray) == maxLines:
-                            # Bail out at 1114111 because chr(1114112) throws.
+                            # Bail out at maxLines because unichr(maxLines+1) throws.
                             line = text[lineStart:]
                             lineEnd = len(text)
                         lineArray.append(line)
                         lineHash[line] = len(lineArray) - 1
-                        chars.append(chr(len(lineArray) - 1))
+                        chars.append(unichr(len(lineArray) - 1))
                     lineStart = lineEnd + 1
                 return "".join(chars)
 
             # Allocate 2/3rds of the space for text1, the rest for text2.
-            maxLines = 666666
+            maxLines = _g_maximum_lines
             chars1 = diff_linesToCharsMunge(text1)
-            maxLines = 1114111
+            maxLines = _g_char_limit
             chars2 = diff_linesToCharsMunge(text2)
             return (chars1, chars2, lineArray)
 
