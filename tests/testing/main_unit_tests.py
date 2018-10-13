@@ -76,10 +76,10 @@ except ImportError:
 # Relative imports in Python 3
 # https://stackoverflow.com/questions/16981921/relative-imports-in-python-3
 try:
-    from .std_err_capture import TeeNoFile
+    from .stderr_capture import TeeNoFile
 
 except (ImportError, ValueError, SystemError):
-    from std_err_capture import TeeNoFile
+    from stderr_capture import TeeNoFile
 
 # We need to keep a global reference to this because the logging module internally grabs an
 # reference to the first `sys.strerr` it can get its hands on it.
