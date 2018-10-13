@@ -39,7 +39,7 @@
 import sys
 
 
-class std_err_replament(object):
+class stderr_replament(object):
     """
         In case of reloading this module, never recapture the current `sys.stderr`.
 
@@ -149,7 +149,7 @@ class std_err_replament(object):
 
         except NameError:
 
-            class std_err_replament_hidden(_stderr_default_class_type):
+            class stderr_replament_hidden(_stderr_default_class_type):
                 """
                     Which special methods bypasses __getattribute__ in Python?
                     https://stackoverflow.com/questions/12872695/which-special-methods-bypasses-getattribute-in-python
@@ -324,9 +324,9 @@ class std_err_replament(object):
 
             # sys.stdout.write( "_stderr_default: %s\n" % _stderr_default )
             # sys.stdout.write( "inspect.getmro(_stderr_default): %s\n" % str( inspect.getmro( type( _stderr_default ) ) ) )
-            # sys.stdout.write( "inspect.getmro(std_err_replament): %s\n" % str( inspect.getmro( std_err_replament_hidden ) ) )
+            # sys.stdout.write( "inspect.getmro(stderr_replament): %s\n" % str( inspect.getmro( stderr_replament_hidden ) ) )
             # sys.stdout.write( "traceback.format_stack():\n%s\n" % "".join( traceback.format_stack() ) )
-            _stderr_singleton = std_err_replament_hidden()
+            _stderr_singleton = stderr_replament_hidden()
 
             # sys.stdout.write( "_stderr_singleton: ")
             # sys.stdout.write( "%s\n" % _stderr_singleton )
