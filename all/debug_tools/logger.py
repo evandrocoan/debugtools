@@ -84,6 +84,7 @@ except( ImportError, ValueError ):
 
 
 from .stream_replacement_model import stderr_replament
+from .stream_replacement_model_stdout import stdout_replament
 
 # Uncoment this temporarily to create update the `stream_replacement_model_stdout.py` after changes
 # on `stream_replacement_model.py`
@@ -139,6 +140,7 @@ class Debugger(Logger):
         self.lastTick = timeit.default_timer()
 
         self._stderr = False
+        self._stdout = False
         self.file_handler = None
         self.stream_handler = None
 
@@ -379,7 +381,7 @@ class Debugger(Logger):
             sys.stderr.write( "Cleaning %s (delete=%s) the file: %s\n" % ( self.name, delete, output_file ) )
 
             active._create_file_handler( output_file, active._arguments['rotation'], active._arguments['mode'], True, delete )
-            self.handle_stderr( self._stderr and not delete )
+            self.handle_stderr( enable=self._stderr and not delete, stdout_enable=self._stdout and not delete )
 
     def invert(self):
         """
@@ -387,7 +389,7 @@ class Debugger(Logger):
         """
         self.basic_formatter, self.full_formatter = self.full_formatter, self.basic_formatter
 
-    def handle_stderr(self, enable=True):
+    def handle_stderr(self, enable=True, stdout_enable=False):
         """
             Register a exception hook if the logger is capable of logging them to alternate streams.
         """
@@ -400,14 +402,20 @@ class Debugger(Logger):
 
                 if self.hasStreamHandlers():
                     sys.stderr.write( "Error on `%s`:\n" % self.name )
-                    sys.stderr.write( "Cannot set to handler `sys.stderr` while there is a StreamHandler.\n" )
+                    sys.stderr.write( "Cannot set to handler `sys.stderr or sys.stdout` while there is a StreamHandler.\n" )
                     self.traceback()
 
                 else:
                     stderr_replament.lock( self )
 
+                    if stdout_enable:
+                        stdout_replament.lock( self )
+
             else:
                 stderr_replament.unlock()
+
+                if stdout_enable:
+                    stdout_replament.unlock()
 
         except Exception:
             self.exception( "Could not register the sys.stderr stream handler" )
@@ -473,7 +481,7 @@ class Debugger(Logger):
             For example, if you pass name="%(name)s: " the function name will be displayed as
             `name: `, instead of the default `[name] `.
 
-            If you change your `sys.stderr` after creating an StreamHandler, you need to pass `force=True`
+            If you change your `sys.stderr` after creating an StreamHandler, you need to pass `handlers=True`
             to make it to recreate the StreamHandler because of the old reference to `sys.stderr`.
 
             Single page cheat-sheet about Python string formatting pyformat.info
@@ -516,6 +524,9 @@ class Debugger(Logger):
             @param `stderr`     if True (default True), it will install a listener to the `sys.stderr`
                                 console output. This is useful for logging not handled exceptions.
 
+            @param `stdout`     if True (default False), it will install a listener to the `sys.stdout`
+                                console output. This is useful for logging all console output to a file.
+
             @param `force`      if an integer, set the `debug_level` into all created loggers hierarchy.
             @param `active`     if True (default True), it will search for any other active logger in
                                 the current logger hierarchy and do the setup call on him. If no active
@@ -530,8 +541,9 @@ class Debugger(Logger):
         """
             Allow to pass positional arguments to `setup()`.
         """
-        force = kwargs.pop( 'handlers', False )
+        handlers = kwargs.pop( 'handlers', False )
         self._stderr = kwargs.pop( 'stderr', True )
+        self._stdout = kwargs.pop( 'stdout', False )
 
         _force_debug = kwargs.pop( "force", None )
         _fix_children = kwargs.pop( '_fix_children', False )
@@ -558,7 +570,7 @@ class Debugger(Logger):
                     arguments[kwarg] = value
 
         if has_changes \
-                or force \
+                or handlers \
                 or ( not logger.stream_handler \
                     and not logger.file_handler ):
 
@@ -583,6 +595,7 @@ class Debugger(Logger):
             self._create_file_handler( output_file, arguments['rotation'], arguments['mode'] )
             self._disable( stream=arguments['delete'] )
             self.handle_stderr( self._stderr )
+            self.handle_stderr( self._stdout )
 
         else:
             self._disable( stream=True )
@@ -743,7 +756,7 @@ class Debugger(Logger):
 
         if "StreamHandler" in str( type( handler ) ):
 
-            if stderr_replament.is_active:
+            if stderr_replament.is_active or stdout_replament.is_active:
                 sys.stderr.write( "Warning on Debugger::addHandler for %s\n" % self.name )
                 sys.stderr.write( "You cannot add a StreamHandler while the `sys.stderr` handling is enabled.\n" )
                 sys.stderr.write( "Therefore, your stream handler `%s` is not being added.\n" % handler )
