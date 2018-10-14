@@ -44,7 +44,7 @@ class TestingUtilities(unittest.TestCase):
     maxDiff = None
 
     ## Whether `characters diff=0`, `words diff=1` or `lines diff=2` will be used
-    diffMode = 1
+    diffMode = 0
 
     def __init__(self, *args, **kwargs):
         diffMode = kwargs.pop('diffMode', -1)
@@ -75,7 +75,7 @@ class TestingUtilities(unittest.TestCase):
 
             else:
                 diff_struct = diff_match.diff_linesToWords(expected, actual,
-                        re.compile(r'\b') if self.diffMode == 1 else re.compile(r'\n') )
+                        re.compile(r'\b| ') if self.diffMode == 1 else re.compile(r'\n|\r\n') )
 
                 lineText1 = diff_struct[0] # .chars1;
                 lineText2 = diff_struct[1] # .chars2;

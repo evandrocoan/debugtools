@@ -137,6 +137,9 @@ if diff_match_patch:
             Returns:
               Text representation.
             """
+            last_text = "\n"
+            last_op_type = self.DIFF_EQUAL
+
             results_diff = []
             cut_next_new_line = [False]
 
@@ -187,6 +190,7 @@ if diff_match_patch:
 
                 elif op == self.DIFF_EQUAL:
                     # print('new3:', text.encode( 'ascii' ))
+                    # if last_op_type != op or last_text and last_text[-1] == '\n': text = textwrap_indent(text, "  ")
                     text = textwrap_indent(text, "  ")
 
                     if cut_next_new_line[0]:
@@ -195,6 +199,9 @@ if diff_match_patch:
 
                     results_diff.append(text)
                     # print('new4:', text.encode( 'ascii' ))
+
+                last_text = text
+                last_op_type = op
 
             return "".join(results_diff)
 

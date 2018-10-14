@@ -128,6 +128,46 @@ class UtilitiesUnitTests(testing_utilities.TestingUtilities):
             "+   text_chunk_end  source.sma"
             , str(error.exception) )
 
+    @unittest.skip("Not sure how to fix this")
+    def test_wordsDiffModeStartingWithSpace(self):
+        self.diffMode = 1
+        expected = "First\n" \
+                   " Second\n" \
+                   "Third\n" \
+                   "Forth\n" \
+
+        actual = "First\n" \
+                 "Second\n" \
+                 "Third\n" \
+                 "Forth\n" \
+
+        with self.assertRaises( AssertionError ) as error:
+            self.myAssertEqual( expected, actual )
+
+        self.assertEqual(
+            ""
+            , str(error.exception) )
+
+    @unittest.skip("Not sure how to fix this")
+    def test_wordsDiffModeDifferentLineEndings(self):
+        self.diffMode = 1
+        expected = "First\n" \
+                   "Second\r\n" \
+                   "Third\n" \
+                   "Forth\n" \
+
+        actual = "First\n" \
+                 "Second\n" \
+                 "Third\n" \
+                 "Forth\n" \
+
+        with self.assertRaises( AssertionError ) as error:
+            self.myAssertEqual( expected, actual )
+
+        self.assertEqual(
+            ""
+            , str(error.exception) )
+
     def test_linesDiffModeExample1(self):
         self.diffMode = 2
         expected = "1. Duplicated target language name defined in your grammar on: [@-1,63:87='Abstract Machine Language'<__ANON_3>,3:19]\n" \
