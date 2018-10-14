@@ -54,7 +54,7 @@ try:
     import sublime_plugin
 
     import debug_tools.logger
-    from debug_tools.utilities import wrap_text
+    from debug_tools import utilities
 
     # Import and reload the debugger
     sublime_plugin.reload_plugin( "debug_tools.logger" )
@@ -71,7 +71,7 @@ except ImportError:
     assert_path( os.path.join( os.path.dirname( os.path.dirname( os.path.dirname( os.path.realpath( __file__ ) ) ) ), 'all' ) )
 
     import debug_tools.logger
-    from debug_tools.utilities import wrap_text
+    from debug_tools import utilities
 
 # Relative imports in Python 3
 # https://stackoverflow.com/questions/16981921/relative-imports-in-python-3
@@ -93,6 +93,10 @@ _stdout = TeeNoFile(stdout=True)
 def getLogger(debug_level=127, logger_name=None, **kwargs):
     global log
     global line
+
+    if kwargs.pop( 'create_test_file', False ):
+        kwargs['file'] = utilities.get_relative_path( 'main_unit_tests.txt', __file__ )
+
     log = debug_tools.logger.getLogger( debug_level, logger_name, **kwargs )
     _stderr.clear( log )
     _stdout.clear( log )
@@ -161,7 +165,7 @@ class StdErrUnitTests(unittest.TestCase):
         offset1 = 1
         offset2 = 4
 
-        self.assertEqual( wrap_text( """\
+        self.assertEqual( utilities.wrap_text( """\
             testing.main_unit_tests.test_function_name:{} - Bitwise
             testing.main_unit_tests.test_function_name:{} - Bitwise
             testing.main_unit_tests.test_function_name:{} - Warn
@@ -188,7 +192,7 @@ class StdErrUnitTests(unittest.TestCase):
         log.debug( "Debug" )
 
         output = self.contents( r"\d{4}\-\d{2}\-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
-        self.assertEqual( wrap_text( """\
+        self.assertEqual( utilities.wrap_text( """\
             testing.main_unit_tests DEBUG(1) - Bitwise
             testing.main_unit_tests DEBUG(8) - Bitwise
             testing.main_unit_tests WARNING - Warn
@@ -207,7 +211,7 @@ class StdErrUnitTests(unittest.TestCase):
         log.debug( "Debug" )
 
         output = self.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
-        self.assertEqual( wrap_text( """\
+        self.assertEqual( utilities.wrap_text( """\
             testing.main_unit_tests - Bitwise
             testing.main_unit_tests - Bitwise
             testing.main_unit_tests - Warn
@@ -226,7 +230,7 @@ class StdErrUnitTests(unittest.TestCase):
         log.debug( "Debug" )
 
         output = self.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
-        self.assertEqual( wrap_text( """\
+        self.assertEqual( utilities.wrap_text( """\
             logger - Bitwise
             logger - Bitwise
             logger - Warn
@@ -245,7 +249,7 @@ class StdErrUnitTests(unittest.TestCase):
         log.debug( "Debug" )
 
         output = self.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
-        self.assertEqual( wrap_text( """\
+        self.assertEqual( utilities.wrap_text( """\
             Bitwise
             Bitwise
             Warn
@@ -274,7 +278,7 @@ class StdErrUnitTests(unittest.TestCase):
         regex_pattern = re.compile( r"File \".*\", line \d+," )
         output = self.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
 
-        self.assertEqual( wrap_text( """\
+        self.assertEqual( utilities.wrap_text( """\
                 testing.main_unit_tests.test_exception_throwing:{} - I am catching you
                 Traceback (most recent call last):
                    in test_exception_throwing
@@ -284,11 +288,11 @@ class StdErrUnitTests(unittest.TestCase):
             regex_pattern.sub( "", output ) )
 
     def test_exception_throwing_from_relative_file_path(self):
-        getLogger( "testing.main_unit_tests", 127, file="debug_tools_log_test_exception_throwing_from_relative_file_path.txt" )
+        getLogger( "testing.main_unit_tests", 127, create_test_file=True )
         throw_file_exception( self )
 
     def test_exception_throwing_from_absolute_file_path(self):
-        getLogger( "testing.main_unit_tests", 127, file=os.path.abspath("debug_tools_log_test_exception_throwing_from_absolute_file_path.txt") )
+        getLogger( "testing.main_unit_tests", 127, create_test_file=True )
         throw_file_exception( self )
 
 
@@ -311,7 +315,7 @@ def throw_file_exception(self):
     regex_pattern = re.compile( r"File \".*\"," )
     output = self.file_contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
 
-    self.assertEqual( wrap_text( """\
+    self.assertEqual( utilities.wrap_text( """\
             testing.main_unit_tests.throw_file_exception:{} - I am catching you...
             Traceback (most recent call last):
                line {}, in throw_file_exception
@@ -338,10 +342,10 @@ class StdOutUnitTests(unittest.TestCase):
         return _stdout.file_contents( date_regex, log )
 
     def test_helloWordToStdOut(self):
-        getLogger( 127, "testing.main_unit_tests", date=True, stdout=True )
+        getLogger( 127, "testing.main_unit_tests", create_test_file=True, stdout=True )
 
         print("Std out logging capture test!")
-        output = self.contents( r"\d{4}\-\d{2}-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+        output = self.file_contents( r"\d{4}\-\d{2}-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
 
         self.assertEqual( "Std out logging capture test!", output )
 

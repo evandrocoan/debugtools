@@ -603,7 +603,10 @@ def _create_stdout_handler():
         `stream_replacement_model.py` and run `logger.py` function `create_stdout_handler()` by
         uncommenting it on `all/debug_tools/logger.py` file.
     \"\"\"
-    """)
+    """ )
+
+    # fix Python 2 messing up with new line endings
+    if is_python2: warning_message = warning_message.replace( '\n', '\r\n' )
 
     sys.stderr.write( '\nCreating the `stream_replacement_model_stdout.py` file!\n' )
     sys.stderr.write( 'model_relative_path %s\n' % model_relative_path )

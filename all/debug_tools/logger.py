@@ -381,7 +381,7 @@ class Debugger(Logger):
             sys.stderr.write( "Cleaning %s (delete=%s) the file: %s\n" % ( self.name, delete, output_file ) )
 
             active._create_file_handler( output_file, active._arguments['rotation'], active._arguments['mode'], True, delete )
-            self.handle_stderr( enable=self._stderr and not delete, stdout_enable=self._stdout and not delete )
+            self.handle_stderr( stderr=self._stderr and not delete, stdout=self._stdout and not delete )
 
     def invert(self):
         """
@@ -389,15 +389,18 @@ class Debugger(Logger):
         """
         self.basic_formatter, self.full_formatter = self.full_formatter, self.basic_formatter
 
-    def handle_stderr(self, enable=True, stdout_enable=False):
+    def handle_stderr(self, stderr=True, stdout=False):
         """
             Register a exception hook if the logger is capable of logging them to alternate streams.
+
+            @param `stderr` if True, it will enable the logging hook on the stderr and stdout if `stdout` is also True.
+            @param `stdout` if True, it will enable the logging hook on the stdout if `enable` is True.
         """
         _acquireLock()
 
         try:
 
-            if enable:
+            if stderr or stdout:
                 # print( "name: %s, hasStreamHandlers: %s" % ( self.name, self.hasStreamHandlers() ) )
 
                 if self.hasStreamHandlers():
@@ -406,15 +409,17 @@ class Debugger(Logger):
                     self.traceback()
 
                 else:
-                    stderr_replament.lock( self )
+                    if stderr:
+                        stderr_replament.lock( self )
 
-                    if stdout_enable:
+                    if stdout:
                         stdout_replament.lock( self )
 
             else:
-                stderr_replament.unlock()
+                if not stderr:
+                    stderr_replament.unlock()
 
-                if stdout_enable:
+                if not stdout:
                     stdout_replament.unlock()
 
         except Exception:
@@ -436,7 +441,7 @@ class Debugger(Logger):
             self.stream_handler = None
 
         if file:
-            self.handle_stderr( False )
+            self.handle_stderr( False, False )
 
             if self.file_handler:
                 self.removeHandler( self.file_handler )
@@ -594,8 +599,7 @@ class Debugger(Logger):
 
             self._create_file_handler( output_file, arguments['rotation'], arguments['mode'] )
             self._disable( stream=arguments['delete'] )
-            self.handle_stderr( self._stderr )
-            self.handle_stderr( self._stdout )
+            self.handle_stderr( self._stderr, self._stdout )
 
         else:
             self._disable( stream=True )
