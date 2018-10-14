@@ -103,12 +103,11 @@ install:
             sh travis.sh clone_git_package "https://github.com/evandroforks/PortalockerFiles" "PortalockerFiles";
             sh travis.sh clone_git_package "https://github.com/evandroforks/DiffMatchPatch" "DiffMatchPatch";
             sh travis.sh clone_git_package "https://github.com/evandroforks/ConcurrentLogHandler" "ConcurrentLogHandler";
-            echo "first1 ls"; ls;
-            echo "first2 ls"; ls ../;
-            echo "first3 ls"; ls ../../;
-            echo "first4 ls"; ls ../../../;
-            echo "first5 ls"; ls ../../../../;
-            echo "first6 ls"; ls "/home/travis/.config/sublime-text-3/Packages";
+            echo "ls"; ls;
+            echo "ls ../"; ls ../;
+            echo "ls ../../"; ls ../../;
+            echo "ls ../../../"; ls ../../../;
+            echo "ls ../../../../"; ls ../../../../;
             sh travis.sh install_package_control;
       fi
 
