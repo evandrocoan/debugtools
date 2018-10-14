@@ -612,9 +612,6 @@ def _create_stdout_handler():
     \"\"\"
     """ )
 
-    # fix Python 2 messing up with new line endings
-    if is_python2: warning_message = warning_message.replace( '\n', '\r\n' )
-
     sys.stderr.write( '\nCreating the `stream_replacement_model_stdout.py` file!\n' )
     sys.stderr.write( 'model_relative_path %s\n' % model_relative_path )
     sys.stderr.write( 'destine_relative_path %s\n' % destine_relative_path )
