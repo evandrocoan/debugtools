@@ -73,13 +73,13 @@ class UtilitiesUnitTests(testing_utilities.TestingUtilities):
     def test_characthersDiffModeExample1(self):
         self.diffMode = 0
         expected = "1. Duplicated target language name defined in your grammar on: [@-1,63:87='Abstract Machine Language'<__ANON_3>,3:19]\n" \
-                "2. Duplicated master scope name defined in your grammar on: [@-1,138:147='source.sma'<__ANON_3>,5:20]"
+                   "2. Duplicated master scope name defined in your grammar on: [@-1,138:147='source.sma'<__ANON_3>,5:20]"
 
         actual = "1. Duplicated target language name defined in your grammar on: free_input_string\n" \
-                "  text_chunk_end  Abstract Machine Language\n" \
-                "\n" \
-                "2. Duplicated master scope name defined in your grammar on: free_input_string\n" \
-                "  text_chunk_end  source.sma" \
+                 "  text_chunk_end  Abstract Machine Language\n" \
+                 "\n" \
+                 "2. Duplicated master scope name defined in your grammar on: free_input_string\n" \
+                 "  text_chunk_end  source.sma" \
 
         with self.assertRaises( AssertionError ) as error:
             self.myAssertEqual( expected, actual )
@@ -104,13 +104,13 @@ class UtilitiesUnitTests(testing_utilities.TestingUtilities):
     def test_wordsDiffModeExample1(self):
         self.diffMode = 1
         expected = "1. Duplicated target language name defined in your grammar on: [@-1,63:87='Abstract Machine Language'<__ANON_3>,3:19]\n" \
-                "2. Duplicated master scope name defined in your grammar on: [@-1,138:147='source.sma'<__ANON_3>,5:20]"
+                   "2. Duplicated master scope name defined in your grammar on: [@-1,138:147='source.sma'<__ANON_3>,5:20]"
 
         actual = "1. Duplicated target language name defined in your grammar on: free_input_string\n" \
-                "  text_chunk_end  Abstract Machine Language\n" \
-                "\n" \
-                "2. Duplicated master scope name defined in your grammar on: free_input_string\n" \
-                "  text_chunk_end  source.sma" \
+                 "  text_chunk_end  Abstract Machine Language\n" \
+                 "\n" \
+                 "2. Duplicated master scope name defined in your grammar on: free_input_string\n" \
+                 "  text_chunk_end  source.sma" \
 
         with self.assertRaises( AssertionError ) as error:
             self.myAssertEqual( expected, actual )
@@ -131,13 +131,13 @@ class UtilitiesUnitTests(testing_utilities.TestingUtilities):
     def test_linesDiffModeExample1(self):
         self.diffMode = 2
         expected = "1. Duplicated target language name defined in your grammar on: [@-1,63:87='Abstract Machine Language'<__ANON_3>,3:19]\n" \
-                "2. Duplicated master scope name defined in your grammar on: [@-1,138:147='source.sma'<__ANON_3>,5:20]"
+                   "2. Duplicated master scope name defined in your grammar on: [@-1,138:147='source.sma'<__ANON_3>,5:20]"
 
         actual = "1. Duplicated target language name defined in your grammar on: free_input_string\n" \
-                "  text_chunk_end  Abstract Machine Language\n" \
-                "\n" \
-                "2. Duplicated master scope name defined in your grammar on: free_input_string\n" \
-                "  text_chunk_end  source.sma" \
+                 "  text_chunk_end  Abstract Machine Language\n" \
+                 "\n" \
+                 "2. Duplicated master scope name defined in your grammar on: free_input_string\n" \
+                 "  text_chunk_end  source.sma" \
 
         with self.assertRaises( AssertionError ) as error:
             self.myAssertEqual( expected, actual )
