@@ -2,10 +2,10 @@
 environment:
 
     matrix:
-        - COVERAGE: py36
-
         - PACKAGE: "DebugTools"
           SUBLIME_TEXT_VERSION : "3"
+
+        - COVERAGE: py36
 
         - TOXENV: py27
         - TOXENV: py34
