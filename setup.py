@@ -28,12 +28,14 @@ except ImportError:
     # All in one command:
     #     rm -rf ./dist && python setup.py sdist && twine upload dist/* && rm -rf ./dist
     #
-    version = '2.4.2'
+    version = '2.4.3'
 
     install_requires=[
     ]
 
     # To install use: pip install -e .[full]
+    # To install use: pip install -e debug_tools[full]
+    # To install use: pip install -e debug_tools debug_tools[full]
     extras_require = {
         'full': [
             "natsort",
@@ -53,7 +55,7 @@ except ImportError:
         ],
     }
 
-    if sys.platform.startswith("win"):
+    if sys.platform.startswith("win") or sys.platform.startswith("cyg"):
         extras_require['full'].append('pypiwin32;python_version>"3.4"')
         extras_require['lock'].append('pypiwin32;python_version>"3.4"')
 
