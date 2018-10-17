@@ -58,6 +58,7 @@ try:
     import diff_match_patch
 
 except( ImportError, ValueError ):
+    DiffMatchPatch = None
     diff_match_patch = None
 
 
