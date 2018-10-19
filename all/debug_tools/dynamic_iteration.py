@@ -37,7 +37,6 @@
 
 import copy
 
-from contextlib import suppress
 from debug_tools import getLogger
 
 from debug_tools.utilities import emquote_string
@@ -476,9 +475,10 @@ class DynamicIterationDict(object):
         """
             Remove new `element` anywhere in the container.
         """
-
-        with suppress(KeyError):
+        try:
             del self[element]
+        except KeyError:
+            pass
 
     def copy(self):
         """
