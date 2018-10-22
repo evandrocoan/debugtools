@@ -58,6 +58,7 @@ from logging import getLevelName
 from logging import Logger
 from logging import Manager
 from logging import PlaceHolder
+from logging import LogRecord
 
 from logging import DEBUG
 from logging import WARNING
@@ -988,6 +989,20 @@ class Debugger(Logger):
                 break
             return rv
 
+    def makeRecord(self, name, level, fn, lno, msg, args, exc_info,
+                   func=None, extra=None, sinfo=None):
+        """
+        A factory method which can be overridden in subclasses to create
+        specialized LogRecords.
+        """
+        rv = SmartLogRecord(name, level, fn, lno, msg, args, exc_info, func, sinfo)
+        if extra is not None:
+            for key in extra:
+                if (key in ["message", "asctime"]) or (key in rv.__dict__):
+                    raise KeyError("Attempt to overwrite %r in LogRecord" % key)
+                rv.__dict__[key] = extra[key]
+        return rv
+
 
 class CleanLogRecord(object):
 
@@ -1025,6 +1040,51 @@ class CleanLogRecord(object):
 
     def getMessage(self):
         return str( self.msg )
+
+
+class SmartLogRecord(LogRecord):
+    """
+        Creates a LogRecord which concatenates trailing arguments instead of raising an exception.
+    """
+
+    def _getMessage(self, remaing_arguments):
+        """
+            https://stackoverflow.com/questions/38127563/handle-an-exception-in-a-while-loop
+        """
+
+        try:
+
+            if self.args:
+                remaing_arguments.append( self.msg % self.args )
+
+            else:
+                remaing_arguments.append( self.msg )
+
+            return False
+
+        except TypeError:
+            remaing_arguments.append( str( self.args[-1] ) )
+            self.args = self.args[:-1]
+
+            if len( self.args ):
+                return True
+
+            else:
+                remaing_arguments.append( self.msg )
+                return False
+
+    def getMessage(self):
+        """
+        Return the message for this LogRecord.
+
+        Return the message for this LogRecord after merging any user-supplied
+        arguments with the message.
+        """
+        remaing_arguments = []
+        self.msg = str( self.msg )
+
+        while self._getMessage( remaing_arguments ): pass
+        return " ".join( reversed( remaing_arguments ) )
 
 
 # Setup the alternate debugger, completely independent of the standard logging module Logger class
