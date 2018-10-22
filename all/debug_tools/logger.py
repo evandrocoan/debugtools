@@ -237,9 +237,15 @@ class Debugger(Logger):
             bitwise logging level, instead of all sharing the main `level`.
         """
 
-        if self._debugger_level & debug_level != 0:
-            kwargs['debug_level'] = debug_level
-            self._log( DEBUG, msg, args, **kwargs )
+        if type( debug_level ) is int:
+
+            if self._debugger_level & debug_level != 0:
+                kwargs['debug_level'] = debug_level
+                self._log( DEBUG, msg, args, **kwargs )
+
+        else:
+            kwargs['debug_level'] = 1
+            self._log( DEBUG, debug_level, (msg,) + args, **kwargs )
 
     def traceback(self, **kwargs):
         """
