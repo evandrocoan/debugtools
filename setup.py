@@ -16,7 +16,7 @@ except ImportError:
     #
     # Run pip install --user keyring
     #
-    # Run on cmd.exe, not mintty.exe and then type your password when prompted
+    # Run on cmd.exe and then type your password when prompted
     # keyring set https://upload.pypi.org/legacy/ your-username
     #
     # Run this to build the `dist/PACKAGE_NAME-xxx.tar.gz` file
@@ -28,7 +28,7 @@ except ImportError:
     # All in one command:
     #     rm -rf ./dist && python setup.py sdist && twine upload dist/* && rm -rf ./dist
     #
-    version = '2.4.4'
+    version = '2.5.1'
 
     install_requires=[
     ]
