@@ -28,7 +28,7 @@ except ImportError:
     # All in one command:
     #     rm -rf ./dist && python setup.py sdist && twine upload dist/* && rm -rf ./dist
     #
-    version = '2.5.1'
+    version = '2.5.2'
 
     install_requires=[
     ]

@@ -989,57 +989,35 @@ class Debugger(Logger):
                 break
             return rv
 
-    def makeRecord(self, name, level, fn, lno, msg, args, exc_info,
-                   func=None, extra=None, sinfo=None):
-        """
-        A factory method which can be overridden in subclasses to create
-        specialized LogRecords.
-        """
-        rv = SmartLogRecord(name, level, fn, lno, msg, args, exc_info, func, sinfo)
-        if extra is not None:
-            for key in extra:
-                if (key in ["message", "asctime"]) or (key in rv.__dict__):
-                    raise KeyError("Attempt to overwrite %r in LogRecord" % key)
-                rv.__dict__[key] = extra[key]
-        return rv
+    if is_python2:
 
+        def makeRecord(self, name, level, fn, lno, msg, args, exc_info, func=None, extra=None):
+            """
+            A factory method which can be overridden in subclasses to create
+            specialized LogRecords.
+            """
+            rv = SmartLogRecord(name, level, fn, lno, msg, args, exc_info, func)
+            if extra is not None:
+                for key in extra:
+                    if (key in ["message", "asctime"]) or (key in rv.__dict__):
+                        raise KeyError("Attempt to overwrite %r in LogRecord" % key)
+                    rv.__dict__[key] = extra[key]
+            return rv
 
-class CleanLogRecord(object):
+    else:
 
-    def __init__(self, level, name, msg):
-        self.name = name
-        self.msg = msg
-        self.levelno = level
-
-        self.levelname = getLevelName(level)
-        self.pathname = "No Path Name"
-        self.filename = "No Filename"
-        self.module = "Unknown module"
-
-        self.debugLevel = ""
-        self.tickDifference = 0.0
-
-        self.exc_info = None
-        self.exc_text = None
-        self.stack_info = None
-        self.lineno = 0
-
-        self.args = "No Args"
-        self.funcName = "No Function"
-        self.created = 0
-        self.msecs = 0
-        self.relativeCreated = 0
-
-        self.thread = None
-        self.threadName = None
-        self.processName = None
-        self.process = None
-
-    def __str__(self):
-        return '<CleanLogRecord: "%s">' % ( self.msg )
-
-    def getMessage(self):
-        return str( self.msg )
+        def makeRecord(self, name, level, fn, lno, msg, args, exc_info, func=None, extra=None, sinfo=None):
+            """
+            A factory method which can be overridden in subclasses to create
+            specialized LogRecords.
+            """
+            rv = SmartLogRecord(name, level, fn, lno, msg, args, exc_info, func, sinfo)
+            if extra is not None:
+                for key in extra:
+                    if (key in ["message", "asctime"]) or (key in rv.__dict__):
+                        raise KeyError("Attempt to overwrite %r in LogRecord" % key)
+                    rv.__dict__[key] = extra[key]
+            return rv
 
 
 class SmartLogRecord(LogRecord):
@@ -1085,6 +1063,44 @@ class SmartLogRecord(LogRecord):
 
         while self._getMessage( remaing_arguments ): pass
         return " ".join( reversed( remaing_arguments ) )
+
+
+class CleanLogRecord(object):
+
+    def __init__(self, level, name, msg):
+        self.name = name
+        self.msg = msg
+        self.levelno = level
+
+        self.levelname = getLevelName(level)
+        self.pathname = "No Path Name"
+        self.filename = "No Filename"
+        self.module = "Unknown module"
+
+        self.debugLevel = ""
+        self.tickDifference = 0.0
+
+        self.exc_info = None
+        self.exc_text = None
+        self.stack_info = None
+        self.lineno = 0
+
+        self.args = "No Args"
+        self.funcName = "No Function"
+        self.created = 0
+        self.msecs = 0
+        self.relativeCreated = 0
+
+        self.thread = None
+        self.threadName = None
+        self.processName = None
+        self.process = None
+
+    def __str__(self):
+        return '<CleanLogRecord: "%s">' % ( self.msg )
+
+    def getMessage(self):
+        return str( self.msg )
 
 
 # Setup the alternate debugger, completely independent of the standard logging module Logger class
