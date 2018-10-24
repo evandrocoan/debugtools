@@ -245,8 +245,10 @@ class Debugger(Logger):
                 self._log( DEBUG, msg, args, **kwargs )
 
         else:
-            kwargs['debug_level'] = 1
-            self._log( DEBUG, debug_level, (msg,) + args, **kwargs )
+
+            if self._debugger_level & 1 != 0:
+                kwargs['debug_level'] = 1
+                self._log( DEBUG, debug_level, (msg,) + args, **kwargs )
 
     def traceback(self, **kwargs):
         """
