@@ -564,7 +564,7 @@ def wrap_text(text, wrap=0, trim_tabs=False, trim_spaces=False, trim_lines=False
     return dedent_lines
 
 
-def get_representation(self, ignore=[], emquote=False):
+def get_representation(self, ignore=[], emquote=False, repr=repr):
     """
         Given a object, iterating through all its public attributes and return then as a string
         representation.
@@ -588,7 +588,7 @@ def get_representation(self, ignore=[], emquote=False):
     for attribute in valid_attributes:
 
         if not attribute.startswith( '_' ) and attribute not in ignore:
-            clean_attributes.append( "{}: {}".format( attribute, pack_attribute( self.__dict__[attribute] ) ) )
+            clean_attributes.append( "{}: {}".format( attribute, pack_attribute( repr( self.__dict__[attribute] ) ) ) )
 
     return "%s %s;" % ( self.__class__.__name__, ", ".join( clean_attributes ) )
 
