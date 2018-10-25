@@ -231,7 +231,7 @@ class Debugger(Logger):
         set_level( active )
         active.fix_children( set_level )
 
-    def __call__(self, debug_level, msg="", *args, **kwargs):
+    def __call__(self, debug_level=1, msg="", *args, **kwargs):
         """
             Log to the current active handlers its message based on the bitwise `self._debugger_level`
             value. Note, differently from the standard logging level, each logger object has its own
