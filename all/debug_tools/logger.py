@@ -1027,30 +1027,39 @@ class SmartLogRecord(LogRecord):
         Creates a LogRecord which concatenates trailing arguments instead of raising an exception.
     """
 
-    def _getMessage(self, remaing_arguments):
+    def _getMessage(self, remaining_arguments):
         """
             https://stackoverflow.com/questions/38127563/handle-an-exception-in-a-while-loop
         """
 
         try:
+            args = self.args
 
-            if self.args:
-                remaing_arguments.append( self.msg % self.args )
+            if args:
+
+                if isinstance( args, dict ):
+                    remaining_arguments.append( str( args ) )
+                    remaining_arguments.append( self.msg )
+
+                else:
+                    remaining_arguments.append( self.msg % args )
 
             else:
-                remaing_arguments.append( self.msg )
+                remaining_arguments.append( self.msg )
 
             return False
 
-        except TypeError:
-            remaing_arguments.append( str( self.args[-1] ) )
-            self.args = self.args[:-1]
+        except TypeError as error:
+            self.args = args[:-1]
 
-            if len( self.args ):
+            # print('error', error)
+            remaining_arguments.append( str( args[-1] ) )
+
+            if len( args ) - 1 > 0:
                 return True
 
             else:
-                remaing_arguments.append( self.msg )
+                remaining_arguments.append( self.msg )
                 return False
 
     def getMessage(self):
@@ -1060,11 +1069,12 @@ class SmartLogRecord(LogRecord):
         Return the message for this LogRecord after merging any user-supplied
         arguments with the message.
         """
-        remaing_arguments = []
+        # print('self.msg', self.msg, ', self.args', self.args)
+        remaining_arguments = []
         self.msg = str( self.msg )
 
-        while self._getMessage( remaing_arguments ): pass
-        return " ".join( reversed( remaing_arguments ) )
+        while self._getMessage( remaining_arguments ): pass
+        return " ".join( reversed( remaining_arguments ) )
 
 
 class CleanLogRecord(object):
