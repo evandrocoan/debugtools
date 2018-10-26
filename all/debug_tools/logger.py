@@ -84,11 +84,11 @@ except( ImportError, ValueError ):
             super( ConcurrentRotatingFileHandler, self ).__init__( output_file )
 
 
-from .stream_replacement_model import stderr_replament
-from .stream_replacement_model_stdout import stdout_replament
+from .stderr_replacement import stderr_replacement
+from .stdout_replacement import stdout_replacement
 
-# Uncoment this temporarily to create update the `stream_replacement_model_stdout.py` after changes
-# on `stream_replacement_model.py`
+# Uncoment this temporarily to create update the `stdout_replacement.py` after changes
+# on `stderr_replacement.py`
 #
 # While developing, you can reload/test your changes to ``create_stdout_handler with:
 #     import imp; imp.reload( debug_tools.logger );
@@ -410,6 +410,8 @@ class Debugger(Logger):
         try:
 
             if stderr or stdout:
+                # print( "stderr: %s, stdout: %s" % ( stderr, stdout ) )
+                # print( "sys.stderr: %s, sys.stdout: %s" % ( sys.stderr, sys.stdout ) )
                 # print( "name: %s, hasStreamHandlers: %s" % ( self.name, self.hasStreamHandlers() ) )
 
                 if self.hasStreamHandlers():
@@ -419,17 +421,17 @@ class Debugger(Logger):
 
                 else:
                     if stderr:
-                        stderr_replament.lock( self )
+                        stderr_replacement.lock( self )
 
                     if stdout:
-                        stdout_replament.lock( self )
+                        stdout_replacement.lock( self )
 
             else:
                 if not stderr:
-                    stderr_replament.unlock()
+                    stderr_replacement.unlock()
 
                 if not stdout:
-                    stdout_replament.unlock()
+                    stdout_replacement.unlock()
 
         except Exception:
             self.exception( "Could not register the sys.stderr stream handler" )
@@ -769,7 +771,7 @@ class Debugger(Logger):
 
         if "StreamHandler" in str( type( handler ) ):
 
-            if stderr_replament.is_active or stdout_replament.is_active:
+            if stderr_replacement.is_active or stdout_replacement.is_active:
                 sys.stderr.write( "Warning on Debugger::addHandler for %s\n" % self.name )
                 sys.stderr.write( "You cannot add a StreamHandler while the `sys.stderr` handling is enabled.\n" )
                 sys.stderr.write( "Therefore, your stream handler `%s` is not being added.\n" % handler )

@@ -195,18 +195,18 @@ class UtilitiesUnitTests(testing_utilities.TestingUtilities):
             , str(error.exception) )
 
     def test_createStdoutHandler(self):
-        stream_replacement_model_path = utilities.get_relative_path('stream_replacement_model_stdout.py', utilities.__file__)
+        std_replacement_path = utilities.get_relative_path('stdout_replacement.py', utilities.__file__)
 
-        with io.open( stream_replacement_model_path, "r" ) as model_file:
+        with io.open( std_replacement_path, "r" ) as model_file:
             model_text = model_file.read()
 
         utilities._create_stdout_handler()
 
-        with io.open( stream_replacement_model_path, "r" ) as model_file:
+        with io.open( std_replacement_path, "r" ) as model_file:
             updated_model_text = model_file.read()
 
         self.myAssertEqual( updated_model_text, model_text )
 
-        with io.open( stream_replacement_model_path, "w", newline='\n' ) as model_file:
+        with io.open( std_replacement_path, "w", newline='\n' ) as model_file:
             model_file.write( model_text )
 

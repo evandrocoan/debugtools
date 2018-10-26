@@ -38,9 +38,11 @@
 
 # Warning message here
 import sys
+import inspect
+import traceback
 
 
-class stderr_replament(object):
+class stderr_replacement(object):
     """
         In case of reloading this module, never recapture the current `sys.stderr`.
 
@@ -308,8 +310,7 @@ class stderr_replament(object):
                             target_class_attribute = _stderr_default.__getattribute__( attribute )
 
                             if base_class_attribute != target_class_attribute:
-                                sys.stderr.write( "    The base class attribute `%s` is different from the target class:\n%s\n%s\n\n" % (
-                                        attribute, base_class_attribute, target_class_attribute ) )
+                                sys.stderr.write( "    The base class attribute `%s` is different from the target class:\n%s\n%s\n\n" % ( attribute, base_class_attribute, target_class_attribute ) )
 
                 def __getattribute__(self, item):
                     # sys.stdout.write( "__getattribute__, item: %s: %s\n" % ( item, _sys_stderr_write ) )
@@ -325,7 +326,7 @@ class stderr_replament(object):
 
             # sys.stdout.write( "_stderr_default: %s\n" % _stderr_default )
             # sys.stdout.write( "inspect.getmro(_stderr_default): %s\n" % str( inspect.getmro( type( _stderr_default ) ) ) )
-            # sys.stdout.write( "inspect.getmro(stderr_replament): %s\n" % str( inspect.getmro( stderr_replament_hidden ) ) )
+            # sys.stdout.write( "inspect.getmro(stderr_replacement): %s\n" % str( inspect.getmro( stderr_replament_hidden ) ) )
             # sys.stdout.write( "traceback.format_stack():\n%s\n" % "".join( traceback.format_stack() ) )
             _stderr_singleton = stderr_replament_hidden()
 
