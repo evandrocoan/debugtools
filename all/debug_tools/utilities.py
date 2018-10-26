@@ -37,6 +37,7 @@
 #
 
 import os
+import io
 import re
 import sys
 
@@ -617,10 +618,10 @@ def _create_stdout_handler():
     sys.stderr.write( 'model_relative_path %s\n' % model_relative_path )
     sys.stderr.write( 'destine_relative_path %s\n' % destine_relative_path )
 
-    with open(model_relative_path, "r") as model_file:
+    with io.open(model_relative_path, 'r', newline=None) as model_file:
+        model_text = model_file.read()
 
-        with open( destine_relative_path, "w" ) as destine_file:
-            model_text = model_file.read()
+        with io.open(destine_relative_path, 'w', newline=None) as destine_file:
             model_text = model_text.replace( 'stderr', 'stdout' )
             model_text = model_text.replace( '# Warning message here', warning_message )
             destine_file.write( model_text )
