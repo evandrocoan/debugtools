@@ -28,7 +28,7 @@ Basic logger for python on the output form:
 [main.py] 23:34:08:086.225986 2.78e-04 ( AgentPlayer ) I am a good boy, as long as I am playing.
 ```
 
-See also the example on [tests/manual_tests.py](tests/manual_tests.py):
+See also the example on [tests/stream_handler_manual_tests.py](tests/stream_handler_manual_tests.py):
 ```
 reloading plugin DebugTools.tests.manual_tests
 reloading plugin DebugTools.logger
