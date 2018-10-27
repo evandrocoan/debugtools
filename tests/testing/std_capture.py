@@ -91,7 +91,7 @@ class TeeNoFile(object):
 
     def file_contents(self, date_regex, log):
 
-        with io.open( log.output_file, "r", encoding='utf-8' ) as file:
+        with io.open( log.output_file, "r", encoding='utf-8', newline=None ) as file:
             output = file.read()
 
         contents = self._process_contents( date_regex, output )
