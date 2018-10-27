@@ -54,11 +54,15 @@ try:
     import sublime_plugin
 
     import debug_tools.logger
+    import debug_tools.testing_utilities
+
     from debug_tools import utilities
+    from debug_tools import testing_utilities
 
     # Import and reload the debugger
     sublime_plugin.reload_plugin( "debug_tools.logger" )
     sublime_plugin.reload_plugin( "debug_tools.utilities" )
+    sublime_plugin.reload_plugin( "debug_tools.testing_utilities" )
 
 except ImportError:
 
@@ -71,7 +75,11 @@ except ImportError:
     assert_path( os.path.join( os.path.dirname( os.path.dirname( os.path.dirname( os.path.realpath( __file__ ) ) ) ), 'all' ) )
 
     import debug_tools.logger
+    import debug_tools.testing_utilities
+
     from debug_tools import utilities
+    from debug_tools import testing_utilities
+
 
 # Relative imports in Python 3
 # https://stackoverflow.com/questions/16981921/relative-imports-in-python-3
@@ -349,4 +357,53 @@ class StdOutUnitTests(unittest.TestCase):
         output = self.file_contents( r"\d{4}\-\d{2}-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
 
         self.assertEqual( "Std out logging capture test!", output )
+
+
+class LogRecordUnitTests(testing_utilities.TestingUtilities):
+    """
+        How to assert output with nosetest/unittest in python?
+        https://stackoverflow.com/questions/4219717/how-to-assert-output-with-nosetest-unittest-in-python
+    """
+
+    def setUp(self):
+        self.maxDiff = None
+        sys.stderr.write("\n")
+        sys.stderr.write("\n")
+
+    def tearDown(self):
+        log.clear( True )
+        log.reset()
+
+    def contents(self, date_regex):
+        return _stderr.contents( date_regex )
+
+    def test_dictionaryLogging(self):
+        getLogger( 127, "testing.main_unit_tests", date=True )
+
+        dictionary = {1: 'defined_chunk'}
+        log('dictionary', )
+        log('dictionary', dictionary)
+
+        output = self.contents( r"\d{4}\-\d{2}\-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+
+        self.myAssertEqual( utilities.wrap_text( """\
+                + testing.main_unit_tests.test_dictionaryLogging:{line1} - dictionary
+                + testing.main_unit_tests.test_dictionaryLogging:{line2} - dictionary {{1: 'defined_chunk'}}
+            """.format( line1=line+3, line2=line+4 ) ),
+            utilities.wrap_text( output, trim_spaces=True ) )
+
+    def test_nonDictionaryLogging(self):
+        getLogger( 127, "testing.main_unit_tests", date=True )
+
+        dictionary = {1: 'defined_chunk'}
+        log('dictionary', )
+        log('dictionary %s', dictionary)
+
+        output = self.contents( r"\d{4}\-\d{2}\-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+
+        self.myAssertEqual( utilities.wrap_text( """\
+                + testing.main_unit_tests.test_nonDictionaryLogging:{line1} - dictionary
+                + testing.main_unit_tests.test_nonDictionaryLogging:{line2} - dictionary {{1: 'defined_chunk'}}
+            """.format( line1=line+3, line2=line+4 ) ),
+            utilities.wrap_text( output, trim_spaces=True ) )
 

@@ -1031,7 +1031,7 @@ class SmartLogRecord(LogRecord):
 
     def _getMessage(self, remaining_arguments):
         """
-            https://stackoverflow.com/questions/38127563/handle-an-exception-in-a-while-loop
+            Use a function to force exception handling not break the while loop where this is used.
         """
 
         try:
@@ -1039,9 +1039,16 @@ class SmartLogRecord(LogRecord):
 
             if args:
 
+                # https://stackoverflow.com/questions/53002709/why-var-1-variable-prints-var-instead-of-raising-the-exception-typeer
                 if isinstance( args, dict ):
-                    remaining_arguments.append( str( args ) )
-                    remaining_arguments.append( self.msg )
+                    new_msg = self.msg % args
+
+                    if new_msg == self.msg:
+                        remaining_arguments.append( str( args ) )
+                        remaining_arguments.append( new_msg )
+
+                    else:
+                        remaining_arguments.append( new_msg )
 
                 else:
                     remaining_arguments.append( self.msg % args )
@@ -1075,6 +1082,7 @@ class SmartLogRecord(LogRecord):
         remaining_arguments = []
         self.msg = str( self.msg )
 
+        # https://stackoverflow.com/questions/38127563/handle-an-exception-in-a-while-loop
         while self._getMessage( remaining_arguments ): pass
         return " ".join( reversed( remaining_arguments ) )
 

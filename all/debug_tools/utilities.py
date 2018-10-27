@@ -532,13 +532,13 @@ def wrap_text(text, wrap=0, trim_tabs=False, trim_spaces=False, trim_lines=False
     if trim_spaces and trim_plus:
 
         for line in dedent_lines.split( '\n' ):
-            line = line.rstrip( ' ' ).lstrip( '+' )
+            line = line.strip( ' ' ).lstrip( '+' )
             clean_lines.append( line )
 
     elif trim_spaces:
 
         for line in dedent_lines.split( '\n' ):
-            line = line.rstrip( ' ' )
+            line = line.strip( ' ' )
             clean_lines.append( line )
 
     elif trim_plus:
