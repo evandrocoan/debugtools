@@ -509,7 +509,7 @@ def getCleanSpaces(inputText, minimumLength=0, lineCutTrigger="", keepSpaceSepat
     return clean_lines
 
 
-def wrap_text(text, wrap=0, trim_tabs=False, trim_spaces=False, trim_lines=False, indent="", trim_plus=True):
+def wrap_text(text, wrap=0, trim_tabs=False, trim_spaces=False, trim_lines=False, trim_plus=True, indent=""):
     """
         1. Remove input text leading common indentation, trailing white spaces
         2. If `wrap`, wraps big lists on 80 characters.
@@ -532,13 +532,13 @@ def wrap_text(text, wrap=0, trim_tabs=False, trim_spaces=False, trim_lines=False
     if trim_spaces and trim_plus:
 
         for line in dedent_lines.split( '\n' ):
-            line = line.strip( ' ' ).lstrip( '+' )
+            line = line.rstrip( ' ' ).lstrip( '+' )
             clean_lines.append( line )
 
     elif trim_spaces:
 
         for line in dedent_lines.split( '\n' ):
-            line = line.strip( ' ' )
+            line = line.rstrip( ' ' )
             clean_lines.append( line )
 
     elif trim_plus:

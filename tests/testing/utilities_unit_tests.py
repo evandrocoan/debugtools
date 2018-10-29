@@ -83,7 +83,7 @@ class UtilitiesUnitTests(testing_utilities.TestingUtilities):
                  "  text_chunk_end  source.sma" \
 
         with self.assertRaises( AssertionError ) as error:
-            self.myAssertEqual( expected, actual )
+            self.assertEqual( expected, actual )
 
         self.assertEqual(
             "The strings does not match...\n"
@@ -114,7 +114,7 @@ class UtilitiesUnitTests(testing_utilities.TestingUtilities):
                  "  text_chunk_end  source.sma" \
 
         with self.assertRaises( AssertionError ) as error:
-            self.myAssertEqual( expected, actual )
+            self.assertEqual( expected, actual )
 
         self.assertEqual(
             "The strings does not match...\n"
@@ -143,7 +143,7 @@ class UtilitiesUnitTests(testing_utilities.TestingUtilities):
                  "Forth\n" \
 
         with self.assertRaises( AssertionError ) as error:
-            self.myAssertEqual( expected, actual )
+            self.assertEqual( expected, actual )
 
         self.assertEqual(
             ""
@@ -163,7 +163,7 @@ class UtilitiesUnitTests(testing_utilities.TestingUtilities):
                  "Forth\n" \
 
         with self.assertRaises( AssertionError ) as error:
-            self.myAssertEqual( expected, actual )
+            self.assertEqual( expected, actual )
 
         self.assertEqual(
             ""
@@ -181,7 +181,7 @@ class UtilitiesUnitTests(testing_utilities.TestingUtilities):
                  "  text_chunk_end  source.sma" \
 
         with self.assertRaises( AssertionError ) as error:
-            self.myAssertEqual( expected, actual )
+            self.assertEqual( expected, actual )
 
         self.assertEqual(
             "The strings does not match...\n"
@@ -205,7 +205,7 @@ class UtilitiesUnitTests(testing_utilities.TestingUtilities):
         with io.open( std_replacement_path, "r" ) as model_file:
             updated_model_text = model_file.read()
 
-        self.myAssertEqual( updated_model_text, model_text )
+        self.assertEqual( updated_model_text, model_text )
 
         with io.open( std_replacement_path, "w", newline='\n' ) as model_file:
             model_file.write( model_text )

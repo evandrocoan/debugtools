@@ -53,9 +53,9 @@ class TestingUtilities(unittest.TestCase):
         super(TestingUtilities, self).__init__(*args, **kwargs)
 
     def setUp(self):
-        if diff_match_patch: self.addTypeEqualityFunc(str, self.myAssertEqual)
+        if diff_match_patch: self.addTypeEqualityFunc(str, self.assertTextEqual)
 
-    def myAssertEqual(self, expected, actual, msg=""):
+    def diffMatchPatchAssertEqual(self, expected, actual, msg=""):
         """
             How to wrap correctly the unit testing diff?
             https://stackoverflow.com/questions/52682351/how-to-wrap-correctly-the-unit-testing-diff
@@ -99,16 +99,19 @@ class TestingUtilities(unittest.TestCase):
         """
         LockableType.USE_STRING = True
 
-    def assertTextEqual(self, goal, results, trim_plus=True):
+    def assertTextEqual(self, goal, results, msg="", trim_tabs=True, trim_spaces=True, trim_plus=True, trim_lines=False, indent=""):
         """
             Remove both input texts indentation and trailing white spaces, then assertEquals() both
             of the inputs.
         """
-        goal = wrap_text( goal, trim_tabs=True, trim_spaces=True, trim_plus=trim_plus )
-        results = wrap_text( results, trim_tabs=True, trim_spaces=True, trim_plus=trim_plus )
+        goal = wrap_text( goal, trim_tabs=trim_tabs, trim_spaces=trim_spaces,
+                trim_plus=trim_plus, indent=indent, trim_lines=trim_lines )
+
+        results = wrap_text( results, trim_tabs=trim_tabs, trim_spaces=trim_spaces,
+                trim_plus=trim_plus, indent=indent, trim_lines=trim_lines )
 
         if diff_match_patch:
-            self.myAssertEqual( goal, results )
+            self.diffMatchPatchAssertEqual( goal, results, msg=msg )
 
     def unidiff_output(self, expected, actual):
         """

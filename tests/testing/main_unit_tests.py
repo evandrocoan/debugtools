@@ -386,7 +386,7 @@ class LogRecordUnitTests(testing_utilities.TestingUtilities):
 
         output = self.contents( r"\d{4}\-\d{2}\-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
 
-        self.myAssertEqual( utilities.wrap_text( """\
+        self.assertEqual( utilities.wrap_text( """\
                 + testing.main_unit_tests.test_dictionaryLogging:{line1} - dictionary
                 + testing.main_unit_tests.test_dictionaryLogging:{line2} - dictionary {{1: 'defined_chunk'}}
             """.format( line1=line+3, line2=line+4 ) ),
@@ -401,7 +401,7 @@ class LogRecordUnitTests(testing_utilities.TestingUtilities):
 
         output = self.contents( r"\d{4}\-\d{2}\-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
 
-        self.myAssertEqual( utilities.wrap_text( """\
+        self.assertEqual( utilities.wrap_text( """\
                 + testing.main_unit_tests.test_nonDictionaryLogging:{line1} - dictionary
                 + testing.main_unit_tests.test_nonDictionaryLogging:{line2} - dictionary {{1: 'defined_chunk'}}
             """.format( line1=line+3, line2=line+4 ) ),
