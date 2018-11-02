@@ -907,7 +907,7 @@ class Debugger(Logger):
 
         def add(logger):
             total_loggers[0] += 1
-            current_logger = "True_" if logger == self else "False"
+            current_logger = "True " if logger == self else "False"
 
             if isinstance( logger, PlaceHolder ):
                 representations.append( "%2s. name(%s), %s" %
