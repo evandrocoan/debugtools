@@ -155,14 +155,14 @@ this `dependencies.json` file on the root of your Package:
     "windows": {
         ">3000": [
             "python-pywin32",
-            "PortalockerFiles",
+            "portalockerfiles",
             "ConcurrentLogHandler",
             "debugtools"
         ]
     },
     "*": {
         "*": [
-            "PortalockerFiles",
+            "portalockerfiles",
             "ConcurrentLogHandler",
             "debugtools"
         ]
