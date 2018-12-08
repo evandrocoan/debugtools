@@ -1,11 +1,11 @@
 # Python Debug Tools
 
-[![Build Status](https://travis-ci.org/evandrocoan/DebugTools.svg?branch=master)](https://travis-ci.org/evandrocoan/DebugTools)
-[![Build status](https://ci.appveyor.com/api/projects/status/github/evandrocoan/DebugTools?branch=master&svg=true)](https://ci.appveyor.com/project/evandrocoan/PythonDebugTools/branch/master)
-[![codecov](https://codecov.io/gh/evandrocoan/DebugTools/branch/master/graph/badge.svg)](https://codecov.io/gh/evandrocoan/DebugTools)
-[![Coverage Status](https://coveralls.io/repos/github/evandrocoan/DebugTools/badge.svg?branch=HEAD)](https://coveralls.io/github/evandrocoan/DebugTools?branch=HEAD)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/5f3e2cd536b54774b193a1eeef930e3c)](https://www.codacy.com/app/evandrocoan/DebugTools?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=evandrocoan/DebugTools&amp;utm_campaign=Badge_Grade)
-[![Latest Release](https://img.shields.io/github/tag/evandrocoan/DebugTools.svg?label=version)](https://github.com/evandrocoan/DebugTools/releases)
+[![Build Status](https://travis-ci.org/evandrocoan/debugtools.svg?branch=master)](https://travis-ci.org/evandrocoan/debugtools)
+[![Build status](https://ci.appveyor.com/api/projects/status/github/evandrocoan/debugtools?branch=master&svg=true)](https://ci.appveyor.com/project/evandrocoan/PythonDebugTools/branch/master)
+[![codecov](https://codecov.io/gh/evandrocoan/debugtools/branch/master/graph/badge.svg)](https://codecov.io/gh/evandrocoan/debugtools)
+[![Coverage Status](https://coveralls.io/repos/github/evandrocoan/debugtools/badge.svg?branch=HEAD)](https://coveralls.io/github/evandrocoan/debugtools?branch=HEAD)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/5f3e2cd536b54774b193a1eeef930e3c)](https://www.codacy.com/app/evandrocoan/debugtools?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=evandrocoan/debugtools&amp;utm_campaign=Badge_Grade)
+[![Latest Release](https://img.shields.io/github/tag/evandrocoan/debugtools.svg?label=version)](https://github.com/evandrocoan/debugtools/releases)
 [![PyPi Versions](https://img.shields.io/pypi/pyversions/debug_tools.svg)](https://pypi.python.org/pypi/debug_tools)
 
 Basic logger for python on the output form:
@@ -30,23 +30,23 @@ Basic logger for python on the output form:
 
 See also the example on [tests/stream_handler_manual_tests.py](tests/stream_handler_manual_tests.py):
 ```
-reloading plugin DebugTools.tests.manual_tests
-reloading plugin DebugTools.logger
-[DebugTools.tests.manual_tests] 16:31:26:638.928890 2.19e-04 <module>:13 My logging
-[DebugTools.tests.manual_tests] 16:31:26:639.429092 4.90e-04 <module>:14 A warning
-[DebugTools.tests.manual_tests] 16:31:26:639.930010 4.77e-04 <module>:15 A debugging
+reloading plugin debugtools.tests.manual_tests
+reloading plugin debugtools.logger
+[debugtools.tests.manual_tests] 16:31:26:638.928890 2.19e-04 <module>:13 My logging
+[debugtools.tests.manual_tests] 16:31:26:639.429092 4.90e-04 <module>:14 A warning
+[debugtools.tests.manual_tests] 16:31:26:639.930010 4.77e-04 <module>:15 A debugging
 
-[DebugTools.tests.manual_tests] 16:31:26:640.930891 3.87e-04 DEBUG(1) Bitwise
-[DebugTools.tests.manual_tests] 16:31:26:641.431093 4.62e-04 DEBUG(8) Bitwise
-[DebugTools.tests.manual_tests] 16:31:26:641.431093 3.04e-04 WARNING Warn
-[DebugTools.tests.manual_tests] 16:31:26:641.931057 2.96e-04 INFO Info
-[DebugTools.tests.manual_tests] 16:31:26:642.431974 2.80e-04 DEBUG Debug
+[debugtools.tests.manual_tests] 16:31:26:640.930891 3.87e-04 DEBUG(1) Bitwise
+[debugtools.tests.manual_tests] 16:31:26:641.431093 4.62e-04 DEBUG(8) Bitwise
+[debugtools.tests.manual_tests] 16:31:26:641.431093 3.04e-04 WARNING Warn
+[debugtools.tests.manual_tests] 16:31:26:641.931057 2.96e-04 INFO Info
+[debugtools.tests.manual_tests] 16:31:26:642.431974 2.80e-04 DEBUG Debug
 
-[DebugTools.tests.manual_tests] 2018-01-13 16:31:26:642.931938 2.47e-04 function_name:18 Bitwise
-[DebugTools.tests.manual_tests] 2018-01-13 16:31:26:642.931938 2.88e-04 function_name:19 Bitwise
-[DebugTools.tests.manual_tests] 2018-01-13 16:31:26:643.431902 3.04e-04 function_name:20 Warn
-[DebugTools.tests.manual_tests] 2018-01-13 16:31:26:643.431902 2.85e-04 function_name:21 Info
-[DebugTools.tests.manual_tests] 2018-01-13 16:31:26:643.933058 2.99e-04 function_name:22 Debug
+[debugtools.tests.manual_tests] 2018-01-13 16:31:26:642.931938 2.47e-04 function_name:18 Bitwise
+[debugtools.tests.manual_tests] 2018-01-13 16:31:26:642.931938 2.88e-04 function_name:19 Bitwise
+[debugtools.tests.manual_tests] 2018-01-13 16:31:26:643.431902 3.04e-04 function_name:20 Warn
+[debugtools.tests.manual_tests] 2018-01-13 16:31:26:643.431902 2.85e-04 function_name:21 Info
+[debugtools.tests.manual_tests] 2018-01-13 16:31:26:643.933058 2.99e-04 function_name:22 Debug
 ```
 
 
@@ -59,8 +59,8 @@ pip install debug_tools
 
 Or clone this repository locally by running the commands:
 ```
-git clone https://github.com/evandrocoan/DebugTools
-cd DebugTools
+git clone https://github.com/evandrocoan/debugtools
+cd debugtools
 ```
 Then `python setup.py install` or `python setup.py develop` to install it on development mode.
 
@@ -95,7 +95,7 @@ def assert_path(module):
         sys.path.append( module )
 
 # Import the debug tools
-assert_path( os.path.join( os.path.dirname( os.path.realpath( __file__ ) ), 'DebugTools', 'all' ) )
+assert_path( os.path.join( os.path.dirname( os.path.realpath( __file__ ) ), 'debugtools', 'all' ) )
 
 # Import the debugger
 from debug_tools import getLogger
@@ -157,14 +157,14 @@ this `dependencies.json` file on the root of your Package:
             "python-pywin32",
             "PortalockerFiles",
             "ConcurrentLogHandler",
-            "DebugTools"
+            "debugtools"
         ]
     },
     "*": {
         "*": [
             "PortalockerFiles",
             "ConcurrentLogHandler",
-            "DebugTools"
+            "debugtools"
         ]
     }
 }

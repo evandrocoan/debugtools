@@ -38,7 +38,7 @@
 
 try:
     # To run this file, run on the Sublime Text console:
-    # import imp; import DebugTools.tests.file_handler_manual_tests; imp.reload( DebugTools.tests.file_handler_manual_tests )
+    # import imp; import debugtools.tests.file_handler_manual_tests; imp.reload( debugtools.tests.file_handler_manual_tests )
     import sublime_plugin
 
 except (ImportError):
