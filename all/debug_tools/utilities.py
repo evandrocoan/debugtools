@@ -59,7 +59,7 @@ try:
     import diff_match_patch
 
 except( ImportError, ValueError ):
-    DiffMatchPatch = None
+    diffmatchpatch = None
     diff_match_patch = None
 
 
@@ -130,7 +130,7 @@ if diff_match_patch:
         _g_maximum_lines = 666666
         _g_char_limit = 1114111
 
-    class DiffMatchPatch(diff_match_patch.diff_match_patch):
+    class diffmatchpatch(diff_match_patch.diff_match_patch):
 
         def diff_prettyText(self, diffs):
             """Convert a diff array into a pretty Text report.

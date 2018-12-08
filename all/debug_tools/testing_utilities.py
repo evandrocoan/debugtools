@@ -31,7 +31,7 @@ from debug_tools import getLogger
 log = getLogger( 127, __name__ )
 
 from .utilities import wrap_text
-from .utilities import DiffMatchPatch
+from .utilities import diffmatchpatch
 from .utilities import diff_match_patch
 from .lockable_type import LockableType
 
@@ -68,7 +68,7 @@ class TestingUtilities(unittest.TestCase):
 
         # self.unidiff_output( goal, results )
         if expected != actual:
-            diff_match = DiffMatchPatch()
+            diff_match = diffmatchpatch()
 
             if self.diffMode == 0:
                 diffs = diff_match.diff_main(expected, actual)
