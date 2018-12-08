@@ -156,14 +156,14 @@ this `dependencies.json` file on the root of your Package:
         ">3000": [
             "python-pywin32",
             "portalockerfiles",
-            "ConcurrentLogHandler",
+            "concurrentloghandler",
             "debugtools"
         ]
     },
     "*": {
         "*": [
             "portalockerfiles",
-            "ConcurrentLogHandler",
+            "concurrentloghandler",
             "debugtools"
         ]
     }
