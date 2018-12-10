@@ -572,6 +572,7 @@ def get_representation(self, ignore=[], emquote=False, repr=repr):
 
         `ignore` a list of attributes to be ignored
         `emquote` if True, puts the attributes values inside single or double quotes accordingly.
+        `repr` is the callback to call recursively on nested objects, can be either `repr` or `str`.
     """
     valid_attributes = self.__dict__.keys()
     clean_attributes = []
