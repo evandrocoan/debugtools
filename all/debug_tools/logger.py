@@ -509,15 +509,17 @@ class Debugger(Logger):
             @param `file`       a relative or absolute path to the log file. If empty the output
                                 will be sent to the standard output stream.
 
-            @param `mode`       the file write mode on the file system. It can be `a` to append to the
-                                existent file, or `w` to erase the existent file before start. If the
-                                parameter `rotation` is set to non zero, then this will be an integer value
-                                setting how many backups are going to be keep when doing the file rotation as
-                                specified on logging::handlers::RotatingFileHandler documentation.
+            @param `mode`       the file write mode on the file system (default `a`). It can be `a`
+                                to append to the existent file, or `w` to erase the existent file
+                                before start. If the parameter `rotation` is set to non zero, then
+                                this will be an integer value setting how many backups are going to
+                                be keep when doing the file rotation as specified on
+                                logging::handlers::RotatingFileHandler documentation.
 
-            @param `delete`     if True, it will delete the other handler before activate the
-                                current one, otherwise it will only activate the selected handler.
-                                Useful for enabling multiple handlers simultaneously.
+            @param `delete`     if True (default True), it will delete the other handler before
+                                activate the current one, otherwise it will only activate the
+                                selected handler. Useful for enabling multiple handlers
+                                simultaneously.
 
             @param `date`       if True, add to the `full_formatter` the date on the format `%Y-%m-%d`.
             @param `level`      if True, add to the `full_formatter` the log levels.
