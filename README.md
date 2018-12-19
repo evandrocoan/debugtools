@@ -117,6 +117,30 @@ log( 1, "..." )
 log( 1, "..." )
 ```
 
+## Cleaning the log file every start up
+
+If you are logging the debug output to a file and you would like to clean/erase all the log file contents,
+every time you re-create the logger,
+you need first to unlock the log file lock, otherwise,
+the file contents are not going to be erased.
+
+To unlock your log file,
+you just need to call `log.setup("")`,
+with an empty string before creating a new logger.
+
+On Sublime Text, this could be done with te following:
+```python
+from debug_tools import getLogger
+log = getLogger(debug_enabled, "wrap_plus", "wrapplus.txt", mode='w')
+
+def plugin_unloaded():
+    # Unlocks the log file, if any
+    log.setup("")
+```
+
+
+## Reloading it (for development)
+
 If you want to reload the debug tools code on the fly, you can use this to import it:
 ```python
 import imp
@@ -129,6 +153,17 @@ from debug_tools.logger import getLogger
 Debugger.deleteAllLoggers()
 log = getLogger(1, "LSP")
 ```
+
+Or:
+```python
+import imp
+import debugtools.all.debug_tools.logger
+imp.reload( debugtools.all.debug_tools.logger )
+log = debugtools.all.debug_tools.logger.getLogger(debug_enabled, __name__)
+```
+
+
+## Using file logger configuration
 
 If you want to load the logger configuration from a file, you need to replace the standard logging
 module class with this one:
