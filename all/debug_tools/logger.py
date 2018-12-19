@@ -194,15 +194,6 @@ class Debugger(Logger):
         """
         return self._debugger_level
 
-    @property
-    def _debug_level(self):
-        """
-            The same as Debugger::debug_level, return this logger active debug level.
-
-            This only exists for consistency with the setter Debugger::_debug_level().
-        """
-        return self._debugger_level
-
     @debug_level.setter
     def debug_level(self, value):
         """
@@ -214,6 +205,15 @@ class Debugger(Logger):
 
         else:
             raise ValueError( "Error: The debug_level `%s` must be an integer!" % debug_level )
+
+    @property
+    def _debug_level(self):
+        """
+            The same as Debugger::debug_level, return this logger active debug level.
+
+            This only exists for consistency with the setter Debugger::_debug_level().
+        """
+        return self._debugger_level
 
     @_debug_level.setter
     def _debug_level(self, value):
