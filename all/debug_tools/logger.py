@@ -794,6 +794,9 @@ class Debugger(Logger):
         try:
             cls.manager.loggerDict.clear()
 
+        except Exception:
+            self.exception("Could not delete all registered loggers!")
+
         finally:
             _releaseLock()
 
@@ -804,7 +807,7 @@ class Debugger(Logger):
         try:
             del self.manager.loggerDict[self.name]
 
-        except:
+        except Exception:
             self.exception("Could not delete the logger %s!", self.name)
 
         finally:
