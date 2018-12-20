@@ -604,17 +604,15 @@ class Debugger(Logger):
         # import traceback
         # traceback.print_stack()
 
-        if arguments['file'] or arguments['file'] == "":
+        if arguments['file']:
+            output_file = self.get_debug_file_path( arguments['file'] )
 
-            if arguments['file']:
-                output_file = self.get_debug_file_path( arguments['file'] )
+            sys.stderr.write( "".join( self._get_time_prefix( datetime.datetime.now() ) )
+                    + "Logging to the file %s\n" % output_file )
 
-                sys.stderr.write( "".join( self._get_time_prefix( datetime.datetime.now() ) )
-                        + "Logging to the file %s\n" % output_file )
-
-                self._create_file_handler( output_file, arguments['rotation'], arguments['mode'] )
-                self._disable( stream=arguments['delete'] )
-                self.handle_stderr( self._stderr, self._stdout )
+            self._create_file_handler( output_file, arguments['rotation'], arguments['mode'] )
+            self._disable( stream=arguments['delete'] )
+            self.handle_stderr( self._stderr, self._stdout )
 
         else:
             self._disable( stream=True )
