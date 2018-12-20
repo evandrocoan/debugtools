@@ -135,7 +135,7 @@ log = getLogger(debug_enabled, "wrap_plus", "wrapplus.txt", mode='w')
 
 def plugin_unloaded():
     # Unlocks the log file, if any
-    log.setup("")
+    log.delete()
 ```
 
 

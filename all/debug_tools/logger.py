@@ -797,6 +797,20 @@ class Debugger(Logger):
         finally:
             _releaseLock()
 
+    def delete(self):
+        self.removeHandlers()
+        _acquireLock()
+
+        try:
+            del self.manager.loggerDict[self.name]
+
+        except:
+            self.exception("Could not delete the logger %s!", self.name)
+
+        finally:
+            _releaseLock()
+
+
     def removeHandlers(self):
         """
             Delete all handlers registered to the current logger.
