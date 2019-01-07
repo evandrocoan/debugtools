@@ -245,7 +245,6 @@ class Debugger(Logger):
                 self._log( DEBUG, msg, args, **kwargs )
 
         else:
-
             if self._debugger_level & 1 != 0:
                 kwargs['debug_level'] = 1
                 self._log( DEBUG, debug_level, (msg,) + args, **kwargs )
@@ -314,7 +313,7 @@ class Debugger(Logger):
         """
         self.clean( level, "" )
 
-    def clean(self, debug_level, msg, *args, **kwargs):
+    def clean(self, debug_level=1, msg="", *args, **kwargs):
         """
             Prints a message without the time prefix as `[plugin_name.py] 11:13:51:0582059`
 
@@ -322,29 +321,54 @@ class Debugger(Logger):
             https://stackoverflow.com/questions/20111758/how-to-insert-newline-in-python-logging
         """
 
-        if self._debugger_level & debug_level != 0:
-            self = self.active or self
-            file_handler = self.file_handler
-            stream_handler = self.stream_handler
+        if type( debug_level ) is int:
 
-            if stream_handler:
-                stream_handler_formatter = stream_handler.formatter
-                stream_handler.formatter = self.clean_formatter
+            if self._debugger_level & debug_level != 0:
+                self = self.active or self
+                file_handler = self.file_handler
+                stream_handler = self.stream_handler
 
-            if file_handler:
-                file_handler_formatter = file_handler.formatter
-                file_handler.formatter = self.clean_formatter
+                if stream_handler:
+                    stream_handler_formatter = stream_handler.formatter
+                    stream_handler.formatter = self.clean_formatter
 
-            kwargs['debug_level'] = debug_level
-            self._log_clean( msg % args )
+                if file_handler:
+                    file_handler_formatter = file_handler.formatter
+                    file_handler.formatter = self.clean_formatter
 
-            if self.stream_handler:
-                stream_handler.formatter = stream_handler_formatter
+                kwargs['debug_level'] = debug_level
+                self._log_clean( msg, args )
 
-            if self.file_handler:
-                file_handler.formatter = file_handler_formatter
+                if self.stream_handler:
+                    stream_handler.formatter = stream_handler_formatter
 
-    def basic(self, debug_level, msg, *args, **kwargs):
+                if self.file_handler:
+                    file_handler.formatter = file_handler_formatter
+
+        else:
+            if self._debugger_level & 1 != 0:
+                self = self.active or self
+                file_handler = self.file_handler
+                stream_handler = self.stream_handler
+
+                if stream_handler:
+                    stream_handler_formatter = stream_handler.formatter
+                    stream_handler.formatter = self.clean_formatter
+
+                if file_handler:
+                    file_handler_formatter = file_handler.formatter
+                    file_handler.formatter = self.clean_formatter
+
+                kwargs['debug_level'] = 1
+                self._log_clean( debug_level, (msg,) + args )
+
+                if self.stream_handler:
+                    stream_handler.formatter = stream_handler_formatter
+
+                if self.file_handler:
+                    file_handler.formatter = file_handler_formatter
+
+    def basic(self, debug_level=1, msg="", *args, **kwargs):
         """
             Prints the bitwise logging message with the standard basic formatter, which uses by
             default the format: [%(name)s] %(asctime)s:%(msecs)010.6f %(tickDifference).2e %(message)s
@@ -354,27 +378,54 @@ class Debugger(Logger):
             the basic formatter.
         """
 
-        if self._debugger_level & debug_level != 0:
-            self = self.active or self
-            file_handler = self.file_handler
-            stream_handler = self.stream_handler
+        if type( debug_level ) is int:
 
-            if stream_handler:
-                stream_handler_formatter = stream_handler.formatter
-                stream_handler.formatter = self.basic_formatter
+            if self._debugger_level & debug_level != 0:
+                self = self.active or self
+                file_handler = self.file_handler
+                stream_handler = self.stream_handler
 
-            if file_handler:
-                file_handler_formatter = file_handler.formatter
-                file_handler.formatter = self.basic_formatter
+                if stream_handler:
+                    stream_handler_formatter = stream_handler.formatter
+                    stream_handler.formatter = self.basic_formatter
 
-            kwargs['debug_level'] = debug_level
-            self._log( DEBUG, msg, args, **kwargs )
+                if file_handler:
+                    file_handler_formatter = file_handler.formatter
+                    file_handler.formatter = self.basic_formatter
 
-            if stream_handler:
-                stream_handler.formatter = stream_handler_formatter
+                kwargs['debug_level'] = debug_level
+                self._log( DEBUG, msg, args, **kwargs )
 
-            if file_handler:
-                file_handler.formatter = file_handler_formatter
+                if stream_handler:
+                    stream_handler.formatter = stream_handler_formatter
+
+                if file_handler:
+                    file_handler.formatter = file_handler_formatter
+
+        else:
+
+            if self._debugger_level & 1 != 0:
+                self = self.active or self
+                file_handler = self.file_handler
+                stream_handler = self.stream_handler
+
+                if stream_handler:
+                    stream_handler_formatter = stream_handler.formatter
+                    stream_handler.formatter = self.basic_formatter
+
+                if file_handler:
+                    file_handler_formatter = file_handler.formatter
+                    file_handler.formatter = self.basic_formatter
+
+                kwargs['debug_level'] = 1
+                self._log( DEBUG, debug_level, (msg,) + args, **kwargs )
+
+                if stream_handler:
+                    stream_handler.formatter = stream_handler_formatter
+
+                if file_handler:
+                    file_handler.formatter = file_handler_formatter
+
 
     def clear(self, delete=False):
         """
@@ -701,8 +752,8 @@ class Debugger(Logger):
             super()._log( level, msg, args, exc_info, extra, stack_info )
             self.lastTick = self.currentTick
 
-    def _log_clean(self, msg):
-        record = CleanLogRecord( self.level, self.name, msg )
+    def _log_clean(self, msg, args=""):
+        record = CleanLogRecord( self.level, self.name, msg, args )
         self.handle( record )
 
     @classmethod
@@ -1043,7 +1094,7 @@ class Debugger(Logger):
             return rv
 
 
-class SmartLogRecord(LogRecord):
+class _SmartLogRecord(object):
     """
         Creates a LogRecord which concatenates trailing arguments instead of raising an exception.
     """
@@ -1106,9 +1157,13 @@ class SmartLogRecord(LogRecord):
         return " ".join( reversed( remaining_arguments ) )
 
 
-class CleanLogRecord(object):
+class SmartLogRecord(_SmartLogRecord, LogRecord):
+    pass
 
-    def __init__(self, level, name, msg):
+
+class CleanLogRecord(_SmartLogRecord):
+
+    def __init__(self, level, name, msg, args):
         self.name = name
         self.msg = msg
         self.levelno = level
@@ -1126,7 +1181,7 @@ class CleanLogRecord(object):
         self.stack_info = None
         self.lineno = 0
 
-        self.args = "No Args"
+        self.args = args
         self.funcName = "No Function"
         self.created = 0
         self.msecs = 0
@@ -1139,9 +1194,6 @@ class CleanLogRecord(object):
 
     def __str__(self):
         return '<CleanLogRecord: "%s">' % ( self.msg )
-
-    def getMessage(self):
-        return str( self.msg )
 
 
 # Setup the alternate debugger, completely independent of the standard logging module Logger class
