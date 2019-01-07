@@ -361,6 +361,8 @@ class StdOutUnitTests(unittest.TestCase):
 
 class LogRecordUnitTests(testing_utilities.TestingUtilities):
     """
+        Test the SmartLogRecord class usage.
+
         How to assert output with nosetest/unittest in python?
         https://stackoverflow.com/questions/4219717/how-to-assert-output-with-nosetest-unittest-in-python
     """
@@ -406,4 +408,13 @@ class LogRecordUnitTests(testing_utilities.TestingUtilities):
                 + testing.main_unit_tests.test_nonDictionaryLogging:{line2} - dictionary {{1: 'defined_chunk'}}
             """.format( line1=line+3, line2=line+4 ) ),
             utilities.wrap_text( output, trim_spaces=True ) )
+
+
+def load_tests(loader, standard_tests, pattern):
+    suite = unittest.TestSuite()
+    # suite.addTest( LogRecordUnitTests( 'test_dictionaryLogging' ) )
+    return suite
+
+# Comment this to run individual Unit Tests
+load_tests = None
 

@@ -210,3 +210,12 @@ class UtilitiesUnitTests(testing_utilities.TestingUtilities):
         with io.open( std_replacement_path, "w", newline='\n' ) as model_file:
             model_file.write( model_text )
 
+
+def load_tests(loader, standard_tests, pattern):
+    suite = unittest.TestSuite()
+    suite.addTest( UtilitiesUnitTests( 'test_wordsDiffModeExample1' ) )
+    return suite
+
+# Comment this to run individual Unit Tests
+load_tests = None
+
