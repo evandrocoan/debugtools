@@ -3,6 +3,7 @@
     "pattern" : "*unit_tests.py",
     "async": false,
     "deferred": false,
+    "reload_package_on_testing": false,
     "verbosity": 2,
     "capture_console": true,
     "output": null
