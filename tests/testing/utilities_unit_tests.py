@@ -213,7 +213,7 @@ class UtilitiesUnitTests(testing_utilities.TestingUtilities):
 
 def load_tests(loader, standard_tests, pattern):
     suite = unittest.TestSuite()
-    suite.addTest( UtilitiesUnitTests( 'test_wordsDiffModeExample1' ) )
+    # suite.addTest( UtilitiesUnitTests( 'test_wordsDiffModeExample1' ) )
     return suite
 
 # Comment this to run individual Unit Tests

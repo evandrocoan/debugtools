@@ -412,7 +412,7 @@ class LogRecordUnitTests(testing_utilities.TestingUtilities):
 
 def load_tests(loader, standard_tests, pattern):
     suite = unittest.TestSuite()
-    # suite.addTest( LogRecordUnitTests( 'test_dictionaryLogging' ) )
+    suite.addTest( StdOutUnitTests( 'test_helloWordToStdOut' ) )
     return suite
 
 # Comment this to run individual Unit Tests
