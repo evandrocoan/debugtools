@@ -409,10 +409,40 @@ class LogRecordUnitTests(testing_utilities.TestingUtilities):
             """.format( line1=line+3, line2=line+4 ) ),
             utilities.wrap_text( output, trim_spaces=True ) )
 
+    def test_dictionaryBasicLogging(self):
+        getLogger( 127, "testing.main_unit_tests", date=True )
+
+        dictionary = {1: 'defined_chunk'}
+        log.basic('dictionary', )
+        log.basic('dictionary %s', dictionary)
+
+        output = self.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \- " )
+
+        self.assertEqual( utilities.wrap_text( """\
+                + testing.main_unit_tests - dictionary
+                + testing.main_unit_tests - dictionary {{1: 'defined_chunk'}}
+            """.format( line1=line+3, line2=line+4 ) ),
+            utilities.wrap_text( output, trim_spaces=True ) )
+
+    def test_dictionaryCleanLogging(self):
+        getLogger( 127, "testing.main_unit_tests", date=True )
+
+        dictionary = {1: 'defined_chunk'}
+        log.clean('dictionary', )
+        log.clean('dictionary', dictionary)
+
+        output = self.contents( r"" )
+
+        self.assertEqual( utilities.wrap_text( """\
+                + dictionary
+                + dictionary {1: 'defined_chunk'}
+            """ ),
+            utilities.wrap_text( output, trim_spaces=True ) )
+
 
 def load_tests(loader, standard_tests, pattern):
     suite = unittest.TestSuite()
-    suite.addTest( StdOutUnitTests( 'test_helloWordToStdOut' ) )
+    suite.addTest( LogRecordUnitTests( 'test_dictionaryBasicLogging' ) )
     return suite
 
 # Comment this to run individual Unit Tests
