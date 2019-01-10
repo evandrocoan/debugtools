@@ -310,6 +310,11 @@ def get_relative_path(relative_path, script_file):
     return filepath
 
 
+def join_path(*args):
+    """ Call join path and then abspath on the result. """
+    return os.path.abspath( os.path.join( *args ) )
+
+
 def get_duplicated_elements(elements_list):
     """
         Given an `elements_list` with duplicated elements, return a set only with the duplicated
