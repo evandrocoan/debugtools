@@ -304,14 +304,18 @@ class Debugger(Logger):
     def newline(self, level=1, count=1):
         """
             Prints a clean new line, without any formatter header.
+            @param `count` how many new lines to output
         """
-        self.clean( level, "" )
+        for index in range(count):
+            self.clean( level, "" )
 
     def new_line(self, level=1, count=1):
         """
             Prints a clean new line, without any formatter header.
+            @param `count` how many new lines to output
         """
-        self.clean( level, "" )
+        for index in range(count):
+            self.clean( level, "" )
 
     def clean(self, debug_level=1, msg="", *args, **kwargs):
         """
