@@ -300,6 +300,45 @@ def get_unique_hash():
     return initial_hash
 
 
+def pop_dict_last_item(dictionary):
+    """
+        Until python 3.5 the popitem() has has a bug where it does not accepts the last=False argument
+        https://bugs.python.org/issue24394 TypeError: popitem() takes no keyword arguments, then,
+        automatically detect which one we have here:
+        https://docs.python.org/3/library/collections.html#collections.OrderedDict.popitem
+    """
+    dictionary.popitem(last=True)
+
+try:
+    {1: 'a'}.popitem(last=True)
+
+except TypeError:
+
+    def pop_dict_last_item(dictionary):
+        dictionary.popitem()
+
+
+def move_to_dict_beginning(dictionary, key):
+    """
+        Move a OrderedDict item to its beginning, or add it to its beginning.
+
+        Compatible with Python 2.7
+        https://stackoverflow.com/questions/16664874/how-to-add-an-element-to-the-beginning-of-an-ordereddict
+    """
+
+    if is_python2:
+        value = dictionary[key]
+        del dictionary[key]
+        root = dictionary._OrderedDict__root
+
+        first = root[1]
+        root[1] = first[0] = dictionary._OrderedDict__map[key] = [root, first, key]
+        dict.__setitem__(dictionary, key, value)
+
+    else:
+        dictionary.move_to_end( key, last=False )
+
+
 def get_relative_path(relative_path, script_file):
     """
         Computes a relative path for a file on the same folder as this class file declaration.
