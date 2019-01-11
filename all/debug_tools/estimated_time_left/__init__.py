@@ -55,11 +55,17 @@ def range(n, info_frequency=0):
         yield i, pi
         i += 1
 
-def sequence_timer(sequence, info_frequency=0):
+def sequence_timer(sequence, info_frequency=0, length=None):
+    """
+        Yields tuples (item, progress_info) objects
+
+        @param `length` if the `sequence` parameter is a generator, it does not have __len__
+                defined, then, if you know its length, you can pass it as this parameter.
+    """
     i = 0
     start = time.time()
     if_counter = start
-    length = len(sequence)
+    length = length if length else len(sequence)
     for elem in sequence:
         now = time.time()
         if now - if_counter < info_frequency:
