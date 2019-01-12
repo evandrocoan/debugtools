@@ -588,7 +588,9 @@ class Debugger(Logger):
 
             @param `rotation`   if non zero, creates a RotatingFileHandler with the specified size
                                 in Mega Bytes instead of FileHandler when creating a log file by the
-                                `file` option. See logging::handlers::RotatingFileHandler for more information.
+                                `file` option. See logging::handlers::RotatingFileHandler for more
+                                information. See the parameter `mode` to specify how many files at
+                                most should be created by the rotation algorithm.
 
             @param `handlers`   if True (default False), it will force to create the handlers,
                                 even if there are no changes on the current saved default parameters.
