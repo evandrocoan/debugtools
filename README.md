@@ -90,7 +90,6 @@ import os
 import sys
 
 def assert_path(module):
-
     if module not in sys.path:
         sys.path.append( module )
 
