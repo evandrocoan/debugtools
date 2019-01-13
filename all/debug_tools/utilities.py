@@ -3,7 +3,7 @@
 
 ####################### Licensing #######################################################
 #
-#   Copyright 2018 @ Evandro Coan
+#   Copyright 2017-2019 @ Evandro Coan
 #   Helper functions and classes
 #
 #  Redistributions of source code must retain the above
@@ -35,6 +35,9 @@
 #
 #########################################################################################
 #
+
+# To run this file, run on the Sublime Text console:
+# import imp; import debugtools.all.debug_tools.utilities; imp.reload( debugtools.all.debug_tools.utilities )
 
 import os
 import io
