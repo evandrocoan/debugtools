@@ -580,7 +580,7 @@ class Debugger(Logger):
             @param `level`      if True, add to the `full_formatter` the log levels.
             @param `function`   if True, add to the `full_formatter` the function name.
             @param `name`       if True, add to the `full_formatter` the logger name.
-            @param `time`       if True, add to the `full_formatter` the time on the format `%H:%M:%S:microseconds`.
+            @param `time`       if True, add to the `full_formatter` the time on the format `%H:%M:%S:milliseconds.microseconds`.
             @param `msecs`      if True, add to the `full_formatter` the current milliseconds on the format ddd,ddddd.
             @param `tick`       if True, add to the `full_formatter` the time.perf_counter() difference from the last call.
             @param `separator`  if True, add to the `full_formatter` the a ` - ` to the end of the log record header.
