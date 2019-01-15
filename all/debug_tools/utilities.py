@@ -50,6 +50,8 @@ import random
 import threading
 import textwrap
 
+from collections import OrderedDict
+
 try:
     from natsort import natsorted
 
@@ -434,6 +436,31 @@ def sort_correctly(iterable):
     convert = lambda text: int( text ) if text.isdigit() else text
     alphanum_key = lambda key: [convert( characters ) for characters in re.split( '([0-9]+)', str( key ).lower() )]
     return sorted( sorted( iterable, key=alphanum_key ), key=lambda item: str( item ).istitle() )
+
+
+def sort_dictionary(dictionary):
+    return OrderedDict( sorted( dictionary.items() ) )
+
+
+def sort_dictionaries_on_list(list_of_dictionaries):
+    sorted_dictionaries = []
+
+    for dictionary in list_of_dictionaries:
+        sorted_dictionaries.append( sort_dictionary( dictionary ) )
+
+    return sorted_dictionaries
+
+
+def sort_list_of_dictionaries(list_of_dictionaries):
+    """
+        How do I sort a list of dictionaries by values of the dictionary in Python?
+        https://stackoverflow.com/questions/72899/how-do-i-sort-a-list-of-dictionaries-by-values-of-the-dictionary-in-python
+
+        case-insensitive list sorting, without lowercasing the result?
+        https://stackoverflow.com/questions/10269701/case-insensitive-list-sorting-without-lowercasing-the-result
+    """
+    sorted_dictionaries = sort_dictionaries_on_list( list_of_dictionaries )
+    return sorted( sorted_dictionaries, key=lambda k: k['name'].lower() )
 
 
 def get_largest_item_size(iterable):
