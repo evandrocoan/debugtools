@@ -689,11 +689,13 @@ def _create_stdout_handler():
     sys.stderr.write( 'model_relative_path %s\n' % model_relative_path )
     sys.stderr.write( 'destine_relative_path %s\n' % destine_relative_path )
 
-    with io.open(model_relative_path, 'r', newline=None) as model_file:
-        model_text = model_file.read()
+    # https://stackoverflow.com/questions/29151181/writing-an-ascii-string-as-binary-in-python
+    # https://stackoverflow.com/questions/33054527/python-3-5-typeerror-a-bytes-like-object-is-required-not-str-when-writing-t
+    with io.open(model_relative_path, 'rb') as model_file:
+        model_text = model_file.read().decode('utf-8')
 
-        with io.open(destine_relative_path, 'w', newline=None) as destine_file:
+        with io.open(destine_relative_path, 'wb') as destine_file:
             model_text = model_text.replace( 'stderr', 'stdout' )
             model_text = model_text.replace( '# Warning message here', warning_message )
-            destine_file.write( model_text )
+            destine_file.write( model_text.encode() )
 
