@@ -204,7 +204,7 @@ class Debugger(Logger):
             self._debugger_level = value
 
         else:
-            raise ValueError( "Error: The debug_level `%s` must be an integer!" % debug_level )
+            raise ValueError( "Error: The debug_level `%s` must be an integer!" % value )
 
     @property
     def _debug_level(self):
@@ -850,7 +850,7 @@ class Debugger(Logger):
             cls.manager.loggerDict.clear()
 
         except Exception:
-            self.exception("Could not delete all registered loggers!")
+            cls.exception("Could not delete all registered loggers!")
 
         finally:
             _releaseLock()
