@@ -1225,6 +1225,8 @@ def getLogger(debug_level=127, logger_name=None,
     @param `setup` if True (default), ensure there is at least one handler enabled in the hierarchy,
             then the current created active Logger setup method will be called.
     @param `log_handlers` if True, log to the `stderr` when logging handlers are removed.
+
+    @seealso Debugger::setup()
     """
     return _getLogger( debug_level, logger_name,
             file=file, mode=mode, delete=delete, date=date, level=level,
