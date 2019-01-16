@@ -90,8 +90,7 @@ from .stdout_replacement import stdout_replacement
 # Uncoment this temporarily to create update the `stdout_replacement.py` after changes
 # on `stderr_replacement.py`
 #
-# While developing, you can reload/test your changes to ``create_stdout_handler with:
-#     import imp; imp.reload( debug_tools.logger );
+# While developing, you can reload your changes to `create_stdout_handler` with:
 # from .utilities import _create_stdout_handler; _create_stdout_handler();
 
 
