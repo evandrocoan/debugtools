@@ -38,8 +38,19 @@
 
 # Warning message here
 import sys
+import logging
+
 import inspect
 import traceback
+
+from logging import StreamHandler
+
+try:
+    unicode
+    _unicode = True
+except NameError:
+    unicode = str
+    _unicode = False
 
 
 class stderr_replacement(object):
@@ -99,7 +110,52 @@ class stderr_replacement(object):
             global _sys_stderr_write_hidden
 
             if sys.version_info <= (3,2):
-                logger.file_handler.terminator = '\n'
+
+                def customEmit(self, record):
+                    """
+                    Emit a record.
+                    https://stackoverflow.com/questions/12699645/how-can-i-suppress-newline-in-python-logging-module
+
+                    If a formatter is specified, it is used to format the record.
+                    The record is then written to the stream with a trailing newline.  If
+                    exception information is present, it is formatted using
+                    traceback.print_exception and appended to the stream.  If the stream
+                    has an 'encoding' attribute, it is used to determine how to do the
+                    output to the stream.
+                    """
+                    try:
+                        msg = self.format(record)
+                        stream = self.stream
+                        fs = "%s%s"
+                        if not _unicode: #if no unicode support...
+                            stream.write(fs % (msg, self.terminator))
+                        else:
+                            try:
+                                if (isinstance(msg, unicode) and
+                                    getattr(stream, 'encoding', None)):
+                                    ufs = u'%s%s'
+                                    try:
+                                        stream.write(ufs % (msg, self.terminator))
+                                    except UnicodeEncodeError:
+                                        #Printing to terminals sometimes fails. For example,
+                                        #with an encoding of 'cp1251', the above write will
+                                        #work if written to a stream opened or wrapped by
+                                        #the codecs module, but fail when writing to a
+                                        #terminal even when the codepage is set to cp1251.
+                                        #An extra encoding step seems to be needed.
+                                        stream.write((ufs % (msg, self.terminator)).encode(stream.encoding))
+                                else:
+                                    stream.write(fs % (msg, self.terminator))
+                            except UnicodeError:
+                                stream.write(fs % (msg.encode("UTF-8"), self.terminator))
+                        self.flush()
+                    except (KeyboardInterrupt, SystemExit):
+                        raise
+                    except:
+                        self.handleError(record)
+
+                logging.StreamHandler.terminator = '\n'
+                setattr(StreamHandler, StreamHandler.emit.__name__, customEmit)
 
             # Always recreate/override the internal write function used by `_sys_stderr_write`
             def _sys_stderr_write_hidden(msg, *args, **kwargs):
