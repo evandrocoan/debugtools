@@ -295,42 +295,34 @@ class StdErrUnitTests(unittest.TestCase):
             """.format( line + 5 ) ),
             regex_pattern.sub( "", output ) )
 
-    def test_exception_throwing_from_relative_file_path(self):
+    def test_exception_throwing_from_file(self):
         getLogger( "testing.main_unit_tests", 127, create_test_file=True )
-        throw_file_exception( self )
+        line = inspect.getframeinfo( sys._getframe(0) ).lineno
 
-    def test_exception_throwing_from_absolute_file_path(self):
-        getLogger( "testing.main_unit_tests", 127, create_test_file=True )
-        throw_file_exception( self )
+        try:
+            log( 1, "I am catching you..." )
+            raise Exception( "Test Exception" )
 
+        except Exception as error:
 
-def throw_file_exception(self):
-    line = inspect.getframeinfo( sys._getframe(0) ).lineno
+            if is_python2:
+                _, _, exception_traceback = sys.exc_info()
+                log_traceback( error, exception_traceback )
 
-    try:
-        log( 1, "I am catching you..." )
-        raise Exception( "Test Exception" )
+            else:
+                log_traceback( error )
 
-    except Exception as error:
+        regex_pattern = re.compile( r"File \".*\"," )
+        output = self.file_contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
 
-        if is_python2:
-            _, _, exception_traceback = sys.exc_info()
-            log_traceback( error, exception_traceback )
-
-        else:
-            log_traceback( error )
-
-    regex_pattern = re.compile( r"File \".*\"," )
-    output = self.file_contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
-
-    self.assertEqual( utilities.wrap_text( """\
-            testing.main_unit_tests.throw_file_exception:{} - I am catching you...
-            Traceback (most recent call last):
-               line {}, in throw_file_exception
-                raise Exception( "Test Exception" )
-            Exception: Test Exception
-            """.format( line + 3, line + 4  ) ),
-        regex_pattern.sub( "", output ) )
+        self.assertEqual( utilities.wrap_text( """\
+                testing.main_unit_tests.test_exception_throwing_from_file:{} - I am catching you...
+                Traceback (most recent call last):
+                   line {}, in test_exception_throwing_from_file
+                    raise Exception( "Test Exception" )
+                Exception: Test Exception
+                """.format( line + 3, line + 4  ) ),
+            regex_pattern.sub( "", output ) )
 
 
 class StdOutUnitTests(unittest.TestCase):
