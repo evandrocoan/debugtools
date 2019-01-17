@@ -144,12 +144,6 @@ class StdErrUnitTests(unittest.TestCase):
         log.clear( True )
         log.reset()
 
-    def contents(self, date_regex):
-        return _stderr.contents( date_regex )
-
-    def file_contents(self, date_regex):
-        return _stderr.file_contents( date_regex, log )
-
     def test_function_name(self):
         getLogger( 127, "testing.main_unit_tests", date=True )
 
@@ -168,7 +162,7 @@ class StdErrUnitTests(unittest.TestCase):
             log.debug( "Debug" )
 
         function_name()
-        output = self.contents( r"\d{4}\-\d{2}-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+        output = _stderr.contents( r"\d{4}\-\d{2}-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
 
         offset1 = 1
         offset2 = 4
@@ -199,7 +193,7 @@ class StdErrUnitTests(unittest.TestCase):
         log.info( "Info" )
         log.debug( "Debug" )
 
-        output = self.contents( r"\d{4}\-\d{2}\-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+        output = _stderr.contents( r"\d{4}\-\d{2}\-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
         self.assertEqual( utilities.wrap_text( """\
             testing.main_unit_tests DEBUG(1) - Bitwise
             testing.main_unit_tests DEBUG(8) - Bitwise
@@ -218,7 +212,7 @@ class StdErrUnitTests(unittest.TestCase):
         log.info( "Info" )
         log.debug( "Debug" )
 
-        output = self.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+        output = _stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
         self.assertEqual( utilities.wrap_text( """\
             testing.main_unit_tests - Bitwise
             testing.main_unit_tests - Bitwise
@@ -237,7 +231,7 @@ class StdErrUnitTests(unittest.TestCase):
         log.info( "Info" )
         log.debug( "Debug" )
 
-        output = self.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+        output = _stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
         self.assertEqual( utilities.wrap_text( """\
             logger - Bitwise
             logger - Bitwise
@@ -256,7 +250,7 @@ class StdErrUnitTests(unittest.TestCase):
         log.info( "Info" )
         log.debug( "Debug" )
 
-        output = self.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+        output = _stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
         self.assertEqual( utilities.wrap_text( """\
             Bitwise
             Bitwise
@@ -272,7 +266,7 @@ class StdErrUnitTests(unittest.TestCase):
 
         log.basic( 1, "Debug" )
 
-        output = self.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+        output = _stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
         self.assertEqual( "testing.main_unit_tests.test_basic_formatter:{} Debug".format( line + 3 ), output )
 
     def test_exception_throwing(self):
@@ -284,7 +278,7 @@ class StdErrUnitTests(unittest.TestCase):
             log.exception( "I am catching you" )
 
         regex_pattern = re.compile( r"File \".*\", line \d+," )
-        output = self.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+        output = _stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
 
         self.assertEqual( utilities.wrap_text( """\
                 testing.main_unit_tests.test_exception_throwing:{} - I am catching you
@@ -313,7 +307,7 @@ class StdErrUnitTests(unittest.TestCase):
                 log_traceback( error )
 
         regex_pattern = re.compile( r"File \".*\"," )
-        output = self.file_contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+        output = _stderr.file_contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- ", log )
 
         self.assertEqual( utilities.wrap_text( """\
                 testing.main_unit_tests.test_exception_throwing_from_file:{} - I am catching you...
@@ -336,17 +330,11 @@ class StdOutUnitTests(unittest.TestCase):
         log.clear( True )
         log.reset()
 
-    def contents(self, date_regex):
-        return _stdout.contents( date_regex )
-
-    def file_contents(self, date_regex):
-        return _stdout.file_contents( date_regex, log )
-
     def test_helloWordToStdOut(self):
         getLogger( 127, "testing.main_unit_tests", create_test_file=True, stdout=True )
 
         print("Std out logging capture test!")
-        output = self.file_contents( r"\d{4}\-\d{2}-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+        output = _stdout.file_contents( r"\d{4}\-\d{2}-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- ", log )
 
         self.assertEqual( "Std out logging capture test!", output )
 
@@ -368,9 +356,6 @@ class LogRecordUnitTests(testing_utilities.TestingUtilities):
         log.clear( True )
         log.reset()
 
-    def contents(self, date_regex):
-        return _stderr.contents( date_regex )
-
     def test_dictionaryLogging(self):
         getLogger( 127, "testing.main_unit_tests", date=True )
 
@@ -378,7 +363,7 @@ class LogRecordUnitTests(testing_utilities.TestingUtilities):
         log('dictionary', )
         log('dictionary', dictionary)
 
-        output = self.contents( r"\d{4}\-\d{2}\-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+        output = _stderr.contents( r"\d{4}\-\d{2}\-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
 
         self.assertEqual( utilities.wrap_text( """\
                 + testing.main_unit_tests.test_dictionaryLogging:{line1} - dictionary
@@ -393,7 +378,7 @@ class LogRecordUnitTests(testing_utilities.TestingUtilities):
         log('dictionary', )
         log('dictionary %s', dictionary)
 
-        output = self.contents( r"\d{4}\-\d{2}\-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+        output = _stderr.contents( r"\d{4}\-\d{2}\-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
 
         self.assertEqual( utilities.wrap_text( """\
                 + testing.main_unit_tests.test_nonDictionaryLogging:{line1} - dictionary
@@ -408,7 +393,7 @@ class LogRecordUnitTests(testing_utilities.TestingUtilities):
         log.basic('dictionary', )
         log.basic('dictionary %s', dictionary)
 
-        output = self.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \- " )
+        output = _stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \- " )
 
         self.assertEqual( utilities.wrap_text( """\
                 + testing.main_unit_tests - dictionary
@@ -423,7 +408,7 @@ class LogRecordUnitTests(testing_utilities.TestingUtilities):
         log.clean('dictionary', )
         log.clean('dictionary', dictionary)
 
-        output = self.contents( r"" )
+        output = _stderr.contents( r"" )
 
         self.assertEqual( utilities.wrap_text( """\
                 + dictionary
