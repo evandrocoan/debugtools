@@ -106,8 +106,8 @@ def getLogger(debug_level=127, logger_name=None, **kwargs):
         kwargs['file'] = utilities.get_relative_path( 'main_unit_tests.txt', __file__ )
 
     log = debug_tools.logger.getLogger( debug_level, logger_name, **kwargs )
-    _stderr.clear( log )
     _stdout.clear( log )
+    _stderr.clear( log )
 
     frameinfo = inspect.getframeinfo( sys._getframe(1) )
     line = frameinfo.lineno
