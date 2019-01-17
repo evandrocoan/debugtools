@@ -55,9 +55,13 @@ except (ImportError):
 
 
 # Import and reload the debugger
-import imp
+if sys.version_info <= (3,3):
+    import imp as reloader
+else:
+    import importlib as reloader
+
 import debug_tools.logger
-imp.reload( debug_tools.logger )
+reloader.reload( debug_tools.logger )
 
 from debug_tools.logger import getLogger
 from debug_tools.utilities import get_relative_path
