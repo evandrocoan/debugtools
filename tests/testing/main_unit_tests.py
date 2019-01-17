@@ -338,6 +338,42 @@ class StdOutUnitTests(unittest.TestCase):
 
         self.assertEqual( "Std out logging capture test!", output )
 
+    def test_stdout_stderr_and_file_loggging(self):
+        getLogger( "testing.main_unit_tests", 127, create_test_file=True, stdout=True, stderr=True )
+        line = inspect.getframeinfo( sys._getframe(0) ).lineno
+
+        log( 1, "Before adding StreamHandler" )
+        sys.stdout.write("std OUT Before adding StreamHandler\n")
+        sys.stderr.write("std ERR Before adding StreamHandler\n")
+
+        log.setup()
+        log( 1, "After adding StreamHandler" )
+        sys.stdout.write("std OUT After adding StreamHandler\n")
+        sys.stderr.write("std ERR After adding StreamHandler\n")
+
+        file_output = _stdout.file_contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- ", log )
+        stderr_contents = _stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+        stdout_contents = _stdout.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+
+        self.assertEqual( utilities.wrap_text( """\
+                + testing.main_unit_tests.test_stdout_stderr_and_file_loggging:{} - Before adding StreamHandler
+                + std OUT Before adding StreamHandler
+                + std ERR Before adding StreamHandler
+                + testing.main_unit_tests.test_stdout_stderr_and_file_loggging:{} - After adding StreamHandler
+                + std OUT After adding StreamHandler
+                + std ERR After adding StreamHandler
+                """.format( line + 2 , line + 7 ) ), file_output )
+
+        self.assertEqual( utilities.wrap_text( """\
+                + std OUT Before adding StreamHandler
+                + std OUT After adding StreamHandler
+                """.format() ), stdout_contents )
+
+        self.assertEqual( utilities.wrap_text( """\
+                + std ERR Before adding StreamHandler
+                + std ERR After adding StreamHandler
+                """.format() ), stderr_contents )
+
 
 class LogRecordUnitTests(testing_utilities.TestingUtilities):
     """

@@ -102,14 +102,14 @@ class stderr_replacement(object):
                 logger.file_handler.terminator = '\n'
 
             # Always recreate/override the internal write function used by `_sys_stderr_write`
-            def _sys_stderr_write_hidden(*args, **kwargs):
+            def _sys_stderr_write_hidden(msg, *args, **kwargs):
                 """
                     Suppress newline in Python logging module
                     https://stackoverflow.com/questions/7168790/suppress-newline-in-python-logging-module
                 """
 
                 try:
-                    _stderr_write( *args, **kwargs )
+                    _stderr_write( msg, *args, **kwargs )
                     file_handler = logger.file_handler
 
                     formatter = file_handler.formatter
@@ -118,7 +118,8 @@ class stderr_replacement(object):
                     file_handler.formatter = clean_formatter
                     file_handler.terminator = ""
 
-                    logger_call( *args, **kwargs )
+                    kwargs['extra'] = {'_duplicated_from_file': True}
+                    logger_call( msg, *args, **kwargs )
 
                     file_handler.formatter = formatter
                     file_handler.terminator = terminator

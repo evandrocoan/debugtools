@@ -287,7 +287,7 @@ class Debugger(Logger):
         {
             "file": None,
             "mode": 'a',
-            "delete": True,
+            "delete": False,
             "date": False,
             "level": False,
             "function": True,
@@ -570,7 +570,7 @@ class Debugger(Logger):
                                 be keep when doing the file rotation as specified on
                                 logging::handlers::RotatingFileHandler documentation.
 
-            @param `delete`     if True (default True), it will delete the other handler before
+            @param `delete`     if True (default False), it will delete the other handler before
                                 activate the current one, otherwise it will only activate the
                                 selected handler. Useful for enabling multiple handlers
                                 simultaneously.
@@ -677,6 +677,7 @@ class Debugger(Logger):
             try:
 
                 self.stream_handler = logging.StreamHandler()
+                self.stream_handler.addFilter( FileHandlerContextFilter() )
                 self.stream_handler.formatter = self.full_formatter
 
             except Exception:
@@ -757,8 +758,8 @@ class Debugger(Logger):
             super()._log( level, msg, args, exc_info, extra, stack_info )
             self.lastTick = self.currentTick
 
-    def _log_clean(self, msg, args=""):
-        record = CleanLogRecord( self.level, self.name, msg, args )
+    def _log_clean(self, msg, args=(), **kwargs):
+        record = CleanLogRecord( self.level, self.name, msg, args, **kwargs )
         self.handle( record )
 
     @classmethod
@@ -818,25 +819,6 @@ class Debugger(Logger):
                 ":%02d" % currentTime.minute,
                 ":%02d" % currentTime.second,
                 ":%07d " % currentTime.microsecond ]
-
-    def addHandler(self, handler):
-        """
-            Override the super() method because, we cannot add a stream handler when if there is a
-            `sys.stderr` handler.
-
-            See logging::Logger::addHandler().
-        """
-
-        if "StreamHandler" in str( type( handler ) ):
-
-            if stderr_replacement.is_active or stdout_replacement.is_active:
-                sys.stderr.write( "Warning on Debugger::addHandler for %s\n" % self.name )
-                sys.stderr.write( "You cannot add a StreamHandler while the `sys.stderr` handling is enabled.\n" )
-                sys.stderr.write( "Therefore, your stream handler `%s` is not being added.\n" % handler )
-                sys.stderr.write( "traceback.format_stack():\n%s\n" % "".join( traceback.format_stack() ) )
-                return
-
-        super( Debugger, self ).addHandler( handler )
 
     @classmethod
     def deleteAllLoggers(cls):
@@ -1168,7 +1150,8 @@ class SmartLogRecord(_SmartLogRecord, LogRecord):
 
 class CleanLogRecord(_SmartLogRecord):
 
-    def __init__(self, level, name, msg, args):
+    def __init__(self, level, name, msg, args, **kwargs):
+        self.__dict__.update(kwargs)
         self.name = name
         self.msg = msg
         self.levelno = level
@@ -1199,6 +1182,15 @@ class CleanLogRecord(_SmartLogRecord):
 
     def __str__(self):
         return '<CleanLogRecord: "%s">' % ( self.msg )
+
+
+class FileHandlerContextFilter(logging.Filter):
+    """
+        This filter avoids duplicated information to be displayed to the StreamHandler log.
+        https://stackoverflow.com/questions/616645/how-to-duplicate-sys-stdout-to-a-log-file/48970154
+    """
+    def filter(self, record):
+        return not "_duplicated_from_file" in record.__dict__
 
 
 # Setup the alternate debugger, completely independent of the standard logging module Logger class
