@@ -35,6 +35,8 @@
 #
 #########################################################################################
 #
+import os
+import sys
 
 try:
     # To run this file, run on the Sublime Text console:
@@ -42,8 +44,6 @@ try:
     import sublime_plugin
 
 except (ImportError):
-    import os
-    import sys
 
     def assert_path(module):
 
@@ -55,7 +55,7 @@ except (ImportError):
 
 
 # Import and reload the debugger
-if sys.version_info <= (3,3):
+if sys.version_info < (3,4):
     import imp as reloader
 else:
     import importlib as reloader
