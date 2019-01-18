@@ -84,14 +84,14 @@ except( ImportError, ValueError ):
             super( ConcurrentRotatingFileHandler, self ).__init__( output_file )
 
 
-from .stderr_replacement import stderr_replacement
-from .stdout_replacement import stdout_replacement
-
 # Uncoment this temporarily to create update the `stdout_replacement.py` after changes
 # on `stderr_replacement.py`
 #
 # While developing, you can reload your changes to `create_stdout_handler` with:
 # from .utilities import _create_stdout_handler; _create_stdout_handler();
+
+from .stderr_replacement import stderr_replacement
+from .stdout_replacement import stdout_replacement
 
 
 is_python2 = False
