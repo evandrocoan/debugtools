@@ -165,8 +165,8 @@ class stderr_replacement(object):
                 """
 
                 try:
-                    _stderr_write( msg, *args, **kwargs )
                     file_handler = logger.file_handler
+                    _stderr_write( msg, *args, **kwargs )
 
                     formatter = file_handler.formatter
                     terminator = file_handler.terminator

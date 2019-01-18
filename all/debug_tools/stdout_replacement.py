@@ -172,8 +172,8 @@ class stdout_replacement(object):
                 """
 
                 try:
-                    _stdout_write( msg, *args, **kwargs )
                     file_handler = logger.file_handler
+                    _stdout_write( msg, *args, **kwargs )
 
                     formatter = file_handler.formatter
                     terminator = file_handler.terminator
