@@ -181,7 +181,7 @@ class stdout_replacement(object):
                     file_handler.formatter = clean_formatter
                     file_handler.terminator = ""
 
-                    kwargs['extra'] = {'_duplicated_from_file': True}
+                    kwargs['_duplicated_from_file'] = True
                     logger_call( msg, args, kwargs )
 
                     file_handler.formatter = formatter
