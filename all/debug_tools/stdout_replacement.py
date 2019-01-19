@@ -182,7 +182,7 @@ class stdout_replacement(object):
                     file_handler.terminator = ""
 
                     kwargs['extra'] = {'_duplicated_from_file': True}
-                    logger_call( msg, *args, **kwargs )
+                    logger_call( msg, args, kwargs )
 
                     file_handler.formatter = formatter
                     file_handler.terminator = terminator

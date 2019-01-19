@@ -340,7 +340,7 @@ class Debugger(Logger):
                     file_handler.formatter = self.clean_formatter
 
                 kwargs['debug_level'] = debug_level
-                self._log_clean( msg, args )
+                self._log_clean( msg, args, kwargs )
 
                 if self.stream_handler:
                     stream_handler.formatter = stream_handler_formatter
@@ -363,7 +363,7 @@ class Debugger(Logger):
                     file_handler.formatter = self.clean_formatter
 
                 kwargs['debug_level'] = 1
-                self._log_clean( debug_level, (msg,) + args )
+                self._log_clean( debug_level, (msg,) + args, kwargs )
 
                 if self.stream_handler:
                     stream_handler.formatter = stream_handler_formatter
@@ -752,8 +752,8 @@ class Debugger(Logger):
             super()._log( level, msg, args, exc_info, extra, stack_info )
             self.lastTick = self.currentTick
 
-    def _log_clean(self, msg, args=(), **kwargs):
-        record = CleanLogRecord( self.level, self.name, msg, args, **kwargs )
+    def _log_clean(self, msg, args, kwargs):
+        record = CleanLogRecord( self.level, self.name, msg, args, kwargs )
         self.handle( record )
 
     @classmethod
@@ -1144,7 +1144,7 @@ class SmartLogRecord(_SmartLogRecord, LogRecord):
 
 class CleanLogRecord(_SmartLogRecord):
 
-    def __init__(self, level, name, msg, args, **kwargs):
+    def __init__(self, level, name, msg, args, kwargs):
         self.__dict__.update(kwargs)
         self.name = name
         self.msg = msg
