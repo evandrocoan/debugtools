@@ -456,8 +456,8 @@ class Debugger(Logger):
         """
             Register a exception hook if the logger is capable of logging them to alternate streams.
 
-            @param `stderr` if True, it will enable the logging hook on the stderr and stdout if `stdout` is also True.
-            @param `stdout` if True, it will enable the logging hook on the stdout if `enable` is True.
+            @param `stderr` if True, it will enable the logging hook on the sys.stderr.
+            @param `stdout` if True, it will enable the logging hook on the sys.stdout.
         """
         _acquireLock()
 
@@ -539,15 +539,15 @@ class Debugger(Logger):
             separator=EMPTY_KWARG, formatter=EMPTY_KWARG, rotation=EMPTY_KWARG, **kwargs):
         """
             If `file` parameter is passed, instead of output the debug to the standard output
-            stream, send it a file on the file system, which is faster for large outputs.
+            stream, send it to a file on the file system, which is faster for large outputs.
 
-            As this function remembers its parameters passed from previous calls, you need to
+            As this function remembers most of its parameters passed from previous calls, you need to
             explicitly pass `file=None` with `delete=True` if you want to disable the file
             system output after setting up it to log to a file. See the function Debugger::reset()
             for the default parameters values used on this setup utility.
 
             If the parameters `date`, `level`, `function`, `name`, `time`, `tick` and `msecs` are
-            strings nonempty, their value will be used to defining their configuration formatting.
+            nonempty strings, their value will be used to defining their configuration formatting.
             For example, if you pass name="%(name)s: " the function name will be displayed as
             `name: `, instead of the default `[name] `.
 
@@ -1156,7 +1156,7 @@ class CleanLogRecord(_SmartLogRecord):
         self.msg = msg
         self.levelno = level
 
-        self.levelname = getLevelName(level)
+        self.levelname = getLevelName( level )
         self.pathname = "No Path Name"
         self.filename = "No Filename"
         self.module = "Unknown module"
