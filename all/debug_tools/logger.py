@@ -1146,7 +1146,8 @@ class CleanLogRecord(_SmartLogRecord):
 
     def __init__(self, level, name, msg, args, kwargs):
         # https://stackoverflow.com/questions/9728243/is-self-dict-updatekwargs-good-or-poor-style
-        for key, value in kwargs.items(): setattr( self, key, value )
+        if 'extra' in kwargs:
+            for key, value in kwargs['extra'].items(): setattr( self, key, value )
         self.name = name
         self.msg = msg
         self.levelno = level
