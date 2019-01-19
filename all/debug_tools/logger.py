@@ -468,17 +468,11 @@ class Debugger(Logger):
                 # print( "sys.stderr: %s, sys.stdout: %s" % ( sys.stderr, sys.stdout ) )
                 # print( "name: %s, hasStreamHandlers: %s" % ( self.name, self.hasStreamHandlers() ) )
 
-                if self.hasStreamHandlers():
-                    sys.stderr.write( "Error on `%s`:\n" % self.name )
-                    sys.stderr.write( "Cannot set to handler `sys.stderr or sys.stdout` while there is a StreamHandler.\n" )
-                    self.traceback()
+                if stderr:
+                    stderr_replacement.lock( self )
 
-                else:
-                    if stderr:
-                        stderr_replacement.lock( self )
-
-                    if stdout:
-                        stdout_replacement.lock( self )
+                if stdout:
+                    stdout_replacement.lock( self )
 
             else:
                 if not stderr:
