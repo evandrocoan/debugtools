@@ -101,9 +101,10 @@ _stdout = TeeNoFile(stdout=True)
 def getLogger(debug_level=127, logger_name=None, **kwargs):
     global log
     global line
+    create_test_file = kwargs.pop( 'create_test_file', "" )
 
-    if kwargs.pop( 'create_test_file', False ):
-        kwargs['file'] = utilities.get_relative_path( 'main_unit_tests.txt', __file__ )
+    if create_test_file:
+        kwargs['file'] = utilities.get_relative_path( create_test_file, __file__ )
 
     log = debug_tools.logger.getLogger( debug_level, logger_name, **kwargs )
     _stdout.clear( log )
@@ -290,7 +291,7 @@ class StdErrUnitTests(unittest.TestCase):
             regex_pattern.sub( "", output ) )
 
     def test_exception_throwing_from_file(self):
-        getLogger( "testing.main_unit_tests", 127, create_test_file=True )
+        getLogger( "testing.main_unit_tests", 127, create_test_file='main_unit_tests.txt' )
         line = inspect.getframeinfo( sys._getframe(0) ).lineno
 
         try:
@@ -331,7 +332,7 @@ class StdOutUnitTests(unittest.TestCase):
         log.reset()
 
     def test_helloWordToStdOut(self):
-        getLogger( 127, "testing.main_unit_tests", create_test_file=True, stdout=True )
+        getLogger( 127, "testing.main_unit_tests", create_test_file='main_unit_tests.txt', stdout=True )
 
         print("Std out logging capture test!")
         output = _stdout.file_contents( r"\d{4}\-\d{2}-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- ", log )
@@ -339,7 +340,7 @@ class StdOutUnitTests(unittest.TestCase):
         self.assertEqual( "Std out logging capture test!", output )
 
     def test_stdout_stderr_and_file_loggging(self):
-        getLogger( "testing.main_unit_tests", 127, create_test_file=True, stdout=True, stderr=True )
+        getLogger( "testing.main_unit_tests", 127, create_test_file='main_unit_tests.txt', stdout=True, stderr=True )
         line = inspect.getframeinfo( sys._getframe(0) ).lineno
 
         log( 1, "Before adding StreamHandler" )
