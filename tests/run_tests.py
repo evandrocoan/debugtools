@@ -47,12 +47,15 @@ PACKAGE_ROOT_DIRECTORY = os.path.dirname( os.path.realpath( __file__ ) )
 loader = unittest.TestLoader()
 start_dir = os.path.join( PACKAGE_ROOT_DIRECTORY, 'testing' )
 
-# What numbers can you pass as verbosity in running Python Unit Test Suites?
-# https://stackoverflow.com/questions/1322575/what-numbers-can-you-pass-as-verbosity-in-running-python-unit-test-suites
-suite = loader.discover( start_dir, "*unit_tests.py" )
-runner = unittest.TextTestRunner(verbosity=2)
+# https://stackoverflow.com/questions/15971735/running-single-test-from-unittest-testcase-via-command-line
+from testing import main_unit_tests
+testNames = ["StdOutUnitTests.test_helloWordToStdOut"]
 
-# print( sys.path )
+suite = loader.discover( start_dir, "*unit_tests.py" )
+# suite = loader.loadTestsFromNames( testNames, main_unit_tests )
+
+# https://stackoverflow.com/questions/1322575/what-numbers-can-you-pass-as-verbosity-in-running-python-unit-test-suites
+runner = unittest.TextTestRunner(verbosity=2)
 results = runner.run( suite )
 
 print( "results: %s" % results )
