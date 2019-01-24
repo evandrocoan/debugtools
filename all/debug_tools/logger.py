@@ -287,7 +287,7 @@ class Debugger(Logger):
         {
             "file": None,
             "mode": 'a',
-            "delete": False,
+            "delete": True,
             "date": False,
             "level": False,
             "function": True,
@@ -452,7 +452,7 @@ class Debugger(Logger):
         """
         self.basic_formatter, self.full_formatter = self.full_formatter, self.basic_formatter
 
-    def handle_stderr(self, stderr=True, stdout=False):
+    def handle_stderr(self, stderr=False, stdout=False):
         """
             Register a exception hook if the logger is capable of logging them to alternate streams.
 
