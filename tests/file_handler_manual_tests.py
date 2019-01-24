@@ -66,8 +66,40 @@ reloader.reload( debug_tools.logger )
 from debug_tools.logger import getLogger
 from debug_tools.utilities import get_relative_path
 
-log = getLogger( 127, __name__, file=get_relative_path('file_handler_manual_tests.txt', __file__), stdout=True )
-print('I am working!')
+FILE1 = get_relative_path('file_handler_manual_tests1.txt', __file__)
+FILE2 = get_relative_path('file_handler_manual_tests2.txt', __file__)
 
-# Unlock the file
+log = getLogger( 127, "LSP.core", file=FILE1, stdout=True )
+# log.setup("")
+log('log MODULE 1')
+
+print('Doing std OUT 1')
+sys.stderr.write('Doing std ERR 1\n')
+
+log2 = getLogger( 127, "channel.module", file=FILE2, rotation=10, mode=2, stdout=True )
+# log2.setup("")
+log2('log2 MODULE 1')
+
+print('Doing std OUT 2')
+sys.stderr.write('Doing std ERR 2\n')
+
+log('log MODULE 2')
+log2('log2 MODULE 2')
+
+# print('log\n%s'%log.handlers)
+log = getLogger( 127, __name__, FILE1, rotation=10, mode=2, stdout=True, delete=False)
+
+log2 = getLogger(1, 'LSP.boot', delete=False)
+log2.setup( FILE1, delete=False )
+log2(1, 'No LSP clients enabled.')
+
+log = getLogger( 1, 'LSP.boot', file=FILE1, delete=False )
+log.setup( "", delete=False )
+log( 1, 'No LSP clients enabled.' )
+
+# Unlock the files
 log.removeHandlers()
+log2.removeHandlers()
+
+print('Doing std OUT 3')
+
