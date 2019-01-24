@@ -500,7 +500,7 @@ class Debugger(Logger):
             self.stream_handler = None
 
         if file:
-            self.handle_stderr( False, False )
+            self.handle_stderr( stderr=False, stdout=False )
 
             if self.file_handler:
                 self.removeHandler( self.file_handler )
@@ -852,7 +852,7 @@ class Debugger(Logger):
         if self.log_handlers:
             sys.stderr.write( "Removing all handlers from %s...\n" % self.name )
 
-        self._disable( True, True )
+        self._disable( stream=True, file=True )
 
         for handler in self.handlers:
             self.removeHandler( handler )
