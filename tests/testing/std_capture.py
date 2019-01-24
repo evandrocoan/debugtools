@@ -49,6 +49,7 @@ class TeeNoFile(object):
         How do I duplicate sys.stdout to a log file in python?
         https://stackoverflow.com/questions/616645/how-do-i-duplicate-sys-stdout-to-a-log-file-in-python
     """
+    __closed = False
 
     def __init__(self, stdout=False):
         self._contents = []
@@ -65,19 +66,47 @@ class TeeNoFile(object):
         # sys.stdout.write( "inspect.getmro(sys.stderr):  %s\n" % str( inspect.getmro( type( sys.stderr ) ) ) )
         # sys.stdout.write( "inspect.getmro(self.stderr): %s\n" % str( inspect.getmro( type( self._std_original ) ) ) )
 
+    @property
+    def closed(self):
+        """
+            @return `True` if the file has been closed.
+        """
+        return self.__closed
+
     def __del__(self):
         """
+            The try/except block is in case this is called at program exit time, when it's possible
+            that globals have already been deleted, and then the close() call might fail.  Since
+            there's nothing we can do about such failures and they annoy the end users, we suppress
+            the traceback.
+            https://github.com/python/cpython/blob/1fd06f1eca80dcbf3a916133919482a8327f3da4/Lib/_pyio.py#L380
+
             python Exception AttributeError: “'NoneType' object has no attribute 'var'”
             https://stackoverflow.com/questions/9750308/python-exception-attributeerror-nonetype-object-has-no-attribute-var
         """
-        self.close()
+
+        try:
+            self.close()
+
+        except:
+            pass
 
     def clear(self, log):
         log.clear()
         del self._contents[:]
 
     def flush(self):
-        self._std_original.flush()
+
+        try:
+            self._std_original.flush()
+
+        except AttributeError:
+
+            if self.closed:
+                pass
+
+            else:
+                raise
 
     def write(self, *args, **kwargs):
         # self._std_original.write( " 111111 %s" % self._std_original.write + str( args ), **kwargs )
@@ -112,13 +141,18 @@ class TeeNoFile(object):
     def close(self):
 
         # On shutdown `__del__`, the sys module can be already set to None.
-        if sys and self._std_original:
+        if sys and self._std_original and not self.__closed:
 
-            if self.stdout_type:
-                sys.stdout = self._std_original
+            try:
+                self.flush()
+
+            finally:
+                self.__closed = True
+
+                if self.stdout_type:
+                    sys.stdout = self._std_original
+
+                else:
+                    sys.stderr = self._std_original
+
                 self._std_original = None
-
-            else:
-                sys.stderr = self._std_original
-                self._std_original = None
-
