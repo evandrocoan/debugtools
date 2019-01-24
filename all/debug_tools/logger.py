@@ -462,24 +462,19 @@ class Debugger(Logger):
         _acquireLock()
 
         try:
+            # print( "stderr: %s, stdout: %s" % ( stderr, stdout ) )
+            # print( "sys.stderr: %s, sys.stdout: %s" % ( sys.stderr, sys.stdout ) )
+            # print( "name: %s, hasStreamHandlers: %s" % ( self.name, self.hasStreamHandlers() ) )
 
-            if stderr or stdout:
-                # print( "stderr: %s, stdout: %s" % ( stderr, stdout ) )
-                # print( "sys.stderr: %s, sys.stdout: %s" % ( sys.stderr, sys.stdout ) )
-                # print( "name: %s, hasStreamHandlers: %s" % ( self.name, self.hasStreamHandlers() ) )
-
-                if stderr:
-                    stderr_replacement.lock( self )
-
-                if stdout:
-                    stdout_replacement.lock( self )
-
+            if stderr:
+                stderr_replacement.lock( self )
             else:
-                if not stderr:
-                    stderr_replacement.unlock()
+                stderr_replacement.unlock()
 
-                if not stdout:
-                    stdout_replacement.unlock()
+            if stdout:
+                stdout_replacement.lock( self )
+            else:
+                stdout_replacement.unlock()
 
         except Exception:
             self.exception( "Could not register the sys.stderr stream handler" )
