@@ -319,6 +319,16 @@ class StdErrUnitTests(unittest.TestCase):
                 """.format( line + 3, line + 4  ) ),
             regex_pattern.sub( "", output ) )
 
+    def test_infinity_recursion_fix(self):
+        getLogger( 1, 'LSP.boot', create_test_file='main_unit_tests.txt', delete=False, stdout=False, stderr=True )
+        line = inspect.getframeinfo( sys._getframe(0) ).lineno
+
+        log.setup( "", delete=False )
+        log( 1, 'No LSP clients enabled.' )
+
+        output = _stderr.file_contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- ", log )
+        self.assertEqual( "LSP.boot.test_infinity_recursion_fix:{} - No LSP clients enabled.".format( line + 3 ), output )
+
 
 class StdOutUnitTests(unittest.TestCase):
 
