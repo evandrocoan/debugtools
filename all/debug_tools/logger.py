@@ -125,6 +125,8 @@ class Debugger(Logger):
     """
     logger = None
     log_handlers = False
+    file_handler_context_filter = None
+    has_file_handler_context_filter = False
 
     def __init__(self, logger_name, logger_level=None):
         """
@@ -657,7 +659,6 @@ class Debugger(Logger):
 
             self._create_file_handler( output_file, arguments['rotation'], arguments['mode'] )
             self._disable( stream=arguments['delete'] )
-            self.handle_stderr( self._stderr, self._stdout )
 
         else:
             self._disable( stream=True )
@@ -666,7 +667,6 @@ class Debugger(Logger):
             try:
 
                 self.stream_handler = logging.StreamHandler()
-                self.stream_handler.addFilter( FileHandlerContextFilter() )
                 self.stream_handler.formatter = self.full_formatter
 
             except Exception:
@@ -808,6 +808,55 @@ class Debugger(Logger):
                 ":%02d" % currentTime.minute,
                 ":%02d" % currentTime.second,
                 ":%07d " % currentTime.microsecond ]
+
+    def addHandler(self, handler):
+        """
+            Override the super() method to correctly set up `sys.stderr/stdout` handlers.
+
+            When adding a new handler and either `sys.stderr` or `sys.stdout` is enabled. It is
+            required to check whether there is also a stream handler enabled, and if so, then, we
+            need to add a log record filter to avoid infinity log records trying to be displayed.
+            See also logging::Logger::addHandler().
+        """
+
+        if self._stderr or self._stdout:
+
+            if self.file_handler and self.stream_handler:
+                handler.addFilter( self.file_handler_context_filter )
+                self.has_file_handler_context_filter = True
+
+                for other_handler in self.handlers:
+                    other_handler.addFilter( self.file_handler_context_filter )
+
+                self.handle_stderr( self._stderr, self._stdout )
+
+            # else: # TODO: Support other this logic also for other handlers and the builtin stream_handler and file_handler
+
+        super( Debugger, self ).addHandler( handler )
+
+    def removeHandler(self, handler):
+        """
+            Override the super() method to correctly set up `sys.stderr/stdout` handlers.
+
+            When
+            See also logging::Logger::removeHandler().
+        """
+
+        if self.has_file_handler_context_filter:
+
+            if not self._stderr and not self._stdout or not self.file_handler or not self.stream_handler:
+
+                handler.removeFilter( self.file_handler_context_filter )
+                self.has_file_handler_context_filter = False
+
+                for other_handler in self.handlers:
+                    other_handler.removeFilter( self.file_handler_context_filter )
+
+                self.handle_stderr( self._stderr, self._stdout )
+
+            # else: # TODO: Support other this logic also for other handlers and the builtin stream_handler and file_handler
+
+        super( Debugger, self ).removeHandler( handler )
 
     @classmethod
     def deleteAllLoggers(cls):
@@ -1187,6 +1236,7 @@ class FileHandlerContextFilter(logging.Filter):
 # Setup the alternate debugger, completely independent of the standard logging module Logger class
 root = Debugger( "root_debugger", "WARNING" )
 Debugger.root = root
+Debugger.file_handler_context_filter = FileHandlerContextFilter()
 
 Debugger.manager = Manager( root )
 Debugger.manager.setLoggerClass( Debugger )
