@@ -1177,8 +1177,8 @@ class CleanLogRecord(_SmartLogRecord):
         self.process = None
 
     def __str__(self):
-        return '<CleanLogRecord: "%s">' % ( self.msg )
-
+        return '<CleanLogRecord: %s, %s, %s, %s, "%s">'%(self.name, self.levelno,
+                self.pathname, self.lineno, self.msg)
 
 class FileHandlerContextFilter(logging.Filter):
     """
