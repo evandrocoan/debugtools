@@ -463,6 +463,50 @@ class LogRecordUnitTests(testing_utilities.TestingUtilities):
             """ ),
             utilities.wrap_text( output, trim_spaces=True ) )
 
+    def test_integerCleanLogging(self):
+        getLogger( 127, "testing.main_unit_tests", date=True )
+
+        log.clean(1)
+        output = _stderr.contents( r"" )
+
+        self.assertEqual( utilities.wrap_text( """\
+            1
+            """ ),
+            utilities.wrap_text( output, trim_spaces=True ) )
+
+    def test_integerBasicLogging(self):
+        getLogger( 127, "testing.main_unit_tests", date=True )
+
+        log.basic(1)
+        output = _stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \- " )
+
+        self.assertEqual( utilities.wrap_text( """\
+            + testing.main_unit_tests - 1
+            """ ),
+            utilities.wrap_text( output, trim_spaces=True ) )
+
+    def test_integerFullLogging(self):
+        getLogger( 127, "testing.main_unit_tests" )
+
+        log(1)
+        output = _stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+
+        self.assertEqual( utilities.wrap_text( """\
+            + testing.main_unit_tests.test_integerFullLogging:491 - 1
+            """ ),
+            utilities.wrap_text( output, trim_spaces=True ) )
+
+    def test_integerFullLoggingEdge(self):
+        getLogger( 127, "testing.main_unit_tests" )
+
+        log(2, 2)
+        output = _stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+
+        self.assertEqual( utilities.wrap_text( """\
+            + testing.main_unit_tests.test_integerFullLoggingEdge:502 - 2
+            """ ),
+            utilities.wrap_text( output, trim_spaces=True ) )
+
 
 def load_tests(loader, standard_tests, pattern):
     suite = unittest.TestSuite()

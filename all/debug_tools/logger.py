@@ -255,7 +255,7 @@ class Debugger(Logger):
         """
         raise ValueError( "Error: The stdout attribute is readonly!" )
 
-    def __call__(self, debug_level=1, msg="", *args, **kwargs):
+    def __call__(self, debug_level=1, msg=EMPTY_KWARG, *args, **kwargs):
         """
             Log to the current active handlers its message based on the bitwise `self._debugger_level`
             value. Note, differently from the standard logging level, each logger object has its own
@@ -264,11 +264,19 @@ class Debugger(Logger):
 
         if type( debug_level ) is int:
 
+            if msg is EMPTY_KWARG:
+                debug_level = 1
+                msg = debug_level
+
             if self._debugger_level & debug_level != 0:
                 kwargs['debug_level'] = debug_level
                 self._log( DEBUG, msg, args, **kwargs )
 
         else:
+
+            if msg is EMPTY_KWARG:
+                msg = ""
+
             if self._debugger_level & 1 != 0:
                 kwargs['debug_level'] = 1
                 self._log( DEBUG, debug_level, (msg,) + args, **kwargs )
@@ -343,7 +351,7 @@ class Debugger(Logger):
         for index in range(count):
             self.clean( debug_level, "" )
 
-    def clean(self, debug_level=1, msg="", *args, **kwargs):
+    def clean(self, debug_level=1, msg=EMPTY_KWARG, *args, **kwargs):
         """
             Prints a message without the time prefix as `[plugin_name.py] 11:13:51:0582059`
 
@@ -352,6 +360,10 @@ class Debugger(Logger):
         """
 
         if type( debug_level ) is int:
+
+            if msg is EMPTY_KWARG:
+                debug_level = 1
+                msg = debug_level
 
             if self._debugger_level & debug_level != 0:
                 self = self.active or self
@@ -376,6 +388,10 @@ class Debugger(Logger):
                     _file.formatter = file_formatter
 
         else:
+
+            if msg is EMPTY_KWARG:
+                msg = ""
+
             if self._debugger_level & 1 != 0:
                 self = self.active or self
                 _file = self._file
@@ -398,7 +414,7 @@ class Debugger(Logger):
                 if self._file:
                     _file.formatter = file_formatter
 
-    def basic(self, debug_level=1, msg="", *args, **kwargs):
+    def basic(self, debug_level=1, msg=EMPTY_KWARG, *args, **kwargs):
         """
             Prints the bitwise logging message with the standard basic formatter, which uses by
             default the format: [%(name)s] %(asctime)s:%(msecs)010.6f %(tickDifference).2e %(message)s
@@ -409,6 +425,10 @@ class Debugger(Logger):
         """
 
         if type( debug_level ) is int:
+
+            if msg is EMPTY_KWARG:
+                debug_level = 1
+                msg = debug_level
 
             if self._debugger_level & debug_level != 0:
                 self = self.active or self
@@ -433,6 +453,9 @@ class Debugger(Logger):
                     _file.formatter = file_formatter
 
         else:
+
+            if msg is EMPTY_KWARG:
+                msg = ""
 
             if self._debugger_level & 1 != 0:
                 self = self.active or self
