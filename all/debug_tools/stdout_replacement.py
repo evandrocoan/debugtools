@@ -172,23 +172,23 @@ class stdout_replacement(object):
                 """
 
                 try:
-                    file_handler = logger.file_handler
+                    file = logger._file
                     _stdout_write( msg, *args, **kwargs )
 
-                    formatter = file_handler.formatter
-                    terminator = file_handler.terminator
+                    formatter = file.formatter
+                    terminator = file.terminator
 
-                    file_handler.formatter = clean_formatter
-                    file_handler.terminator = ""
+                    file.formatter = clean_formatter
+                    file.terminator = ""
 
                     kwargs['extra'] = { '_duplicated_from_file': True }
                     logger_call( msg, args, kwargs )
 
-                    file_handler.formatter = formatter
-                    file_handler.terminator = terminator
+                    file.formatter = formatter
+                    file.terminator = terminator
 
                 except Exception:
-                    logger.exception( "Could not write to the file_handler: %s(%s)", file_handler, logger )
+                    logger.exception( "Could not write to the file: %s(%s)", file, logger )
                     cls.unlock()
 
             # Only create one `_sys_stdout_write` function pointer ever

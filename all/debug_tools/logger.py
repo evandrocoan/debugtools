@@ -123,10 +123,9 @@ class Debugger(Logger):
         How to print list inside python print?
         https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
     """
-    debugme = False
-
-    _file_handler_context_filter = None
-    _has_file_handler_context_filter = False
+    _debugme = False
+    _file_context_filter = None
+    _has_file_context_filter = False
 
     def __init__(self, logger_name, logger_level=None):
         """
@@ -138,8 +137,8 @@ class Debugger(Logger):
         """
         super( Debugger, self ).__init__( logger_name, logger_level or "DEBUG" )
 
-        self.file_handler = None
-        self.stream_handler = None
+        self._file = None
+        self._stream = None
 
         # Initialize the first last tick as the current tick
         self._last_tick = timeit.default_timer()
@@ -157,8 +156,8 @@ class Debugger(Logger):
     @property
     def output_file(self):
 
-        if self.file_handler:
-            return self.file_handler.baseFilename
+        if self._file:
+            return self._file.baseFilename
 
         return None
 
@@ -358,48 +357,48 @@ class Debugger(Logger):
 
             if self._debugger_level & debug_level != 0:
                 self = self.active or self
-                file_handler = self.file_handler
-                stream_handler = self.stream_handler
+                _file = self._file
+                _stream = self._stream
 
-                if stream_handler:
-                    stream_handler_formatter = stream_handler.formatter
-                    stream_handler.formatter = self.clean_formatter
+                if _stream:
+                    stream_formatter = _stream.formatter
+                    _stream.formatter = self.clean_formatter
 
-                if file_handler:
-                    file_handler_formatter = file_handler.formatter
-                    file_handler.formatter = self.clean_formatter
+                if _file:
+                    file_formatter = _file.formatter
+                    _file.formatter = self.clean_formatter
 
                 kwargs['debug_level'] = debug_level
                 self._log_clean( msg, args, kwargs )
 
-                if self.stream_handler:
-                    stream_handler.formatter = stream_handler_formatter
+                if self._stream:
+                    _stream.formatter = stream_formatter
 
-                if self.file_handler:
-                    file_handler.formatter = file_handler_formatter
+                if self._file:
+                    _file.formatter = file_formatter
 
         else:
             if self._debugger_level & 1 != 0:
                 self = self.active or self
-                file_handler = self.file_handler
-                stream_handler = self.stream_handler
+                _file = self._file
+                _stream = self._stream
 
-                if stream_handler:
-                    stream_handler_formatter = stream_handler.formatter
-                    stream_handler.formatter = self.clean_formatter
+                if _stream:
+                    stream_formatter = _stream.formatter
+                    _stream.formatter = self.clean_formatter
 
-                if file_handler:
-                    file_handler_formatter = file_handler.formatter
-                    file_handler.formatter = self.clean_formatter
+                if _file:
+                    file_formatter = _file.formatter
+                    _file.formatter = self.clean_formatter
 
                 kwargs['debug_level'] = 1
                 self._log_clean( debug_level, (msg,) + args, kwargs )
 
-                if self.stream_handler:
-                    stream_handler.formatter = stream_handler_formatter
+                if self._stream:
+                    _stream.formatter = stream_formatter
 
-                if self.file_handler:
-                    file_handler.formatter = file_handler_formatter
+                if self._file:
+                    _file.formatter = file_formatter
 
     def basic(self, debug_level=1, msg="", *args, **kwargs):
         """
@@ -415,49 +414,49 @@ class Debugger(Logger):
 
             if self._debugger_level & debug_level != 0:
                 self = self.active or self
-                file_handler = self.file_handler
-                stream_handler = self.stream_handler
+                _file = self._file
+                _stream = self._stream
 
-                if stream_handler:
-                    stream_handler_formatter = stream_handler.formatter
-                    stream_handler.formatter = self.basic_formatter
+                if _stream:
+                    stream_formatter = _stream.formatter
+                    _stream.formatter = self.basic_formatter
 
-                if file_handler:
-                    file_handler_formatter = file_handler.formatter
-                    file_handler.formatter = self.basic_formatter
+                if _file:
+                    file_formatter = _file.formatter
+                    _file.formatter = self.basic_formatter
 
                 kwargs['debug_level'] = debug_level
                 self._log( DEBUG, msg, args, **kwargs )
 
-                if stream_handler:
-                    stream_handler.formatter = stream_handler_formatter
+                if _stream:
+                    _stream.formatter = stream_formatter
 
-                if file_handler:
-                    file_handler.formatter = file_handler_formatter
+                if _file:
+                    _file.formatter = file_formatter
 
         else:
 
             if self._debugger_level & 1 != 0:
                 self = self.active or self
-                file_handler = self.file_handler
-                stream_handler = self.stream_handler
+                _file = self._file
+                _stream = self._stream
 
-                if stream_handler:
-                    stream_handler_formatter = stream_handler.formatter
-                    stream_handler.formatter = self.basic_formatter
+                if _stream:
+                    stream_formatter = _stream.formatter
+                    _stream.formatter = self.basic_formatter
 
-                if file_handler:
-                    file_handler_formatter = file_handler.formatter
-                    file_handler.formatter = self.basic_formatter
+                if _file:
+                    file_formatter = _file.formatter
+                    _file.formatter = self.basic_formatter
 
                 kwargs['debug_level'] = 1
                 self._log( DEBUG, debug_level, (msg,) + args, **kwargs )
 
-                if stream_handler:
-                    stream_handler.formatter = stream_handler_formatter
+                if _stream:
+                    _stream.formatter = stream_formatter
 
-                if file_handler:
-                    file_handler.formatter = file_handler_formatter
+                if _file:
+                    _file.formatter = file_formatter
 
 
     def clear(self, delete=False):
@@ -473,7 +472,7 @@ class Debugger(Logger):
             output_file = active.output_file
             sys.stderr.write( "Cleaning %s (delete=%s) the file: %s\n" % ( self.name, delete, output_file ) )
 
-            active._create_file_handler( output_file, active._arguments['rotation'], active._arguments['mode'], True, delete )
+            active._create_file( output_file, active._arguments['rotation'], active._arguments['mode'], True, delete )
             self.handle_stderr( stderr=self._stderr and not delete, stdout=self._stdout and not delete )
 
     def invert(self):
@@ -492,7 +491,7 @@ class Debugger(Logger):
         _acquireLock()
 
         try:
-            if self.debugme:
+            if self._debugme:
                 sys.stderr.write( "stderr: %s, stdout: %s" % ( stderr, stdout ) )
                 sys.stderr.write( "sys.stderr: %s, sys.stdout: %s" % ( sys.stderr, sys.stdout ) )
                 sys.stderr.write( "name: %s, hasStreamHandlers: %s" % ( self.name, self.hasStreamHandlers() ) )
@@ -519,21 +518,21 @@ class Debugger(Logger):
         """
         is_successful = False
 
-        if stream and self.stream_handler:
-            self.removeHandler( self.stream_handler )
+        if stream and self._stream:
+            self.removeHandler( self._stream )
 
             is_successful = True
-            self.stream_handler = None
+            self._stream = None
 
         if file:
             self.handle_stderr( stderr=False, stdout=False )
 
-            if self.file_handler:
-                self.removeHandler( self.file_handler )
-                self.file_handler.close()
+            if self._file:
+                self.removeHandler( self._file )
+                self._file.close()
 
                 is_successful = True
-                self.file_handler = None
+                self._file = None
 
         return is_successful
 
@@ -665,8 +664,8 @@ class Debugger(Logger):
 
         if has_changes \
                 or handlers \
-                or ( not logger.stream_handler \
-                    and not logger.file_handler ):
+                or ( not logger._stream \
+                    and not logger._file ):
 
             if _fix_children:
                 logger.fix_children( lambda logger: logger.removeHandlers() )
@@ -686,7 +685,7 @@ class Debugger(Logger):
             sys.stderr.write( "".join( self._get_time_prefix( datetime.datetime.now() ) )
                     + "Logging to the file %s\n" % output_file )
 
-            self._create_file_handler( output_file, arguments['rotation'], arguments['mode'] )
+            self._create_file( output_file, arguments['rotation'], arguments['mode'] )
             self._disable( stream=arguments['delete'] )
 
         else:
@@ -695,8 +694,8 @@ class Debugger(Logger):
 
             try:
 
-                self.stream_handler = logging.StreamHandler()
-                self.stream_handler.formatter = self.full_formatter
+                self._stream = logging.StreamHandler()
+                self._stream.formatter = self.full_formatter
 
             except Exception:
                 self.exception( "Could not create the stream handler" )
@@ -704,10 +703,10 @@ class Debugger(Logger):
             finally:
                 _releaseLock()
 
-            self.addHandler( self.stream_handler )
+            self.addHandler( self._stream )
             self._disable( file=arguments['delete'] )
 
-    def _create_file_handler(self, output_file, rotation, mode, clear=False, delete=False):
+    def _create_file(self, output_file, rotation, mode, clear=False, delete=False):
         backup_count = mode
         mode = 'w' if clear else mode
 
@@ -726,18 +725,18 @@ class Debugger(Logger):
             rotation = rotation * 1024 * 1024
 
             backup_count = abs( backup_count ) if isinstance( backup_count, int ) else 2
-            file_handler = ConcurrentRotatingFileHandler( output_file, maxBytes=rotation, backupCount=backup_count )
+            _file = ConcurrentRotatingFileHandler( output_file, maxBytes=rotation, backupCount=backup_count )
 
         else:
 
             if not isinstance( mode, str ):
                 raise ValueError( "The mode argument `%s` must be instance of string." % mode )
 
-            file_handler = logging.FileHandler( output_file, mode )
+            _file = logging.FileHandler( output_file, mode )
 
-        file_handler.formatter = self.full_formatter
-        self.file_handler = file_handler
-        self.addHandler( file_handler )
+        _file.formatter = self.full_formatter
+        self._file = _file
+        self.addHandler( _file )
 
     def warn(self, msg, *args, **kwargs):
         """
@@ -850,16 +849,16 @@ class Debugger(Logger):
 
         if self._stderr or self._stdout:
 
-            if self.file_handler and self.stream_handler:
-                handler.addFilter( self._file_handler_context_filter )
-                self._has_file_handler_context_filter = True
+            if self._file and self._stream:
+                handler.addFilter( self._file_context_filter )
+                self._has_file_context_filter = True
 
                 for other_handler in self.handlers:
-                    other_handler.addFilter( self._file_handler_context_filter )
+                    other_handler.addFilter( self._file_context_filter )
 
                 self.handle_stderr( self._stderr, self._stdout )
 
-            # else: # TODO: Support other this logic also for other handlers and the builtin stream_handler and file_handler
+            # else: # TODO: Support other this logic also for other handlers and the builtin _stream and _file
 
         super( Debugger, self ).addHandler( handler )
 
@@ -871,19 +870,19 @@ class Debugger(Logger):
             See also logging::Logger::removeHandler().
         """
 
-        if self._has_file_handler_context_filter:
+        if self._has_file_context_filter:
 
-            if not self._stderr and not self._stdout or not self.file_handler or not self.stream_handler:
+            if not self._stderr and not self._stdout or not self._file or not self._stream:
 
-                handler.removeFilter( self._file_handler_context_filter )
-                self._has_file_handler_context_filter = False
+                handler.removeFilter( self._file_context_filter )
+                self._has_file_context_filter = False
 
                 for other_handler in self.handlers:
-                    other_handler.removeFilter( self._file_handler_context_filter )
+                    other_handler.removeFilter( self._file_context_filter )
 
                 self.handle_stderr( self._stderr, self._stdout )
 
-            # else: # TODO: Support other this logic also for other handlers and the builtin stream_handler and file_handler
+            # else: # TODO: Support other this logic also for other handlers and the builtin _stream and _file
 
         super( Debugger, self ).removeHandler( handler )
 
@@ -921,7 +920,7 @@ class Debugger(Logger):
         """
             Delete all handlers registered to the current logger.
         """
-        if self.debugme: sys.stderr.write( "Removing all handlers from %s...\n" % self.name )
+        if self._debugme: sys.stderr.write( "Removing all handlers from %s...\n" % self.name )
         self._disable( stream=True, file=True )
 
         for handler in self.handlers:
@@ -1038,9 +1037,9 @@ class Debugger(Logger):
 
             else:
                 representations.append( "%2s. _debugger_level: %3d, level: %2s, propagate: %5s, "
-                    "_frame_level: %2d, name(%s): %s, stream_handler: %s, file_handler: %s, arguments: %s" %
+                    "_frame_level: %2d, name(%s): %s, _stream: %s, _file: %s, arguments: %s" %
                     ( str( total_loggers[0] ), logger._debugger_level, logger.level, logger.propagate,
-                    logger._frame_level, current_logger, logger.name, logger.stream_handler, logger.file_handler,
+                    logger._frame_level, current_logger, logger.name, logger._stream, logger._file,
                     logger._arguments ) )
 
         for logger_name in loggers_dict:
@@ -1262,7 +1261,7 @@ class FileHandlerContextFilter(logging.Filter):
 # Setup the alternate debugger, completely independent of the standard logging module Logger class
 root = Debugger( "root_debugger", "WARNING" )
 Debugger.root = root
-Debugger._file_handler_context_filter = FileHandlerContextFilter()
+Debugger._file_context_filter = FileHandlerContextFilter()
 
 Debugger.manager = Manager( root )
 Debugger.manager.setLoggerClass( Debugger )
@@ -1282,7 +1281,7 @@ def getLogger(debug_level=127, logger_name=None,
     @param from `file` until `**kwargs` are the named parameters passed to the Debugger.setup() member function.
     @param `setup` if True (default), ensure there is at least one handler enabled in the hierarchy,
             then the current created active Logger setup method will be called.
-    @param `debugme` if True, log to the `stderr` logging self debugging messages.
+    @param `_debugme` if True, log to the `stderr` logging self debugging messages.
 
     @seealso Debugger::setup()
     """
@@ -1297,10 +1296,10 @@ def _getLogger(debug_level=127, logger_name=None, **kwargs):
         Allow to pass positional arguments to `getLogger()`.
     """
     level = kwargs.get( "level", EMPTY_KWARG )
-    debugme = kwargs.get( "debugme", False )
+    _debugme = kwargs.get( "_debugme", False )
 
-    if debugme:
-        Debugger.debugme = True
+    if _debugme:
+        Debugger._debugme = True
 
     debug_level, logger_name = _get_debug_level( debug_level, logger_name )
 
