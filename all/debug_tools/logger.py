@@ -129,12 +129,10 @@ class Debugger(Logger):
 
     def __init__(self, logger_name, logger_level=None):
         """
-            What is a clean, pythonic way to have multiple constructors in Python?
-            https://stackoverflow.com/questions/682504/what-is-a-clean-pythonic-way-to-have-multiple-constructors-in-python
-
-            @param `logger_name` the name of this logger accordingly with the standard logging.Logger() documentation.
-            @param `logger_level` an integer/string with the enabled log level from logging module
+            See the factory global function logger.getLogger().
         """
+        # What is a clean, pythonic way to have multiple constructors in Python?
+        # https://stackoverflow.com/questions/682504/what-is-a-clean-pythonic-way-to-have-multiple-constructors-in-python
         super( Debugger, self ).__init__( logger_name, logger_level or "DEBUG" )
 
         self._file = None
@@ -1272,16 +1270,27 @@ def getLogger(debug_level=127, logger_name=None,
             function=EMPTY_KWARG, name=EMPTY_KWARG, time=EMPTY_KWARG, msecs=EMPTY_KWARG, tick=EMPTY_KWARG,
             separator=EMPTY_KWARG, formatter=EMPTY_KWARG, rotation=EMPTY_KWARG, **kwargs):
     """
-    Return a logger with the specified name, creating it if necessary. If no name is specified,
-    return a new logger based on the main logger file name. See also logging::Manager::getLogger()
-    It has the same parameters as Debugger::setup with the addition of the following parameters:
-    @param `debug_level` and `logger_name` are the same parameters passed to the Debugger::__init__() constructor.
+    Return a logger with the specified name, creating it if necessary.
+
+    If no name is specified, return a new logger based on the main logger file name. See also
+    logging::Manager::getLogger(). It has the same parameters as Debugger::setup() with the addition
+    of the following parameters:
+
+    @param `logger_name` the name of this logger accordingly with the standard logging.Logger()
+            documentation.
+
+    @param `logger_level` an integer/string with the enabled log level from logging module
+
     @param `level` if True, add to the `full_formatter` the log levels. If not a boolean,
             it should be the initial logging level accordingly to logging::Logger::setLevel(level)
-    @param from `file` until `**kwargs` are the named parameters passed to the Debugger.setup() member function.
+
+    @param from `file` until `**kwargs` there are the named parameters passed to the Debugger.setup()
+            member function.
+
     @param `setup` if True (default), ensure there is at least one handler enabled in the hierarchy,
-            then the current created active Logger setup method will be called.
-    @param `_debugme` if True, log to the `stderr` logging self debugging messages.
+            then, the current created active Logger setup method will be called.
+
+    @param `debugme` if True, log to the `stderr` logging self debugging messages.
 
     @seealso Debugger::setup()
     """
@@ -1296,10 +1305,7 @@ def _getLogger(debug_level=127, logger_name=None, **kwargs):
         Allow to pass positional arguments to `getLogger()`.
     """
     level = kwargs.get( "level", EMPTY_KWARG )
-    _debugme = kwargs.get( "_debugme", False )
-
-    if _debugme:
-        Debugger._debugme = True
+    Debugger._debugme = kwargs.get( "debugme", False )
 
     debug_level, logger_name = _get_debug_level( debug_level, logger_name )
 
