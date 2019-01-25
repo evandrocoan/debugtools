@@ -123,7 +123,7 @@ class Debugger(Logger):
         How to print list inside python print?
         https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
     """
-    is_handler = False
+    debugme = False
 
     _file_handler_context_filter = None
     _has_file_handler_context_filter = False
@@ -464,9 +464,10 @@ class Debugger(Logger):
         _acquireLock()
 
         try:
-            # print( "stderr: %s, stdout: %s" % ( stderr, stdout ) )
-            # print( "sys.stderr: %s, sys.stdout: %s" % ( sys.stderr, sys.stdout ) )
-            # print( "name: %s, hasStreamHandlers: %s" % ( self.name, self.hasStreamHandlers() ) )
+            if self.debugme:
+                sys.stderr.write( "stderr: %s, stdout: %s" % ( stderr, stdout ) )
+                sys.stderr.write( "sys.stderr: %s, sys.stdout: %s" % ( sys.stderr, sys.stdout ) )
+                sys.stderr.write( "name: %s, hasStreamHandlers: %s" % ( self.name, self.hasStreamHandlers() ) )
 
             if stderr:
                 stderr_replacement.lock( self )
@@ -892,10 +893,7 @@ class Debugger(Logger):
         """
             Delete all handlers registered to the current logger.
         """
-
-        if self.is_handler:
-            sys.stderr.write( "Removing all handlers from %s...\n" % self.name )
-
+        if self.debugme: sys.stderr.write( "Removing all handlers from %s...\n" % self.name )
         self._disable( stream=True, file=True )
 
         for handler in self.handlers:
@@ -1256,7 +1254,7 @@ def getLogger(debug_level=127, logger_name=None,
     @param from `file` until `**kwargs` are the named parameters passed to the Debugger.setup() member function.
     @param `setup` if True (default), ensure there is at least one handler enabled in the hierarchy,
             then the current created active Logger setup method will be called.
-    @param `is_handler` if True, log to the `stderr` when logging handlers are removed.
+    @param `debugme` if True, log to the `stderr` logging self debugging messages.
 
     @seealso Debugger::setup()
     """
@@ -1271,10 +1269,10 @@ def _getLogger(debug_level=127, logger_name=None, **kwargs):
         Allow to pass positional arguments to `getLogger()`.
     """
     level = kwargs.get( "level", EMPTY_KWARG )
-    is_handler = kwargs.get( "is_handler", False )
+    debugme = kwargs.get( "debugme", False )
 
-    if is_handler:
-        Debugger.is_handler = True
+    if debugme:
+        Debugger.debugme = True
 
     debug_level, logger_name = _get_debug_level( debug_level, logger_name )
 
