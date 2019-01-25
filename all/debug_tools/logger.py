@@ -193,16 +193,16 @@ class Debugger(Logger):
         return self._debugger_level
 
     @debug_level.setter
-    def debug_level(self, value):
+    def debug_level(self, debug_level):
         """
             Set this current logger object active debug level.
         """
 
-        if isinstance( value, int ):
-            self._debugger_level = value
+        if isinstance( debug_level, int ):
+            self._debugger_level = debug_level
 
         else:
-            raise ValueError( "Error: The debug_level `%s` must be an integer!" % value )
+            raise ValueError( "Error: The debug_level `%s` must be an integer!" % debug_level )
 
     @property
     def _debug_level(self):
@@ -214,7 +214,7 @@ class Debugger(Logger):
         return self._debugger_level
 
     @_debug_level.setter
-    def _debug_level(self, value):
+    def _debug_level(self, debug_level):
         """
             Set this current logger object and all other relative loggers' active debug level.
 
@@ -224,7 +224,7 @@ class Debugger(Logger):
         active = self.active or self
 
         def set_level(logger):
-            logger.debug_level = value
+            logger.debug_level = debug_level
 
         set_level( active )
         active.fix_children( set_level )
