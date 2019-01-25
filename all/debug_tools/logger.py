@@ -265,21 +265,23 @@ class Debugger(Logger):
         if type( debug_level ) is int:
 
             if msg is EMPTY_KWARG:
-                debug_level = 1
-                msg = debug_level
+                kwargs['debug_level'] = debug_level
+                self._log( DEBUG, debug_level, args, **kwargs )
 
-            if self._debugger_level & debug_level != 0:
+            elif self._debugger_level & debug_level != 0:
                 kwargs['debug_level'] = debug_level
                 self._log( DEBUG, msg, args, **kwargs )
 
         else:
 
-            if msg is EMPTY_KWARG:
-                msg = ""
-
             if self._debugger_level & 1 != 0:
                 kwargs['debug_level'] = 1
-                self._log( DEBUG, debug_level, (msg,) + args, **kwargs )
+
+                if msg is EMPTY_KWARG:
+                    self._log( DEBUG, debug_level, args, **kwargs )
+
+                else:
+                    self._log( DEBUG, debug_level, (msg,) + args, **kwargs )
 
     def traceback(self, **kwargs):
         """
@@ -362,10 +364,28 @@ class Debugger(Logger):
         if type( debug_level ) is int:
 
             if msg is EMPTY_KWARG:
-                debug_level = 1
-                msg = debug_level
+                self = self.active or self
+                _file = self._file
+                _stream = self._stream
 
-            if self._debugger_level & debug_level != 0:
+                if _stream:
+                    stream_formatter = _stream.formatter
+                    _stream.formatter = self.clean_formatter
+
+                if _file:
+                    file_formatter = _file.formatter
+                    _file.formatter = self.clean_formatter
+
+                kwargs['debug_level'] = 1
+                self._log_clean( debug_level, args, kwargs )
+
+                if self._stream:
+                    _stream.formatter = stream_formatter
+
+                if self._file:
+                    _file.formatter = file_formatter
+
+            elif self._debugger_level & debug_level != 0:
                 self = self.active or self
                 _file = self._file
                 _stream = self._stream
@@ -389,30 +409,51 @@ class Debugger(Logger):
 
         else:
 
-            if msg is EMPTY_KWARG:
-                msg = ""
-
             if self._debugger_level & 1 != 0:
-                self = self.active or self
-                _file = self._file
-                _stream = self._stream
 
-                if _stream:
-                    stream_formatter = _stream.formatter
-                    _stream.formatter = self.clean_formatter
+                if msg is EMPTY_KWARG:
+                    self = self.active or self
+                    _file = self._file
+                    _stream = self._stream
 
-                if _file:
-                    file_formatter = _file.formatter
-                    _file.formatter = self.clean_formatter
+                    if _stream:
+                        stream_formatter = _stream.formatter
+                        _stream.formatter = self.clean_formatter
 
-                kwargs['debug_level'] = 1
-                self._log_clean( debug_level, (msg,) + args, kwargs )
+                    if _file:
+                        file_formatter = _file.formatter
+                        _file.formatter = self.clean_formatter
 
-                if self._stream:
-                    _stream.formatter = stream_formatter
+                    kwargs['debug_level'] = 1
+                    self._log_clean( debug_level, args, kwargs )
 
-                if self._file:
-                    _file.formatter = file_formatter
+                    if self._stream:
+                        _stream.formatter = stream_formatter
+
+                    if self._file:
+                        _file.formatter = file_formatter
+
+                else:
+                    self = self.active or self
+                    _file = self._file
+                    _stream = self._stream
+
+                    if _stream:
+                        stream_formatter = _stream.formatter
+                        _stream.formatter = self.clean_formatter
+
+                    if _file:
+                        file_formatter = _file.formatter
+                        _file.formatter = self.clean_formatter
+
+                    kwargs['debug_level'] = 1
+                    self._log_clean( debug_level, (msg,) + args, kwargs )
+
+                    if self._stream:
+                        _stream.formatter = stream_formatter
+
+                    if self._file:
+                        _file.formatter = file_formatter
 
     def basic(self, debug_level=1, msg=EMPTY_KWARG, *args, **kwargs):
         """
@@ -427,10 +468,28 @@ class Debugger(Logger):
         if type( debug_level ) is int:
 
             if msg is EMPTY_KWARG:
-                debug_level = 1
-                msg = debug_level
+                self = self.active or self
+                _file = self._file
+                _stream = self._stream
 
-            if self._debugger_level & debug_level != 0:
+                if _stream:
+                    stream_formatter = _stream.formatter
+                    _stream.formatter = self.basic_formatter
+
+                if _file:
+                    file_formatter = _file.formatter
+                    _file.formatter = self.basic_formatter
+
+                kwargs['debug_level'] = 1
+                self._log( DEBUG, debug_level, args, **kwargs )
+
+                if _stream:
+                    _stream.formatter = stream_formatter
+
+                if _file:
+                    _file.formatter = file_formatter
+
+            elif self._debugger_level & debug_level != 0:
                 self = self.active or self
                 _file = self._file
                 _stream = self._stream
@@ -454,30 +513,51 @@ class Debugger(Logger):
 
         else:
 
-            if msg is EMPTY_KWARG:
-                msg = ""
-
             if self._debugger_level & 1 != 0:
-                self = self.active or self
-                _file = self._file
-                _stream = self._stream
 
-                if _stream:
-                    stream_formatter = _stream.formatter
-                    _stream.formatter = self.basic_formatter
+                if msg is EMPTY_KWARG:
+                    self = self.active or self
+                    _file = self._file
+                    _stream = self._stream
 
-                if _file:
-                    file_formatter = _file.formatter
-                    _file.formatter = self.basic_formatter
+                    if _stream:
+                        stream_formatter = _stream.formatter
+                        _stream.formatter = self.basic_formatter
 
-                kwargs['debug_level'] = 1
-                self._log( DEBUG, debug_level, (msg,) + args, **kwargs )
+                    if _file:
+                        file_formatter = _file.formatter
+                        _file.formatter = self.basic_formatter
 
-                if _stream:
-                    _stream.formatter = stream_formatter
+                    kwargs['debug_level'] = 1
+                    self._log( DEBUG, debug_level, args, **kwargs )
 
-                if _file:
-                    _file.formatter = file_formatter
+                    if _stream:
+                        _stream.formatter = stream_formatter
+
+                    if _file:
+                        _file.formatter = file_formatter
+
+                else:
+                    self = self.active or self
+                    _file = self._file
+                    _stream = self._stream
+
+                    if _stream:
+                        stream_formatter = _stream.formatter
+                        _stream.formatter = self.basic_formatter
+
+                    if _file:
+                        file_formatter = _file.formatter
+                        _file.formatter = self.basic_formatter
+
+                    kwargs['debug_level'] = 1
+                    self._log( DEBUG, debug_level, (msg,) + args, **kwargs )
+
+                    if _stream:
+                        _stream.formatter = stream_formatter
+
+                    if _file:
+                        _file.formatter = file_formatter
 
 
     def clear(self, delete=False):
