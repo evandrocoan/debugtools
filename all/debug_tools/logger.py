@@ -123,10 +123,10 @@ class Debugger(Logger):
         How to print list inside python print?
         https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
     """
-    logger = None
-    log_handlers = False
+    is_handler = False
+
     _file_handler_context_filter = None
-    has_file_handler_context_filter = False
+    _has_file_handler_context_filter = False
 
     def __init__(self, logger_name, logger_level=None):
         """
@@ -823,7 +823,7 @@ class Debugger(Logger):
 
             if self.file_handler and self.stream_handler:
                 handler.addFilter( self._file_handler_context_filter )
-                self.has_file_handler_context_filter = True
+                self._has_file_handler_context_filter = True
 
                 for other_handler in self.handlers:
                     other_handler.addFilter( self._file_handler_context_filter )
@@ -842,12 +842,12 @@ class Debugger(Logger):
             See also logging::Logger::removeHandler().
         """
 
-        if self.has_file_handler_context_filter:
+        if self._has_file_handler_context_filter:
 
             if not self._stderr and not self._stdout or not self.file_handler or not self.stream_handler:
 
                 handler.removeFilter( self._file_handler_context_filter )
-                self.has_file_handler_context_filter = False
+                self._has_file_handler_context_filter = False
 
                 for other_handler in self.handlers:
                     other_handler.removeFilter( self._file_handler_context_filter )
@@ -893,7 +893,7 @@ class Debugger(Logger):
             Delete all handlers registered to the current logger.
         """
 
-        if self.log_handlers:
+        if self.is_handler:
             sys.stderr.write( "Removing all handlers from %s...\n" % self.name )
 
         self._disable( stream=True, file=True )
@@ -1256,7 +1256,7 @@ def getLogger(debug_level=127, logger_name=None,
     @param from `file` until `**kwargs` are the named parameters passed to the Debugger.setup() member function.
     @param `setup` if True (default), ensure there is at least one handler enabled in the hierarchy,
             then the current created active Logger setup method will be called.
-    @param `log_handlers` if True, log to the `stderr` when logging handlers are removed.
+    @param `is_handler` if True, log to the `stderr` when logging handlers are removed.
 
     @seealso Debugger::setup()
     """
@@ -1271,10 +1271,10 @@ def _getLogger(debug_level=127, logger_name=None, **kwargs):
         Allow to pass positional arguments to `getLogger()`.
     """
     level = kwargs.get( "level", EMPTY_KWARG )
-    log_handlers = kwargs.get( "log_handlers", False )
+    is_handler = kwargs.get( "is_handler", False )
 
-    if log_handlers:
-        Debugger.log_handlers = True
+    if is_handler:
+        Debugger.is_handler = True
 
     debug_level, logger_name = _get_debug_level( debug_level, logger_name )
 
