@@ -255,34 +255,6 @@ class Debugger(Logger):
         """
         raise ValueError( "Error: The stdout attribute is readonly!" )
 
-    def __call__(self, debug_level=1, msg=EMPTY_KWARG, *args, **kwargs):
-        """
-            Log to the current active handlers its message based on the bitwise `self._debugger_level`
-            value. Note, differently from the standard logging level, each logger object has its own
-            bitwise logging level, instead of all sharing the main `level`.
-        """
-
-        if type( debug_level ) is int:
-
-            if msg is EMPTY_KWARG:
-                kwargs['debug_level'] = debug_level
-                self._log( DEBUG, debug_level, args, **kwargs )
-
-            elif self._debugger_level & debug_level != 0:
-                kwargs['debug_level'] = debug_level
-                self._log( DEBUG, msg, args, **kwargs )
-
-        else:
-
-            if self._debugger_level & 1 != 0:
-                kwargs['debug_level'] = 1
-
-                if msg is EMPTY_KWARG:
-                    self._log( DEBUG, debug_level, args, **kwargs )
-
-                else:
-                    self._log( DEBUG, debug_level, (msg,) + args, **kwargs )
-
     def traceback(self, **kwargs):
         """
             Prints the stack trace (traceback) until the current function call.
@@ -352,6 +324,34 @@ class Debugger(Logger):
         """
         for index in range(count):
             self.clean( debug_level, "" )
+
+    def __call__(self, debug_level=1, msg=EMPTY_KWARG, *args, **kwargs):
+        """
+            Log to the current active handlers its message based on the bitwise `self._debugger_level`
+            value. Note, differently from the standard logging level, each logger object has its own
+            bitwise logging level, instead of all sharing the main `level`.
+        """
+
+        if type( debug_level ) is int:
+
+            if msg is EMPTY_KWARG:
+                kwargs['debug_level'] = debug_level
+                self._log( DEBUG, debug_level, args, **kwargs )
+
+            elif self._debugger_level & debug_level != 0:
+                kwargs['debug_level'] = debug_level
+                self._log( DEBUG, msg, args, **kwargs )
+
+        else:
+
+            if self._debugger_level & 1 != 0:
+                kwargs['debug_level'] = 1
+
+                if msg is EMPTY_KWARG:
+                    self._log( DEBUG, debug_level, args, **kwargs )
+
+                else:
+                    self._log( DEBUG, debug_level, (msg,) + args, **kwargs )
 
     def clean(self, debug_level=1, msg=EMPTY_KWARG, *args, **kwargs):
         """
