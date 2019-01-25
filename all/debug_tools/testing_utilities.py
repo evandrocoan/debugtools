@@ -113,6 +113,9 @@ class TestingUtilities(unittest.TestCase):
         if diff_match_patch:
             self.diffMatchPatchAssertEqual( goal, results, msg=msg )
 
+        else:
+            super( TestingUtilities, self ).assertEqual( goal, results, msg )
+
     def unidiff_output(self, expected, actual):
         """
             Helper function. Returns a string containing the unified diff of two multiline strings.
