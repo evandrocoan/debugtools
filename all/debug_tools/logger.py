@@ -125,7 +125,7 @@ class Debugger(Logger):
     """
     logger = None
     log_handlers = False
-    file_handler_context_filter = None
+    _file_handler_context_filter = None
     has_file_handler_context_filter = False
 
     def __init__(self, logger_name, logger_level=None):
@@ -139,7 +139,7 @@ class Debugger(Logger):
         super( Debugger, self ).__init__( logger_name, logger_level or "DEBUG" )
 
         # Initialize the first last tick as the current tick
-        self.lastTick = timeit.default_timer()
+        self._last_tick = timeit.default_timer()
 
         self._stderr = False
         self._stdout = False
@@ -728,24 +728,24 @@ class Debugger(Logger):
     if is_python2:
 
         def _log(self, level, msg, args, exc_info=None, extra={}, stack_info=False, debug_level=0):
-            self.currentTick = timeit.default_timer()
+            self._current_tick = timeit.default_timer()
 
             debug_level = "(%d)" % debug_level if debug_level else ""
-            extra.update( {"debugLevel": debug_level, "tickDifference": self.currentTick - self.lastTick} )
+            extra.update( {"debugLevel": debug_level, "tickDifference": self._current_tick - self._last_tick} )
 
             super( Debugger, self )._log( level, msg, args, exc_info, extra )
-            self.lastTick = self.currentTick
+            self._last_tick = self._current_tick
 
     else:
 
         def _log(self, level, msg, args, exc_info=None, extra={}, stack_info=False, debug_level=0):
-            self.currentTick = timeit.default_timer()
+            self._current_tick = timeit.default_timer()
 
             debug_level = "(%d)" % debug_level if debug_level else ""
-            extra.update( {"debugLevel": debug_level, "tickDifference": self.currentTick - self.lastTick} )
+            extra.update( {"debugLevel": debug_level, "tickDifference": self._current_tick - self._last_tick} )
 
             super()._log( level, msg, args, exc_info, extra, stack_info )
-            self.lastTick = self.currentTick
+            self._last_tick = self._current_tick
 
     def _log_clean(self, msg, args, kwargs):
         record = CleanLogRecord( self.level, self.name, msg, args, kwargs )
@@ -822,11 +822,11 @@ class Debugger(Logger):
         if self._stderr or self._stdout:
 
             if self.file_handler and self.stream_handler:
-                handler.addFilter( self.file_handler_context_filter )
+                handler.addFilter( self._file_handler_context_filter )
                 self.has_file_handler_context_filter = True
 
                 for other_handler in self.handlers:
-                    other_handler.addFilter( self.file_handler_context_filter )
+                    other_handler.addFilter( self._file_handler_context_filter )
 
                 self.handle_stderr( self._stderr, self._stdout )
 
@@ -846,11 +846,11 @@ class Debugger(Logger):
 
             if not self._stderr and not self._stdout or not self.file_handler or not self.stream_handler:
 
-                handler.removeFilter( self.file_handler_context_filter )
+                handler.removeFilter( self._file_handler_context_filter )
                 self.has_file_handler_context_filter = False
 
                 for other_handler in self.handlers:
-                    other_handler.removeFilter( self.file_handler_context_filter )
+                    other_handler.removeFilter( self._file_handler_context_filter )
 
                 self.handle_stderr( self._stderr, self._stdout )
 
@@ -1236,7 +1236,7 @@ class FileHandlerContextFilter(logging.Filter):
 # Setup the alternate debugger, completely independent of the standard logging module Logger class
 root = Debugger( "root_debugger", "WARNING" )
 Debugger.root = root
-Debugger.file_handler_context_filter = FileHandlerContextFilter()
+Debugger._file_handler_context_filter = FileHandlerContextFilter()
 
 Debugger.manager = Manager( root )
 Debugger.manager.setLoggerClass( Debugger )
