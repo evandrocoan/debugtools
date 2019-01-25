@@ -147,7 +147,7 @@ class Debugger(Logger):
         self.stream_handler = None
 
         # Forces this debug_level into all children
-        self.force_debug = None
+        self._force_debug = None
 
         # Enable debug messages: (bitwise)
         # 0 - Disabled debugging
@@ -508,21 +508,21 @@ class Debugger(Logger):
 
         return is_successful
 
-    def _configure_force(self, _force_debug, active):
+    def _configure_force(self, force_debug, active):
         """
             Configure the force debug level feature.
         """
-        if _force_debug:
-            active.force_debug = _force_debug
-            self._debug_level = _force_debug
+        if force_debug:
+            active._force_debug = force_debug
+            self._debug_level = force_debug
 
-        elif _force_debug != None:
-            active.force_debug = None
+        elif force_debug != None:
+            active._force_debug = None
 
-        if active.force_debug:
-            self.debug_level = active.force_debug
+        if active._force_debug:
+            self.debug_level = active._force_debug
 
-        # print('active.force_debug %s' % active.force_debug)
+        # print('active._force_debug %s' % active._force_debug)
         # print('logger.debug_level %s' % logger.debug_level)
 
     def setup(self, file=EMPTY_KWARG, mode=EMPTY_KWARG, delete=EMPTY_KWARG, date=EMPTY_KWARG, level=EMPTY_KWARG,
@@ -610,17 +610,17 @@ class Debugger(Logger):
         self._stderr = kwargs.pop( 'stderr', True )
         self._stdout = kwargs.pop( 'stdout', False )
 
-        _force_debug = kwargs.pop( "force", None )
+        force_debug = kwargs.pop( "force", None )
         _fix_children = kwargs.pop( '_fix_children', False )
 
         if kwargs.pop( 'active', True ):
             active = self.active
             logger = active or self
-            self._configure_force( _force_debug, logger)
+            self._configure_force( force_debug, logger)
 
         else:
             logger = self
-            self._configure_force( _force_debug, self.active or self)
+            self._configure_force( force_debug, self.active or self)
 
         has_changes = False
         arguments = logger._arguments
