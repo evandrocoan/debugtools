@@ -291,7 +291,7 @@ class StdErrUnitTests(unittest.TestCase):
             regex_pattern.sub( "", output ) )
 
     def test_exception_throwing_from_file(self):
-        getLogger( "testing.main_unit_tests", 127, create_test_file='main_unit_tests.txt' )
+        getLogger( "testing.main_unit_tests", 127, create_test_file='main_unit_tests.txt', stderr=True )
         line = inspect.getframeinfo( sys._getframe(0) ).lineno
 
         try:

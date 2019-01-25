@@ -138,13 +138,11 @@ class Debugger(Logger):
         """
         super( Debugger, self ).__init__( logger_name, logger_level or "DEBUG" )
 
-        # Initialize the first last tick as the current tick
-        self._last_tick = timeit.default_timer()
-
-        self._stderr = False
-        self._stdout = False
         self.file_handler = None
         self.stream_handler = None
+
+        # Initialize the first last tick as the current tick
+        self._last_tick = timeit.default_timer()
 
         # Forces this debug_level into all children
         self._force_debug = None
@@ -232,6 +230,34 @@ class Debugger(Logger):
         set_level( active )
         active.fix_children( set_level )
 
+    @property
+    def _stderr(self):
+        """
+            Return whether the `sys.stderr` handling is enabled or not.
+        """
+        return self._arguments['stderr']
+
+    @_stderr.setter
+    def _stderr(self, value):
+        """
+            Block modifying the value of `self.stderr`.
+        """
+        raise ValueError( "Error: The stderr attribute is readonly!" )
+
+    @property
+    def _stdout(self):
+        """
+            Return whether the `sys.stdout` handling is enabled or not.
+        """
+        return self._arguments['stdout']
+
+    @_stdout.setter
+    def _stdout(self, value):
+        """
+            Block modifying the value of `self.stdout`.
+        """
+        raise ValueError( "Error: The stdout attribute is readonly!" )
+
     def __call__(self, debug_level=1, msg="", *args, **kwargs):
         """
             Log to the current active handlers its message based on the bitwise `self._debugger_level`
@@ -300,6 +326,8 @@ class Debugger(Logger):
             "formatter": None,
             "rotation": 0,
             "msecs": True,
+            "stderr": False,
+            "stdout": False,
         }
 
     def newline(self, level=1, count=1):
@@ -594,6 +622,8 @@ class Debugger(Logger):
                                 console output. This is useful for logging all console output to a file.
 
             @param `force`      if an integer, set the `debug_level` into all created loggers hierarchy.
+                                Its value is not saved between calls to this setup().
+
             @param `active`     if True (default True), it will search for any other active logger in
                                 the current logger hierarchy and do the setup call on him. If no active
                                 logger is found, it will do the setup on the current logger object,
@@ -608,8 +638,6 @@ class Debugger(Logger):
             Allow to pass positional arguments to `setup()`.
         """
         handlers = kwargs.pop( 'handlers', False )
-        self._stderr = kwargs.pop( 'stderr', True )
-        self._stdout = kwargs.pop( 'stdout', False )
 
         force_debug = kwargs.pop( "force", None )
         _fix_children = kwargs.pop( '_fix_children', False )
