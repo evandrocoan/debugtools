@@ -345,7 +345,7 @@ class StdOutUnitTests(unittest.TestCase):
         getLogger( 127, "testing.main_unit_tests", create_test_file='main_unit_tests.txt', stdout=True )
 
         print("Std out logging capture test!")
-        output = _stdout.file_contents( r"\d{4}\-\d{2}-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- ", log )
+        output = _stdout.file_contents( r"", log )
 
         self.assertEqual( "Std out logging capture test!", output )
 
@@ -363,8 +363,8 @@ class StdOutUnitTests(unittest.TestCase):
         sys.stderr.write("std ERR After adding StreamHandler\n")
 
         file_output = _stdout.file_contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- ", log )
-        stderr_contents = _stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
-        stdout_contents = _stdout.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+        stderr_contents = _stderr.contents( r"" )
+        stdout_contents = _stdout.contents( r"" )
 
         self.assertEqual( utilities.wrap_text( """\
                 + testing.main_unit_tests.test_stdout_stderr_and_file_loggging:{} - Before adding StreamHandler
