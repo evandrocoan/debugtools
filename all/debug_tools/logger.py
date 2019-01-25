@@ -327,21 +327,21 @@ class Debugger(Logger):
             "stdout": False,
         }
 
-    def newline(self, level=1, count=1):
+    def newline(self, debug_level=1, count=1):
         """
             Prints a clean new line, without any formatter header.
             @param `count` how many new lines to output
         """
         for index in range(count):
-            self.clean( level, "" )
+            self.clean( debug_level, "" )
 
-    def new_line(self, level=1, count=1):
+    def new_line(self, debug_level=1, count=1):
         """
             Prints a clean new line, without any formatter header.
             @param `count` how many new lines to output
         """
         for index in range(count):
-            self.clean( level, "" )
+            self.clean( debug_level, "" )
 
     def clean(self, debug_level=1, msg="", *args, **kwargs):
         """
