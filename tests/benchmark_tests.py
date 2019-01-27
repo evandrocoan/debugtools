@@ -75,7 +75,7 @@ def profile_something(profile_function, count=1):
     return "\nProfile results for %s\n%s" % ( profile_function.__name__, output_stream.getvalue() ), profiler_status
 
 output = 1500
-log_debug_counts = 10
+log_debug_counts = 2
 
 def run_profiling(first_function, second_function):
     first_function_results, first_function_stats = profile_something( first_function, log_debug_counts )
@@ -87,17 +87,16 @@ def run_profiling(first_function, second_function):
     print( '\nTotal difference %.3f' % difference )
 
 
-log_debug_iterations = 1000000
-def debug_tools_log_debug_off(iterations=log_debug_iterations):
+iterations_of_log_debug_off = 1000000
+def debug_tools_log_debug_off():
     log = logger.getLogger( 127, "benchmark", tick=False )
-    log.setLevel( "DEBUG" )
     log.setLevel( "WARNING" )
 
-    for index in range( iterations ):
+    for index in range( iterations_of_log_debug_off ):
         # log( 1, 'Message' )
         log.debug( 'Message' )
 
-def logging_mod_log_debug_off(iterations=log_debug_iterations):
+def logging_mod_log_debug_off():
     date_format = "%H:%M:%S"
     string_format = "%(asctime)s:%(msecs)010.6f - %(name)s.%(funcName)s:%(lineno)d - %(message)s"
 
@@ -107,11 +106,11 @@ def logging_mod_log_debug_off(iterations=log_debug_iterations):
 
     log = logging.getLogger( "benchmark" )
     log.addHandler( stream )
-    log.setLevel( "DEBUG" )
     log.setLevel( "WARNING" )
 
-    for index in range( iterations ):
+    for index in range( iterations_of_log_debug_off ):
         log.debug( 'Message' )
+
 
 run_profiling( debug_tools_log_debug_off, logging_mod_log_debug_off )
 
