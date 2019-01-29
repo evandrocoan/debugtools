@@ -66,7 +66,9 @@ def profile_something(profile_function, average_count, iterations_count):
         profile_function( iterations_count )
         profiler.disable()
         profiler_status.add( profiler )
-        print( 'Profiled', '%.3f' % profiler_status.total_tt, 'seconds at', index, 'for', profile_function.__name__, flush=True )
+
+        print( 'Profiled', '{0:7.3f}'.format( profiler_status.total_tt ), 'seconds at', '%3d' % (index + 1),
+                'for', profile_function.__name__, flush=True )
 
     average( profiler_status, average_count )
     profiler_status.sort_stats( "time" )
