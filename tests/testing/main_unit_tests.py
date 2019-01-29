@@ -292,7 +292,6 @@ class StdErrUnitTests(unittest.TestCase):
 
     def test_exception_throwing_from_file(self):
         getLogger( "testing.main_unit_tests", 127, create_test_file='main_unit_tests.txt', stderr=True )
-        line = inspect.getframeinfo( sys._getframe(0) ).lineno
 
         try:
             log( 1, "I am catching you..." )
@@ -321,7 +320,6 @@ class StdErrUnitTests(unittest.TestCase):
 
     def test_infinity_recursion_fix(self):
         getLogger( 1, 'LSP.boot', create_test_file='main_unit_tests.txt', delete=False, stdout=False, stderr=True )
-        line = inspect.getframeinfo( sys._getframe(0) ).lineno
 
         log.setup( "", delete=False )
         log( 1, 'No LSP clients enabled.' )
@@ -351,7 +349,6 @@ class StdOutUnitTests(unittest.TestCase):
 
     def test_stdout_stderr_and_file_loggging(self):
         getLogger( "testing.main_unit_tests", 127, create_test_file='main_unit_tests.txt', stdout=True, stderr=True )
-        line = inspect.getframeinfo( sys._getframe(0) ).lineno
 
         log( 1, "Before adding StreamHandler" )
         sys.stdout.write("std OUT Before adding StreamHandler\n")
@@ -487,7 +484,6 @@ class LogRecordUnitTests(testing_utilities.TestingUtilities):
 
     def test_integerFullLogging(self):
         getLogger( 127, "testing.main_unit_tests" )
-        line = inspect.getframeinfo( sys._getframe(0) ).lineno
 
         log(1)
         output = _stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
@@ -499,7 +495,6 @@ class LogRecordUnitTests(testing_utilities.TestingUtilities):
 
     def test_integerFullLoggingEdge(self):
         getLogger( 127, "testing.main_unit_tests" )
-        line = inspect.getframeinfo( sys._getframe(0) ).lineno
 
         log(2, 2)
         output = _stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
