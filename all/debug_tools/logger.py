@@ -335,8 +335,10 @@ class Debugger(Logger):
         if type( debug_level ) is int:
 
             if msg is EMPTY_KWARG:
-                kwargs['debug_level'] = 1
-                self._log( DEBUG, debug_level, args, **kwargs )
+
+                if self._debugger_level & 1 != 0:
+                    kwargs['debug_level'] = 1
+                    self._log( DEBUG, debug_level, args, **kwargs )
 
             elif self._debugger_level & debug_level != 0:
                 kwargs['debug_level'] = debug_level
@@ -364,26 +366,28 @@ class Debugger(Logger):
         if type( debug_level ) is int:
 
             if msg is EMPTY_KWARG:
-                self = self.active or self
-                _file = self._file
-                _stream = self._stream
 
-                if _stream:
-                    stream_formatter = _stream.formatter
-                    _stream.formatter = self.clean_formatter
+                if self._debugger_level & 1 != 0:
+                    self = self.active or self
+                    _file = self._file
+                    _stream = self._stream
 
-                if _file:
-                    file_formatter = _file.formatter
-                    _file.formatter = self.clean_formatter
+                    if _stream:
+                        stream_formatter = _stream.formatter
+                        _stream.formatter = self.clean_formatter
 
-                kwargs['debug_level'] = 1
-                self._log_clean( debug_level, args, kwargs )
+                    if _file:
+                        file_formatter = _file.formatter
+                        _file.formatter = self.clean_formatter
 
-                if self._stream:
-                    _stream.formatter = stream_formatter
+                    kwargs['debug_level'] = 1
+                    self._log_clean( debug_level, args, kwargs )
 
-                if self._file:
-                    _file.formatter = file_formatter
+                    if self._stream:
+                        _stream.formatter = stream_formatter
+
+                    if self._file:
+                        _file.formatter = file_formatter
 
             elif self._debugger_level & debug_level != 0:
                 self = self.active or self
@@ -468,26 +472,29 @@ class Debugger(Logger):
         if type( debug_level ) is int:
 
             if msg is EMPTY_KWARG:
-                self = self.active or self
-                _file = self._file
-                _stream = self._stream
 
-                if _stream:
-                    stream_formatter = _stream.formatter
-                    _stream.formatter = self.basic_formatter
+                if self._debugger_level & 1 != 0:
 
-                if _file:
-                    file_formatter = _file.formatter
-                    _file.formatter = self.basic_formatter
+                    self = self.active or self
+                    _file = self._file
+                    _stream = self._stream
 
-                kwargs['debug_level'] = 1
-                self._log( DEBUG, debug_level, args, **kwargs )
+                    if _stream:
+                        stream_formatter = _stream.formatter
+                        _stream.formatter = self.basic_formatter
 
-                if _stream:
-                    _stream.formatter = stream_formatter
+                    if _file:
+                        file_formatter = _file.formatter
+                        _file.formatter = self.basic_formatter
 
-                if _file:
-                    _file.formatter = file_formatter
+                    kwargs['debug_level'] = 1
+                    self._log( DEBUG, debug_level, args, **kwargs )
+
+                    if _stream:
+                        _stream.formatter = stream_formatter
+
+                    if _file:
+                        _file.formatter = file_formatter
 
             elif self._debugger_level & debug_level != 0:
                 self = self.active or self
