@@ -44,40 +44,40 @@ import cProfile
 
 from io import StringIO
 
-def average(stats, count):
-    stats.total_calls /= count
-    stats.prim_calls /= count
-    stats.total_tt /= count
+def average(stats, average_count):
+    stats.total_calls /= average_count
+    stats.prim_calls /= average_count
+    stats.total_tt /= average_count
 
     for func, source in stats.stats.items():
         cc, nc, tt, ct, callers = source
-        stats.stats[func] = (cc/count, nc/count, tt/count, ct/count, callers)
+        stats.stats[func] = (cc/average_count, nc/average_count, tt/average_count, ct/average_count, callers)
 
     return stats
 
-def profile_something(profile_function, count=1):
+def profile_something(profile_function, average_count, iterations_count):
     output_stream = StringIO()
     profiler_status = pstats.Stats( stream=output_stream )
 
-    for index in range(count):
+    for index in range(average_count):
         profiler = cProfile.Profile()
         profiler.enable()
 
-        profile_function()
+        profile_function( iterations_count )
         profiler.disable()
         profiler_status.add( profiler )
         print( 'Profiled', '%.3f' % profiler_status.total_tt, 'seconds at', index, 'for', profile_function.__name__, flush=True )
 
-    average( profiler_status, count )
+    average( profiler_status, average_count )
     profiler_status.sort_stats( "time" )
     profiler_status.print_stats()
 
     return "\nProfile results for %s\n%s" % ( profile_function.__name__, output_stream.getvalue() ), profiler_status
 
 
-def run_profiling(first_function, second_function, repeat):
-    first_function_results, first_function_stats = profile_something( first_function, repeat )
-    second_function_results, second_function_stats = profile_something( second_function, repeat )
+def run_profiling(first_function, second_function, average_count, iterations_count):
+    first_function_results, first_function_stats = profile_something( first_function, average_count, iterations_count )
+    second_function_results, second_function_stats = profile_something( second_function, average_count, iterations_count )
     difference = first_function_stats.total_tt - second_function_stats.total_tt
 
     output = 1500
@@ -86,16 +86,14 @@ def run_profiling(first_function, second_function, repeat):
     print( '\nTotal difference %.3f' % difference )
 
 
-repeat_log_debug_off = 100
-iterations_of_log_debug_off = 50000
-def debug_tools_log_debug_off():
+def debug_tools_log_debug_off(iterations_count):
     log = logger.getLogger( 127, "benchmark", tick=False )
     log.setLevel( "WARNING" )
 
-    for index in range( iterations_of_log_debug_off ):
+    for index in range( iterations_count ):
         log.debug( 'Message' )
 
-def logging_mod_log_debug_off():
+def logging_mod_log_debug_off(iterations_count):
     date_format = "%H:%M:%S"
     string_format = "%(asctime)s:%(msecs)010.6f - %(name)s.%(funcName)s:%(lineno)d - %(message)s"
 
@@ -107,10 +105,10 @@ def logging_mod_log_debug_off():
     log.addHandler( stream )
     log.setLevel( "WARNING" )
 
-    for index in range( iterations_of_log_debug_off ):
+    for index in range( iterations_count ):
         log.debug( 'Message' )
 
 
-run_profiling( debug_tools_log_debug_off, logging_mod_log_debug_off, repeat_log_debug_off )
+run_profiling( debug_tools_log_debug_off, logging_mod_log_debug_off, 100, 50000 )
 
 
