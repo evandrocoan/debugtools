@@ -94,21 +94,21 @@ def debug_tools_log_debug_off(iterations_count):
         log.debug( 'Message' )
 
 def logging_mod_log_debug_off(iterations_count):
-    date_format = "%H:%M:%S"
-    string_format = "%(asctime)s:%(msecs)010.6f - %(name)s.%(funcName)s:%(lineno)d - %(message)s"
-
-    stream = logging.StreamHandler()
-    formatter = logging.Formatter( string_format, date_format )
-    stream.setFormatter( formatter )
-
     log = logging.getLogger( "benchmark" )
-    log.addHandler( stream )
     log.setLevel( "WARNING" )
+
+    if not log.hasHandlers():
+        date_format = "%H:%M:%S"
+        string_format = "%(asctime)s:%(msecs)010.6f - %(name)s.%(funcName)s:%(lineno)d - %(message)s"
+
+        stream = logging.StreamHandler()
+        formatter = logging.Formatter( string_format, date_format )
+        stream.setFormatter( formatter )
+        log.addHandler( stream )
 
     for index in range( iterations_count ):
         log.debug( 'Message' )
 
 
-run_profiling( debug_tools_log_debug_off, logging_mod_log_debug_off, 100, 50000 )
-
+run_profiling( debug_tools_log_debug_off, logging_mod_log_debug_off, 10, 5000000 )
 
