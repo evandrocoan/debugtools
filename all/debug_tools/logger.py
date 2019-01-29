@@ -335,7 +335,7 @@ class Debugger(Logger):
         if type( debug_level ) is int:
 
             if msg is EMPTY_KWARG:
-                kwargs['debug_level'] = debug_level
+                kwargs['debug_level'] = 1
                 self._log( DEBUG, debug_level, args, **kwargs )
 
             elif self._debugger_level & debug_level != 0:
