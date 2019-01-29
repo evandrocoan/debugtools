@@ -68,32 +68,31 @@ def profile_something(profile_function, count=1):
         profiler_status.add( profiler )
         print( 'Profiled', '%.3f' % profiler_status.total_tt, 'seconds at', index, 'for', profile_function.__name__, flush=True )
 
-    average(profiler_status, count)
+    average( profiler_status, count )
     profiler_status.sort_stats( "time" )
     profiler_status.print_stats()
 
     return "\nProfile results for %s\n%s" % ( profile_function.__name__, output_stream.getvalue() ), profiler_status
 
-output = 1500
-log_debug_counts = 2
 
-def run_profiling(first_function, second_function):
-    first_function_results, first_function_stats = profile_something( first_function, log_debug_counts )
-    second_function_results, second_function_stats = profile_something( second_function, log_debug_counts )
+def run_profiling(first_function, second_function, repeat):
+    first_function_results, first_function_stats = profile_something( first_function, repeat )
+    second_function_results, second_function_stats = profile_something( second_function, repeat )
     difference = first_function_stats.total_tt - second_function_stats.total_tt
 
+    output = 1500
     print( '\n', first_function_results[0:output] )
     print( '\n', second_function_results[0:output] )
     print( '\nTotal difference %.3f' % difference )
 
 
-iterations_of_log_debug_off = 1000000
+repeat_log_debug_off = 100
+iterations_of_log_debug_off = 50000
 def debug_tools_log_debug_off():
     log = logger.getLogger( 127, "benchmark", tick=False )
     log.setLevel( "WARNING" )
 
     for index in range( iterations_of_log_debug_off ):
-        # log( 1, 'Message' )
         log.debug( 'Message' )
 
 def logging_mod_log_debug_off():
@@ -112,6 +111,6 @@ def logging_mod_log_debug_off():
         log.debug( 'Message' )
 
 
-run_profiling( debug_tools_log_debug_off, logging_mod_log_debug_off )
+run_profiling( debug_tools_log_debug_off, logging_mod_log_debug_off, repeat_log_debug_off )
 
 
