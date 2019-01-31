@@ -82,10 +82,12 @@ def run_profiling(first_function, second_function, average_count, iterations_cou
     second_function_results, second_function_stats = profile_something( second_function, average_count, iterations_count )
     difference = first_function_stats.total_tt - second_function_stats.total_tt
 
-    output = 1500
-    print( '\n', first_function_results[0:output] )
-    print( '\n', second_function_results[0:output] )
-    print( '\nTotal difference %.3f\n\n' % difference )
+    output = 2500
+    output_stream = StringIO()
+    print( '\n', first_function_results[0:output], file=output_stream )
+    print( '\n', second_function_results[0:output], file=output_stream )
+    print( '\nTotal difference %.5f' % difference, file=output_stream )
+    return ( (difference, first_function.__name__, second_function.__name__), output_stream.getvalue() )
 
 
 def debug_tools_log_debug_off(iterations_count):
@@ -126,7 +128,15 @@ def debug_tools_fastdebug_off(iterations_count):
         log( 2, 'Message' )
 
 
-run_profiling( debug_tools_fastdebug_off, logging_mod_log_debug_off, 1, 10000000 )
-run_profiling( debug_tools_slowdebug_off, logging_mod_log_debug_off, 1, 10000000 )
-run_profiling( debug_tools_log_debug_off, logging_mod_log_debug_off, 10, 5000000 )
+results= []
+results.append( run_profiling( debug_tools_fastdebug_off, logging_mod_log_debug_off, 1, 10000000 ) )
+results.append( run_profiling( debug_tools_slowdebug_off, logging_mod_log_debug_off, 1, 10000000 ) )
+results.append( run_profiling( debug_tools_log_debug_off, logging_mod_log_debug_off, 10, 5000000 ) )
 
+print('\n\nResults details:')
+for result in results:
+    print( "%s\n" % result[1] )
+
+print('Results resume:')
+for result in results:
+    print( '%10.5f  %s - %s' % result[0] )
