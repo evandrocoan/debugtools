@@ -92,18 +92,15 @@ def run_profiling(first_function, second_function, average_count, iterations_cou
             output_stream.getvalue() )
 
 
-def debug_tools_log_debug_off(iterations_count):
+def get_debug_tools(level=1):
     logger.Debugger.deleteAllLoggers()
-    log = logger.getLogger( 127, "benchmark", tick=False )
-    log.setLevel( "WARNING" )
+    log = logger.getLogger( level, "benchmark", tick=False )
+    return log
 
-    for index in range( iterations_count ):
-        log.debug( 'Message' )
 
-def logging_mod_log_debug_off(iterations_count):
+def get_loggging_debug():
     logging.Logger.manager.loggerDict.clear()
     log = logging.getLogger( "benchmark" )
-    log.setLevel( "WARNING" )
 
     if not log.hasHandlers():
         date_format = "%H:%M:%S"
@@ -113,21 +110,31 @@ def logging_mod_log_debug_off(iterations_count):
         formatter = logging.Formatter( string_format, date_format )
         stream.setFormatter( formatter )
         log.addHandler( stream )
+    return log
+
+
+def debug_tools_log_debug_off(iterations_count):
+    log = get_debug_tools()
+    log.setLevel( "WARNING" )
 
     for index in range( iterations_count ):
         log.debug( 'Message' )
 
+def logging_mod_log_debug_off(iterations_count):
+    log = get_loggging_debug()
+    log.setLevel( "WARNING" )
+
+    for index in range( iterations_count ):
+        log.debug( 'Message' )
 
 def debug_tools_slowdebug_off(iterations_count):
-    logger.Debugger.deleteAllLoggers()
-    log = logger.getLogger( 1, "benchmark", tick=False )
+    log = get_debug_tools()
 
     for index in range( iterations_count ):
         log( 2, 'Message' )
 
 def debug_tools_fastdebug_off(iterations_count):
-    logger.Debugger.deleteAllLoggers()
-    log = logger.getLogger( 1, "benchmark", tick=False )
+    log = get_debug_tools()
     log.setup( fast=True )
 
     for index in range( iterations_count ):
