@@ -38,11 +38,42 @@
 import logging
 from debug_tools import logger
 
-import sys
+import copy
 import pstats
 import cProfile
 
 from io import StringIO
+
+def difference(first_stats, second_stats):
+    first_stats = copy.deepcopy( first_stats )
+    first_stats.total_calls -= second_stats.total_calls
+    first_stats.prim_calls -= second_stats.prim_calls
+    first_stats.total_tt -= second_stats.total_tt
+
+    first_set = set( first_stats.stats.keys() )
+    second_set = set( second_stats.stats.keys() )
+    intersection = first_set.intersection( second_set )
+
+    for func in intersection:
+        first_source = first_stats.stats[func]
+        second_source = second_stats.stats[func]
+        first_cc, first_nc, first_tt, first_ct, callers = first_source
+        second_cc, second_nc, second_tt, second_ct, callers = second_source
+        first_stats.stats[func] = (first_cc-second_cc, first_nc-second_nc, first_tt-second_tt, first_ct-second_ct, callers)
+
+    for func, source in second_stats.stats.items():
+
+        if func not in first_stats.stats:
+            first_stats.stats[func] = source
+
+    return first_stats
+
+def print_difference(stats):
+    output_stream = StringIO()
+    stats.stream = output_stream
+    stats.sort_stats( "time" )
+    stats.print_stats()
+    return output_stream.getvalue()
 
 def average(stats, average_count):
     stats.total_calls /= average_count
@@ -80,15 +111,16 @@ def profile_something(profile_function, average_count, iterations_count):
 def run_profiling(first_function, second_function, average_count, iterations_count):
     first_function_results, first_function_stats = profile_something( first_function, average_count, iterations_count )
     second_function_results, second_function_stats = profile_something( second_function, average_count, iterations_count )
-    difference = first_function_stats.total_tt - second_function_stats.total_tt
+    total_difference = print_difference( difference( first_function_stats, second_function_stats ) )
+    time_difference = first_function_stats.total_tt - second_function_stats.total_tt
 
     output = 2500
     output_stream = StringIO()
     print( first_function_results[0:output], file=output_stream )
     print( '\n', second_function_results[0:output], file=output_stream )
-    print( '\nTotal difference %.5f' % difference, file=output_stream )
+    print( '\n\nTotal difference\n', total_difference[0:output], file=output_stream )
 
-    return ( ( difference, first_function_stats.total_tt, second_function_stats.total_tt,
+    return ( ( time_difference, first_function_stats.total_tt, second_function_stats.total_tt,
                 first_function.__name__, second_function.__name__, format(iterations_count, ',d') ),
             output_stream.getvalue() )
 
