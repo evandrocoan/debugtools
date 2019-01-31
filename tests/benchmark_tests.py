@@ -87,7 +87,9 @@ def run_profiling(first_function, second_function, average_count, iterations_cou
     print( first_function_results[0:output], file=output_stream )
     print( '\n', second_function_results[0:output], file=output_stream )
     print( '\nTotal difference %.5f' % difference, file=output_stream )
-    return ( (difference, first_function.__name__, second_function.__name__), output_stream.getvalue() )
+
+    return ( ( difference, first_function.__name__, second_function.__name__, format(iterations_count, ',d') ),
+            output_stream.getvalue() )
 
 
 def debug_tools_log_debug_off(iterations_count):
@@ -135,7 +137,7 @@ def debug_tools_fastdebug_off(iterations_count):
 results= []
 results.append( run_profiling( debug_tools_fastdebug_off, logging_mod_log_debug_off, 1, 10000000 ) )
 results.append( run_profiling( debug_tools_slowdebug_off, logging_mod_log_debug_off, 1, 10000000 ) )
-results.append( run_profiling( debug_tools_log_debug_off, logging_mod_log_debug_off, 10, 5000000 ) )
+results.append( run_profiling( debug_tools_log_debug_off, logging_mod_log_debug_off, 1, 10000000 ) )
 
 print('\n\nResults details:')
 for index, result in enumerate( results, start=1 ):
@@ -143,4 +145,4 @@ for index, result in enumerate( results, start=1 ):
 
 print('Results resume:')
 for index, result in enumerate( results, start=1 ):
-    print( '%2d. %10.5f  %s - %s' % ( (index,) + result[0]) )
+    print( '%2d. %10.5f  %s - %s  = %s iterations' % ( (index,) + result[0]) )
