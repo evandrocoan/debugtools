@@ -88,7 +88,8 @@ def run_profiling(first_function, second_function, average_count, iterations_cou
     print( '\n', second_function_results[0:output], file=output_stream )
     print( '\nTotal difference %.5f' % difference, file=output_stream )
 
-    return ( ( difference, first_function.__name__, second_function.__name__, format(iterations_count, ',d') ),
+    return ( ( difference, first_function_stats.total_tt, second_function_stats.total_tt,
+                first_function.__name__, second_function.__name__, format(iterations_count, ',d') ),
             output_stream.getvalue() )
 
 
@@ -152,4 +153,4 @@ for index, result in enumerate( results, start=1 ):
 
 print('Results resume:')
 for index, result in enumerate( results, start=1 ):
-    print( '%2d. %10.5f  %s - %s  = %s iterations' % ( (index,) + result[0]) )
+    print( '%2d. %10.5f %10.5f %10.5f  %s - %s  = %s iterations' % ( (index,) + result[0]) )
