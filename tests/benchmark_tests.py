@@ -91,6 +91,7 @@ def run_profiling(first_function, second_function, average_count, iterations_cou
 
 
 def debug_tools_log_debug_off(iterations_count):
+    logger.Debugger.deleteAllLoggers()
     log = logger.getLogger( 127, "benchmark", tick=False )
     log.setLevel( "WARNING" )
 
@@ -98,6 +99,7 @@ def debug_tools_log_debug_off(iterations_count):
         log.debug( 'Message' )
 
 def logging_mod_log_debug_off(iterations_count):
+    logging.Logger.manager.loggerDict.clear()
     log = logging.getLogger( "benchmark" )
     log.setLevel( "WARNING" )
 
@@ -115,12 +117,14 @@ def logging_mod_log_debug_off(iterations_count):
 
 
 def debug_tools_slowdebug_off(iterations_count):
+    logger.Debugger.deleteAllLoggers()
     log = logger.getLogger( 1, "benchmark", tick=False )
 
     for index in range( iterations_count ):
         log( 2, 'Message' )
 
 def debug_tools_fastdebug_off(iterations_count):
+    logger.Debugger.deleteAllLoggers()
     log = logger.getLogger( 1, "benchmark", tick=False )
     log.setup( fast=True )
 
