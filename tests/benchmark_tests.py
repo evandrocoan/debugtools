@@ -36,14 +36,18 @@ from __future__ import print_function
 #
 #########################################################################################
 #
+
 import logging
 from debug_tools import logger
 
 import io
 import sys
 import copy
+import timeit
 import pstats
 import cProfile
+
+start_time = timeit.default_timer()
 
 def difference(first_stats, second_stats):
     first_stats = copy.deepcopy( first_stats )
@@ -234,6 +238,6 @@ print('\n\nResults details:')
 for index, result in enumerate( results, start=1 ):
     print( "\n%2d. %s\n" % ( index, result[1] ) )
 
-print('Results resume:')
+print('Results resume: (total time %.3f)' % ( timeit.default_timer() - start_time ) )
 for index, result in enumerate( results, start=1 ):
     print( '%2d. %10.5f %10.5f %10.5f  %s - %s  = %s iterations' % ( (index,) + result[0]) )
