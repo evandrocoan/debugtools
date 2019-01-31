@@ -307,6 +307,7 @@ class Debugger(Logger):
             "msecs": True,
             "stderr": False,
             "stdout": False,
+            "fast": False,
         }
 
     def newline(self, debug_level=1, count=1):
@@ -354,6 +355,30 @@ class Debugger(Logger):
 
                 else:
                     self._log( DEBUG, debug_level, (msg,) + args, **kwargs )
+
+    def _fast_clean(self, debug_level=1, msg=EMPTY_KWARG, *args, **kwargs):
+
+        if self._debugger_level & debug_level != 0:
+            self = self.active or self
+            _file = self._file
+            _stream = self._stream
+
+            if _stream:
+                stream_formatter = _stream.formatter
+                _stream.formatter = self.clean_formatter
+
+            if _file:
+                file_formatter = _file.formatter
+                _file.formatter = self.clean_formatter
+
+            kwargs['debug_level'] = debug_level
+            self._log_clean( msg, args, kwargs )
+
+            if self._stream:
+                _stream.formatter = stream_formatter
+
+            if self._file:
+                _file.formatter = file_formatter
 
     def clean(self, debug_level=1, msg=EMPTY_KWARG, *args, **kwargs):
         """
@@ -458,6 +483,30 @@ class Debugger(Logger):
 
                     if self._file:
                         _file.formatter = file_formatter
+
+    def _fast_basic(self, debug_level=1, msg=EMPTY_KWARG, *args, **kwargs):
+
+        if self._debugger_level & debug_level != 0:
+            self = self.active or self
+            _file = self._file
+            _stream = self._stream
+
+            if _stream:
+                stream_formatter = _stream.formatter
+                _stream.formatter = self.basic_formatter
+
+            if _file:
+                file_formatter = _file.formatter
+                _file.formatter = self.basic_formatter
+
+            kwargs['debug_level'] = debug_level
+            self._log( DEBUG, msg, args, **kwargs )
+
+            if _stream:
+                _stream.formatter = stream_formatter
+
+            if _file:
+                _file.formatter = file_formatter
 
     def basic(self, debug_level=1, msg=EMPTY_KWARG, *args, **kwargs):
         """
@@ -566,6 +615,8 @@ class Debugger(Logger):
                     if _file:
                         _file.formatter = file_formatter
 
+    _old_clean = clean
+    _old_basic = basic
 
     def clear(self, delete=False):
         """
@@ -735,6 +786,13 @@ class Debugger(Logger):
                                 the current logger hierarchy and do the setup call on him. If no active
                                 logger is found, it will do the setup on the current logger object,
                                 Its value is not saved between calls to this setup().
+
+            @param `fast`       if True (default False), it will disabled support to log message
+                                calls as `log('message')` and `log(333)`, and it force all log
+                                message calls to respect the format `log(1, message)`. This tradeoff
+                                gains dropping from about 10 seconds to about 7 seconds each
+                                10.000.000 log calls, when the logging debug level is set as
+                                disabled.
         """
         self._setup( file=file, mode=mode, delete=delete, date=date, level=level,
                 function=function, name=name, time=time, msecs=msecs, tick=tick,
@@ -782,6 +840,7 @@ class Debugger(Logger):
             logger._setup_log_handlers()
 
     def _setup_log_handlers(self):
+        self._setup_fast_loggers()
         arguments = self._arguments
 
         # import traceback
@@ -845,6 +904,18 @@ class Debugger(Logger):
         _file.formatter = self.full_formatter
         self._file = _file
         self.addHandler( _file )
+
+    def _setup_fast_loggers(self):
+
+        if self._arguments['fast']:
+            self.__class__ = FastDebugger
+            self.clean = self._fast_clean
+            self.basic = self._fast_basic
+
+        else:
+            self.__class__ = Debugger
+            self.clean = self._old_clean
+            self.basic = self._old_basic
 
     def warn(self, msg, *args, **kwargs):
         """
@@ -1250,6 +1321,21 @@ class Debugger(Logger):
                         raise KeyError("Attempt to overwrite %r in LogRecord" % key)
                     rv.__dict__[key] = extra[key]
             return rv
+
+
+class FastDebugger(Debugger):
+    """
+        This does allow to replace the standard __call__ implementation by a faster one.
+
+        Python does not allow the `__call__` method to be overridden.
+        https://stackoverflow.com/questions/34261111/patch-call-of-a-function
+    """
+
+    def __call__(self, debug_level=1, msg=EMPTY_KWARG, *args, **kwargs):
+
+        if self._debugger_level & debug_level != 0:
+            kwargs['debug_level'] = debug_level
+            self._log( DEBUG, msg, args, **kwargs )
 
 
 class _SmartLogRecord(object):

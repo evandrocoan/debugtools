@@ -272,6 +272,25 @@ class StdErrUnitTests(unittest.TestCase):
             """ ),
             output )
 
+    def test_fast_log_setup_activation(self):
+        getLogger( 1, fast=True )
+        log( 2 )
+        log.clean( 4 )
+        log.basic( 8 )
+
+        log.setup( fast=False )
+        log( 16 )
+        log.clean( 32 )
+        log.basic( 64 )
+
+        output = _stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} (?:\d\.\d{2}e.\d{2} )?\- " )
+        self.assertEqual( utilities.wrap_text( """\
+            + logger.test_fast_log_setup_activation:{} - 16
+            + 32
+            + logger - 64
+            """.format( line + 6 ) ),
+            output )
+
     def test_basic_formatter(self):
         getLogger( 127, "testing.main_unit_tests" )
         log.setup_basic( function=True, separator=" " )
