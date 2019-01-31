@@ -64,6 +64,9 @@ def difference(first_stats, second_stats):
     for func, source in second_stats.stats.items():
 
         if func not in first_stats.stats:
+            func = list(func)
+            func[0] = '* ' + func[0]
+            func = tuple(func)
             first_stats.stats[func] = source
 
     return first_stats
