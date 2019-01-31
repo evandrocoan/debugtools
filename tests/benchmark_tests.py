@@ -142,10 +142,42 @@ def debug_tools_fastdebug_off(iterations_count):
         log( 2, 'Message' )
 
 
+def debug_tools_log_debug_on(iterations_count):
+    log = get_debug_tools()
+    log.setLevel( "DEBUG" )
+
+    for index in range( iterations_count ):
+        log.debug( 'Message' )
+
+def logging_mod_log_debug_on(iterations_count):
+    log = get_loggging_debug()
+    log.setLevel( "DEBUG" )
+
+    for index in range( iterations_count ):
+        log.debug( 'Message' )
+
+def debug_tools_slowdebug_on(iterations_count):
+    log = get_debug_tools()
+
+    for index in range( iterations_count ):
+        log( 1, 'Message' )
+
+def debug_tools_fastdebug_on(iterations_count):
+    log = get_debug_tools()
+    log.setup( fast=True )
+
+    for index in range( iterations_count ):
+        log( 1, 'Message' )
+
+
 results= []
 results.append( run_profiling( debug_tools_fastdebug_off, logging_mod_log_debug_off, 1, 10000000 ) )
 results.append( run_profiling( debug_tools_slowdebug_off, logging_mod_log_debug_off, 1, 10000000 ) )
 results.append( run_profiling( debug_tools_log_debug_off, logging_mod_log_debug_off, 1, 10000000 ) )
+
+results.append( run_profiling( debug_tools_fastdebug_on, logging_mod_log_debug_on, 1, 100000 ) )
+results.append( run_profiling( debug_tools_slowdebug_on, logging_mod_log_debug_on, 1, 100000 ) )
+results.append( run_profiling( debug_tools_log_debug_on, logging_mod_log_debug_on, 1, 100000 ) )
 
 print('\n\nResults details:')
 for index, result in enumerate( results, start=1 ):
