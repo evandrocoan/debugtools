@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 
 ####################### Licensing #######################################################
 #
@@ -38,11 +39,11 @@
 import logging
 from debug_tools import logger
 
+import io
+import sys
 import copy
 import pstats
 import cProfile
-
-from io import StringIO
 
 def difference(first_stats, second_stats):
     first_stats = copy.deepcopy( first_stats )
@@ -72,7 +73,7 @@ def difference(first_stats, second_stats):
     return first_stats
 
 def print_difference(stats):
-    output_stream = StringIO()
+    output_stream = io.BytesIO()
     stats.stream = output_stream
     stats.sort_stats( "time" )
     stats.print_stats()
@@ -90,8 +91,11 @@ def average(stats, average_count):
     return stats
 
 def profile_something(profile_function, average_count, iterations_count):
-    output_stream = StringIO()
-    profiler_status = pstats.Stats( stream=output_stream )
+    output_stream = io.BytesIO()
+    dummy_for_python_27 = cProfile.Profile()
+    dummy_for_python_27.enable()
+    dummy_for_python_27.disable()
+    profiler_status = pstats.Stats( dummy_for_python_27, stream=output_stream )
 
     for index in range(average_count):
         profiler = cProfile.Profile()
@@ -101,15 +105,15 @@ def profile_something(profile_function, average_count, iterations_count):
         profiler.disable()
         profiler_status.add( profiler )
 
-        print( 'Profiled', '{0:7.3f}'.format( profiler_status.total_tt ), 'seconds at', '%3d' % (index + 1),
-                'for', profile_function.__name__, flush=True )
+        print( 'Profiled', '{0:7.3f}'.format( profiler_status.total_tt ),
+                'seconds at', '%3d' % (index + 1), 'for', profile_function.__name__ )
+        sys.stdout.flush()
 
     average( profiler_status, average_count )
     profiler_status.sort_stats( "time" )
     profiler_status.print_stats()
 
     return "\n Profile results for %s\n%s" % ( profile_function.__name__, output_stream.getvalue() ), profiler_status
-
 
 def run_profiling(first_function, second_function, average_count, iterations_count):
     first_function_results, first_function_stats = profile_something( first_function, average_count, iterations_count )
@@ -118,7 +122,7 @@ def run_profiling(first_function, second_function, average_count, iterations_cou
     time_difference = first_function_stats.total_tt - second_function_stats.total_tt
 
     output = 2500
-    output_stream = StringIO()
+    output_stream = io.BytesIO()
     print( first_function_results[0:output], file=output_stream )
     print( '\n', second_function_results[0:output], file=output_stream )
     print( '\n\nTotal difference\n', total_difference[0:output], file=output_stream )
@@ -127,18 +131,30 @@ def run_profiling(first_function, second_function, average_count, iterations_cou
                 first_function.__name__, second_function.__name__, format(iterations_count, ',d') ),
             output_stream.getvalue() )
 
-
 def get_debug_tools(level=1):
     logger.Debugger.deleteAllLoggers()
     log = logger.getLogger( level, "benchmark", tick=False )
     return log
 
+# Python 2.7 logging module does not have hasHandlers()
+def hasHandlers(self):
+    c = self
+    rv = False
+    while c:
+        if c.handlers:
+            rv = True
+            break
+        if not c.propagate:
+            break
+        else:
+            c = c.parent
+    return rv
 
 def get_loggging_debug():
     logging.Logger.manager.loggerDict.clear()
     log = logging.getLogger( "benchmark" )
 
-    if not log.hasHandlers():
+    if not hasHandlers(log):
         date_format = "%H:%M:%S"
         string_format = "%(asctime)s:%(msecs)010.6f - %(name)s.%(funcName)s:%(lineno)d - %(message)s"
 
