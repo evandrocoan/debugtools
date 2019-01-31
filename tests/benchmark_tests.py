@@ -74,7 +74,7 @@ def profile_something(profile_function, average_count, iterations_count):
     profiler_status.sort_stats( "time" )
     profiler_status.print_stats()
 
-    return "\nProfile results for %s\n%s" % ( profile_function.__name__, output_stream.getvalue() ), profiler_status
+    return "\n Profile results for %s\n%s" % ( profile_function.__name__, output_stream.getvalue() ), profiler_status
 
 
 def run_profiling(first_function, second_function, average_count, iterations_count):
@@ -84,7 +84,7 @@ def run_profiling(first_function, second_function, average_count, iterations_cou
 
     output = 2500
     output_stream = StringIO()
-    print( '\n', first_function_results[0:output], file=output_stream )
+    print( first_function_results[0:output], file=output_stream )
     print( '\n', second_function_results[0:output], file=output_stream )
     print( '\nTotal difference %.5f' % difference, file=output_stream )
     return ( (difference, first_function.__name__, second_function.__name__), output_stream.getvalue() )
@@ -138,9 +138,9 @@ results.append( run_profiling( debug_tools_slowdebug_off, logging_mod_log_debug_
 results.append( run_profiling( debug_tools_log_debug_off, logging_mod_log_debug_off, 10, 5000000 ) )
 
 print('\n\nResults details:')
-for result in results:
-    print( "%s\n" % result[1] )
+for index, result in enumerate( results, start=1 ):
+    print( "\n%2d. %s\n" % ( index, result[1] ) )
 
 print('Results resume:')
-for result in results:
-    print( '%10.5f  %s - %s' % result[0] )
+for index, result in enumerate( results, start=1 ):
+    print( '%2d. %10.5f  %s - %s' % ( (index,) + result[0]) )
