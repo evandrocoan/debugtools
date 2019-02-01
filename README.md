@@ -1,4 +1,4 @@
-# Python Debug Tools
+# Debug Tools
 
 [![Build Status](https://travis-ci.org/evandrocoan/debugtools.svg?branch=master)](https://travis-ci.org/evandrocoan/debugtools)
 [![Build status](https://ci.appveyor.com/api/projects/status/github/evandrocoan/debugtools?branch=master&svg=true)](https://ci.appveyor.com/project/evandrocoan/PythonDebugTools/branch/master)
