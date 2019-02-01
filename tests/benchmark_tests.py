@@ -40,12 +40,17 @@ from __future__ import print_function
 import logging
 from debug_tools import logger
 
-import io
 import sys
 import copy
 import timeit
 import pstats
 import cProfile
+
+if sys.version_info[0] < 3:
+    from io import BytesIO as StringIO
+
+else:
+    from io import StringIO
 
 start_time = timeit.default_timer()
 
@@ -77,7 +82,7 @@ def difference(first_stats, second_stats):
     return first_stats
 
 def print_difference(stats):
-    output_stream = io.BytesIO()
+    output_stream = StringIO()
     stats.stream = output_stream
     stats.sort_stats( "time" )
     stats.print_stats()
@@ -95,7 +100,7 @@ def average(stats, average_count):
     return stats
 
 def profile_something(profile_function, average_count, iterations_count):
-    output_stream = io.BytesIO()
+    output_stream = StringIO()
     dummy_for_python_27 = cProfile.Profile()
     dummy_for_python_27.enable()
     dummy_for_python_27.disable()
@@ -126,7 +131,7 @@ def run_profiling(first_function, second_function, average_count, iterations_cou
     time_difference = first_function_stats.total_tt - second_function_stats.total_tt
 
     output = 2500
-    output_stream = io.BytesIO()
+    output_stream = StringIO()
     print( first_function_results[0:output], file=output_stream )
     print( '\n', second_function_results[0:output], file=output_stream )
     print( '\n\nTotal difference\n', total_difference[0:output], file=output_stream )
