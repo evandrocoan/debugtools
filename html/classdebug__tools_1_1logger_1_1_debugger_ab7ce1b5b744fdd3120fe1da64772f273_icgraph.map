@@ -1,0 +1,11 @@
+<map id="get_debug_file_path" name="get_debug_file_path">
+<area shape="rect" id="node2" href="$classdebug__tools_1_1logger_1_1_debugger.html#a498b24a62e25b8656fdf3d9c8cdf2395" title="setup" alt="" coords="192,43,247,69"/>
+<area shape="rect" id="node3" href="$classdebug__tools_1_1logger_1_1_debugger.html#aab117d5d2281fdef24066fd08d24f19e" title="handle_stderr" alt="" coords="295,80,395,107"/>
+<area shape="rect" id="node4" href="$classdebug__tools_1_1logger_1_1_debugger.html#a2299e2300cebaa176eaca8bffc003d14" title="clear" alt="" coords="472,56,523,83"/>
+<area shape="rect" id="node6" href="$classdebug__tools_1_1logger_1_1_debugger.html#a312fa499c41ded002ce8bccb8b5cb83a" title="addHandler" alt="" coords="454,5,541,32"/>
+<area shape="rect" id="node7" href="$classdebug__tools_1_1logger_1_1_debugger.html#a0b42ce896284718bb14dfcb159c5de08" title="removeHandler" alt="" coords="443,107,552,133"/>
+<area shape="rect" id="node5" href="$classdebug__tools_1_1utilities_1_1_sleep_event.html#aa43cf4d674ea170b359c6e6da7a57b68" title="debug_tools.utilities.Sleep\lEvent.sleep" alt="" coords="600,45,775,86"/>
+<area shape="rect" id="node8" href="$classdebug__tools_1_1logger_1_1_debugger.html#af2ee9fd5990c0daf7af239029af2acb0" title="removeHandlers" alt="" coords="629,111,745,137"/>
+<area shape="rect" id="node9" href="$classdebug__tools_1_1logger_1_1_debugger.html#a51829b63adb24ac48d350dee60181002" title="reset" alt="" coords="857,85,907,112"/>
+<area shape="rect" id="node10" href="$classdebug__tools_1_1logger_1_1_debugger.html#aae0175fc510ca4053538a56f87803efb" title="deleteAllLoggers" alt="" coords="823,136,941,163"/>
+</map>

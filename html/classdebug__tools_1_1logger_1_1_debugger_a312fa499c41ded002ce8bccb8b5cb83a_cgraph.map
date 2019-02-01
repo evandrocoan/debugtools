@@ -1,0 +1,22 @@
+<map id="addHandler" name="addHandler">
+<area shape="rect" id="node2" href="$classdebug__tools_1_1logger_1_1_debugger.html#a4d4439aeff5c9489b7ba217d8e39c55e" title="_stderr" alt="" coords="510,5,573,32"/>
+<area shape="rect" id="node3" href="$classdebug__tools_1_1logger_1_1_debugger.html#a5c806a99c5da9ec53bfc2c933643675f" title="_stdout" alt="" coords="509,56,574,83"/>
+<area shape="rect" id="node4" href="$classdebug__tools_1_1logger_1_1_debugger.html#aab117d5d2281fdef24066fd08d24f19e" title="handle_stderr" alt="" coords="140,144,240,171"/>
+<area shape="rect" id="node5" href="$classdebug__tools_1_1logger_1_1_debugger.html#a52bf8e76ca1b89b9cded89c2d04cb9e2" title="hasStreamHandlers" alt="" coords="288,157,424,184"/>
+<area shape="rect" id="node6" href="$classdebug__tools_1_1logger_1_1_debugger.html#a4211befe35a6e62248f59010e91033ae" title="exception" alt="" coords="502,107,581,133"/>
+<area shape="rect" id="node9" href="$classdebug__tools_1_1logger_1_1_debugger.html#a0b42ce896284718bb14dfcb159c5de08" title="removeHandler" alt="" coords="301,107,411,133"/>
+<area shape="rect" id="node10" href="$classdebug__tools_1_1logger_1_1_debugger.html#a498b24a62e25b8656fdf3d9c8cdf2395" title="setup" alt="" coords="329,309,383,336"/>
+<area shape="rect" id="node7" href="$classdebug__tools_1_1logger_1_1_debugger.html#a50def3020236fcd0c142573cd26750a0" title="_log" alt="" coords="715,132,762,159"/>
+<area shape="rect" id="node8" href="$classdebug__tools_1_1logger_1_1_debugger.html#ab8b34f37943f2f7c7d13150a7fd21ef7" title="getFormat" alt="" coords="698,81,779,108"/>
+<area shape="rect" id="node11" href="$classdebug__tools_1_1logger_1_1_debugger.html#a5b2e0f5bc80a5e067a7ec4dd1d510862" title="_setup" alt="" coords="511,613,572,640"/>
+<area shape="rect" id="node12" href="$classdebug__tools_1_1logger_1_1_debugger.html#a1c80bf0168c5dc69938429761c9993b0" title="active" alt="" coords="513,157,570,184"/>
+<area shape="rect" id="node13" href="$classdebug__tools_1_1logger_1_1_debugger.html#a36873091e4b6ceb8dbb6b71d24b9c11b" title="_configure_force" alt="" coords="482,208,601,235"/>
+<area shape="rect" id="node14" href="$classdebug__tools_1_1logger_1_1_debugger.html#ab21ed73506e6670afe8af5cb731d9879" title="_setup_fast_loggers" alt="" coords="472,259,611,285"/>
+<area shape="rect" id="node15" href="$classdebug__tools_1_1logger_1_1_debugger.html#ab7ce1b5b744fdd3120fe1da64772f273" title="get_debug_file_path" alt="" coords="472,309,611,336"/>
+<area shape="rect" id="node17" href="$classdebug__tools_1_1logger_1_1_debugger.html#ab5d191c2081fbee0c856883f13e55b6f" title="_get_time_prefix" alt="" coords="482,360,601,387"/>
+<area shape="rect" id="node18" href="$classdebug__tools_1_1logger_1_1_debugger.html#a38f66ca75c6bae8a47c0c14fcc92f542" title="_create_file" alt="" coords="497,411,586,437"/>
+<area shape="rect" id="node19" href="$classdebug__tools_1_1logger_1_1_debugger.html#ae30d78ab972b764d49b55088fda73e4e" title="_disable" alt="" coords="506,461,577,488"/>
+<area shape="rect" id="node20" href="$classdebug__tools_1_1logger_1_1_debugger.html#ac6b022a5fdc272eab9f1749661cd5e44" title="_fast_clean" alt="" coords="497,512,586,539"/>
+<area shape="rect" id="node21" href="$classdebug__tools_1_1logger_1_1_debugger.html#a4aa0001f6c56aac29f87ab0fb2bb6a4a" title="_fast_basic" alt="" coords="497,563,586,589"/>
+<area shape="rect" id="node16" href="$classdebug__tools_1_1logger_1_1_debugger.html#a26aa8b0422336144c57505e2f3123b85" title="remove_windows_driver\l_letter" alt="" coords="659,302,819,343"/>
+</map>

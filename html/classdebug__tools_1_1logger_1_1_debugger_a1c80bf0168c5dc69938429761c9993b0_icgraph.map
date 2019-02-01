@@ -1,0 +1,15 @@
+<map id="active" name="active">
+<area shape="rect" id="node2" href="$classdebug__tools_1_1logger_1_1_debugger.html#a84aaf4cb9af64f96fe30bf8c508d8d5c" title="__call__" alt="" coords="121,5,191,32"/>
+<area shape="rect" id="node3" href="$classdebug__tools_1_1logger_1_1_debugger.html#ac022c9c91b60d9b2ef6aa0b3bee31ea5" title="basic" alt="" coords="129,56,183,83"/>
+<area shape="rect" id="node4" href="$classdebug__tools_1_1logger_1_1_debugger.html#a10989bcbd404a81f4c28dabe86ab01eb" title="clean" alt="" coords="129,107,183,133"/>
+<area shape="rect" id="node5" href="$classdebug__tools_1_1logger_1_1_debugger.html#a2299e2300cebaa176eaca8bffc003d14" title="clear" alt="" coords="427,165,477,192"/>
+<area shape="rect" id="node7" href="$classdebug__tools_1_1logger_1_1_debugger.html#aabc120bf38fcf4880429a59300a3f06d" title="debug_level" alt="" coords="111,208,201,235"/>
+<area shape="rect" id="node8" href="$classdebug__tools_1_1logger_1_1_debugger.html#a498b24a62e25b8656fdf3d9c8cdf2395" title="setup" alt="" coords="129,259,183,285"/>
+<area shape="rect" id="node6" href="$classdebug__tools_1_1utilities_1_1_sleep_event.html#aa43cf4d674ea170b359c6e6da7a57b68" title="debug_tools.utilities.Sleep\lEvent.sleep" alt="" coords="555,158,729,199"/>
+<area shape="rect" id="node9" href="$classdebug__tools_1_1logger_1_1_debugger.html#aab117d5d2281fdef24066fd08d24f19e" title="handle_stderr" alt="" coords="249,232,349,259"/>
+<area shape="rect" id="node10" href="$classdebug__tools_1_1logger_1_1_debugger.html#a312fa499c41ded002ce8bccb8b5cb83a" title="addHandler" alt="" coords="409,283,495,309"/>
+<area shape="rect" id="node11" href="$classdebug__tools_1_1logger_1_1_debugger.html#a0b42ce896284718bb14dfcb159c5de08" title="removeHandler" alt="" coords="397,232,507,259"/>
+<area shape="rect" id="node12" href="$classdebug__tools_1_1logger_1_1_debugger.html#af2ee9fd5990c0daf7af239029af2acb0" title="removeHandlers" alt="" coords="584,232,700,259"/>
+<area shape="rect" id="node13" href="$classdebug__tools_1_1logger_1_1_debugger.html#a51829b63adb24ac48d350dee60181002" title="reset" alt="" coords="811,207,862,233"/>
+<area shape="rect" id="node14" href="$classdebug__tools_1_1logger_1_1_debugger.html#aae0175fc510ca4053538a56f87803efb" title="deleteAllLoggers" alt="" coords="777,257,896,284"/>
+</map>

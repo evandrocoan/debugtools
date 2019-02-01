@@ -1,0 +1,10 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node2" href="$classdebug__tools_1_1logger_1_1_smart_log_record.html" title="SmartLogRecord" alt="" coords="301,81,420,108"/>
+<area shape="rect" id="node4" href="$classdebug__tools_1_1dynamic__iteration_1_1_dynamic_iterable.html" title="DynamicIterable" alt="" coords="124,56,240,83"/>
+<area shape="rect" id="node5" href="$classdebug__tools_1_1dynamic__iteration_1_1_dynamic_iteration_dict.html" title="DynamicIterationDict" alt="" coords="111,107,253,133"/>
+<area shape="rect" id="node6" href="$classdebug__tools_1_1lockable__type_1_1_lockable_type.html" title="LockableType" alt="" coords="131,157,233,184"/>
+<area shape="rect" id="node7" href="$classdebug__tools_1_1logger_1_1___smart_log_record.html" title="_SmartLogRecord" alt="" coords="119,208,245,235"/>
+<area shape="rect" id="node9" href="$classdebug__tools_1_1stderr__replacement_1_1stderr__replacement.html" title="stderr_replacement" alt="" coords="115,259,249,285"/>
+<area shape="rect" id="node10" href="$classdebug__tools_1_1stdout__replacement_1_1stdout__replacement.html" title="stdout_replacement" alt="" coords="114,309,250,336"/>
+<area shape="rect" id="node8" href="$classdebug__tools_1_1logger_1_1_clean_log_record.html" title="CleanLogRecord" alt="" coords="302,208,419,235"/>
+</map>
