@@ -26,6 +26,7 @@ import re
 
 import difflib
 import unittest
+import traceback
 
 from debug_tools import getLogger
 log = getLogger( 127, __name__ )
@@ -34,6 +35,72 @@ from .utilities import wrap_text
 from .utilities import diffmatchpatch
 from .utilities import diff_match_patch
 from .lockable_type import LockableType
+
+
+class AssertionErrorData(object):
+
+    def __init__(self, stacktrace, message):
+        super(AssertionErrorData, self).__init__()
+        self.stacktrace = stacktrace
+        self.message = message
+
+
+class MultipleAssertionFailures(unittest.TestCase):
+
+    def __init__(self, *args, **kwargs):
+        self.verificationErrors = []
+        super(MultipleAssertionFailures, self).__init__( *args, **kwargs )
+
+    def tearDown(self):
+        super(MultipleAssertionFailures, self).tearDown()
+
+        if self.verificationErrors:
+            index = 0
+            errors = []
+
+            for error in self.verificationErrors:
+                index += 1
+                errors.append( "%s\nAssertionError %s: %s" % ( error.stacktrace, index, error.message ) )
+
+            self.fail( '\n\n' + "\n".join( errors ) )
+            self.verificationErrors.clear()
+
+    def assertEqual(self, goal, results, msg=None):
+
+        try:
+            super( MultipleAssertionFailures, self ).assertEqual( goal, results, msg )
+
+        except unittest.TestCase.failureException as error:
+            goodtraces = self._goodStackTraces()
+            self.verificationErrors.append( AssertionErrorData( "\n".join( goodtraces[:-2] ), error ) )
+
+    def _goodStackTraces(self):
+        """
+            Get only the relevant part of stacktrace.
+        """
+        stop = False
+        found = False
+        goodtraces = []
+
+        # stacktrace = traceback.format_exc()
+        # stacktrace = traceback.format_stack()
+        stacktrace = traceback.extract_stack()
+
+        # https://stackoverflow.com/questions/54499367/how-to-correctly-override-testcase-assertequal
+        for stack in stacktrace:
+            filename = stack.filename
+
+            if found and not stop and not filename.find( 'lib' ) < filename.find( 'unittest' ):
+                stop = True
+
+            if not found and filename.find( 'lib' ) < filename.find( 'unittest' ):
+                found = True
+
+            if stop and found:
+                stackline = '  File "%s", line %s, in %s\n    %s' % ( stack.filename, stack.lineno, stack.name, stack.line )
+                goodtraces.append( stackline )
+
+        return goodtraces
 
 
 class TestingUtilities(unittest.TestCase):
@@ -54,6 +121,7 @@ class TestingUtilities(unittest.TestCase):
 
     def setUp(self):
         if diff_match_patch: self.addTypeEqualityFunc(str, self.assertTextEqual)
+        super(TestingUtilities, self).setUp()
 
     def diffMatchPatchAssertEqual(self, expected, actual, msg=""):
         """
@@ -98,6 +166,7 @@ class TestingUtilities(unittest.TestCase):
             Called right after each Unit Test finish its execution, to clean up settings values.
         """
         LockableType.USE_STRING = True
+        super(TestingUtilities, self).tearDown()
 
     def assertTextEqual(self, goal, results, msg="", trim_tabs=True, trim_spaces=True, trim_plus=True, trim_lines=False, indent=""):
         """

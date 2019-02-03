@@ -130,7 +130,7 @@ def log_traceback(ex, ex_traceback=None):
     sys.stderr.write( "\n".join( tb_lines ) )
 
 
-class StdErrUnitTests(unittest.TestCase):
+class StdErrUnitTests(testing_utilities.MultipleAssertionFailures):
     """
         How to assert output with nosetest/unittest in python?
         https://stackoverflow.com/questions/4219717/how-to-assert-output-with-nosetest-unittest-in-python
@@ -138,10 +138,14 @@ class StdErrUnitTests(unittest.TestCase):
 
     def setUp(self):
         self.maxDiff = None
+        super(StdErrUnitTests, self).setUp()
+
         sys.stderr.write("\n")
         sys.stderr.write("\n")
 
     def tearDown(self):
+        super(StdErrUnitTests, self).tearDown()
+
         log.clear( True )
         log.reset()
 
@@ -358,14 +362,18 @@ class StdErrUnitTests(unittest.TestCase):
         self.assertEqual( "LSP.boot.test_infinity_recursion_fix:{} - No LSP clients enabled.".format( line + 3 ), output )
 
 
-class StdOutUnitTests(unittest.TestCase):
+class StdOutUnitTests(testing_utilities.MultipleAssertionFailures):
 
     def setUp(self):
         self.maxDiff = None
+        super(StdOutUnitTests, self).setUp()
+
         sys.stderr.write("\n")
         sys.stderr.write("\n")
 
     def tearDown(self):
+        super(StdOutUnitTests, self).tearDown()
+
         log.clear( True )
         log.reset()
 
@@ -413,7 +421,7 @@ class StdOutUnitTests(unittest.TestCase):
                 """.format() ), stderr_contents )
 
 
-class LogRecordUnitTests(testing_utilities.TestingUtilities):
+class LogRecordUnitTests(testing_utilities.MultipleAssertionFailures):
     """
         Test the SmartLogRecord class usage.
 
