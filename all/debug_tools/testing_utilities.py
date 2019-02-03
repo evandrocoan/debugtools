@@ -123,7 +123,7 @@ class TestingUtilities(unittest.TestCase):
         if diff_match_patch: self.addTypeEqualityFunc(str, self.assertTextEqual)
         super(TestingUtilities, self).setUp()
 
-    def diffMatchPatchAssertEqual(self, expected, actual, msg=""):
+    def diffMatchPatchAssertEqual(self, expected, actual, msg=None):
         """
             How to wrap correctly the unit testing diff?
             https://stackoverflow.com/questions/52682351/how-to-wrap-correctly-the-unit-testing-diff
@@ -168,7 +168,7 @@ class TestingUtilities(unittest.TestCase):
         LockableType.USE_STRING = True
         super(TestingUtilities, self).tearDown()
 
-    def assertTextEqual(self, goal, results, msg="", trim_tabs=True, trim_spaces=True, trim_plus=True, trim_lines=False, indent=""):
+    def assertTextEqual(self, goal, results, msg=None, trim_tabs=True, trim_spaces=True, trim_plus=True, trim_lines=False, indent=""):
         """
             Remove both input texts indentation and trailing white spaces, then assertEquals() both
             of the inputs.
