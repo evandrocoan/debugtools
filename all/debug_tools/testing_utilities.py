@@ -49,10 +49,13 @@ class MultipleAssertionFailures(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
         self.verificationErrors = []
-        super(MultipleAssertionFailures, self).__init__( *args, **kwargs )
+
+        # https://thingspython.wordpress.com/2010/09/27/another-super-wrinkle-raising-typeerror/
+        self.cached_super = super(MultipleAssertionFailures, self)
+        self.cached_super.__init__( *args, **kwargs )
 
     def tearDown(self):
-        super(MultipleAssertionFailures, self).tearDown()
+        self.cached_super.tearDown()
 
         if self.verificationErrors:
             index = 0
@@ -68,7 +71,7 @@ class MultipleAssertionFailures(unittest.TestCase):
     def assertEqual(self, goal, results, msg=None):
 
         try:
-            super( MultipleAssertionFailures, self ).assertEqual( goal, results, msg )
+            self.cached_super.assertEqual( goal, results, msg )
 
         except unittest.TestCase.failureException as error:
             goodtraces = self._goodStackTraces()
