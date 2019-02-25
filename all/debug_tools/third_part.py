@@ -159,7 +159,7 @@ def load_data_file(file_path, wait_on_error=True, log_level=1, exceptions=False)
     if os.path.exists( file_path ):
         maximum_attempts = 10
 
-        while maximum_attempts > 0:
+        while True:
 
             try:
                 with open( file_path, 'r', encoding='utf-8' ) as data_file:
@@ -169,12 +169,17 @@ def load_data_file(file_path, wait_on_error=True, log_level=1, exceptions=False)
                 log( 1, "Error: maximum_attempts %d, %s (%s)" % ( maximum_attempts, error, file_path ) )
                 maximum_attempts -= 1
 
+                if maximum_attempts < 1:
+                    if exceptions:
+                        raise
+
+                    else:
+                        log.exception( "Could not open the file_path: %s" % ( file_path ) )
+
+                    break
+
                 if wait_on_error:
                     time.sleep( 0.1 )
-
-        if maximum_attempts < 1:
-            log.exception( "Could not open the file_path: %s" % ( file_path ) )
-            if exceptions: raise
 
     else:
 
