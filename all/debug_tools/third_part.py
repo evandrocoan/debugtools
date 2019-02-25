@@ -49,6 +49,7 @@ import datetime
 
 import time
 import json
+import traceback
 
 from collections import OrderedDict
 
@@ -174,7 +175,7 @@ def load_data_file(file_path, wait_on_error=True, log_level=1, exceptions=False)
                         raise
 
                     else:
-                        log.exception( "Could not open the file_path: %s" % ( file_path ) )
+                        log.error( "traceback.format_stack():\n%s", "".join( traceback.format_stack() ) )
 
                     break
 
