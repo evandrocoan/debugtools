@@ -74,8 +74,14 @@ class MultipleAssertionFailures(unittest.TestCase):
             self.cached_super.assertEqual( goal, results, msg )
 
         except unittest.TestCase.failureException as error:
-            goodtraces = self._goodStackTraces()
-            self.verificationErrors.append( AssertionErrorData( "\n".join( goodtraces[:-2] ), error ) )
+
+            try:
+                goodtraces = self._goodStackTraces()
+                self.verificationErrors.append( AssertionErrorData( "\n".join( goodtraces[:-2] ), error ) )
+
+            except Exception as exception:
+                badtraces = traceback.format_list( traceback.extract_stack() )
+                self.verificationErrors.append( AssertionErrorData( "".join( badtraces[:-2] ), error + '\n' + str( exception ) ) )
 
     def _goodStackTraces(self):
         """
