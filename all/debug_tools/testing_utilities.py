@@ -81,7 +81,7 @@ class MultipleAssertionFailures(unittest.TestCase):
 
             except Exception as exception:
                 badtraces = traceback.format_list( traceback.extract_stack() )
-                self.verificationErrors.append( AssertionErrorData( "".join( badtraces[:-2] ), error + '\n' + str( exception ) ) )
+                self.verificationErrors.append( AssertionErrorData( "".join( badtraces[:-2] ), str(error) + '\n' + str(exception) ) )
 
     def _goodStackTraces(self):
         """
