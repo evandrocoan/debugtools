@@ -49,10 +49,10 @@ start_dir = os.path.join( PACKAGE_ROOT_DIRECTORY, 'testing' )
 
 # https://stackoverflow.com/questions/15971735/running-single-test-from-unittest-testcase-via-command-line
 from testing import main_unit_tests
-testNames = ["StdOutUnitTests.test_helloWordToStdOut"]
+testNames = ["StdOutUnitTests.test_stdout_stderr_and_file_loggging_with_stream"]
 
-suite = loader.discover( start_dir, "*unit_tests.py" )
-# suite = loader.loadTestsFromNames( testNames, main_unit_tests )
+# suite = loader.discover( start_dir, "*unit_tests.py" )
+suite = loader.loadTestsFromNames( testNames, main_unit_tests )
 
 # https://stackoverflow.com/questions/1322575/what-numbers-can-you-pass-as-verbosity-in-running-python-unit-test-suites
 runner = unittest.TextTestRunner(verbosity=2)

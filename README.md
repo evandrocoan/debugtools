@@ -39,6 +39,77 @@ log = getLogger( 127, __name__ )
 log( 1, "Debugging" )
 ```
 
+### Comparison with `logging` module
+
+1. Initial configuration
+   * `debug_tools`module:
+     ```python
+     import debug_tools
+     log = debug_tools.getLogger( "benchmark", tick=False )
+
+     log.debug('Message')
+     ```
+
+   * `logging` module:
+     ```python
+     import logging
+     log = logging.getLogger( "benchmark" )
+
+     if not hasHandlers(log):
+         date_format = "%H:%M:%S"
+         string_format = "%(asctime)s:%(msecs)010.6f - %(name)s.%(funcName)s:%(lineno)d - %(message)s"
+
+         stream = logging.StreamHandler()
+         formatter = logging.Formatter( string_format, date_format )
+         stream.setFormatter( formatter )
+         log.addHandler( stream )
+
+     log.debug('Message')
+     ```
+
+1. Automatically log `stderr` and `stdout` to a log file
+   * `debug_tools`module:
+     ```python
+     import debug_tools
+     log = debug_tools.getLogger( "benchmark", file='output.txt', stdout=True, stderr=True )
+
+     print( 'Message' )
+     ```
+
+   * `logging` module:
+     ```python
+     # Much more coding...
+     ```
+
+1. Automatically log `stderr` and `stdout` to a log file and stderr
+   * `debug_tools`module:
+     ```python
+     import debug_tools
+     log = debug_tools.getLogger( "benchmark", file='output.txt', stdout=True, stderr=True )
+
+     log.setup( delete=False )
+     print( 'Message' )
+     ```
+
+   * `logging` module:
+     ```python
+     # Much more coding...
+     ```
+
+1. Directly log messages with bitwise levels
+   * `debug_tools`module:
+     ```python
+     import debug_tools
+     log = debug_tools.getLogger( 1, "benchmark" )
+
+     log( 2, 'Message' )
+     ```
+
+   * `logging` module:
+     ```python
+     # Much more coding...
+     ```
+
 
 ### Cleaning the log file every start up
 

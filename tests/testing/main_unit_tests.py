@@ -101,10 +101,10 @@ _stdout = TeeNoFile(stdout=True)
 def getLogger(debug_level=127, logger_name=None, **kwargs):
     global log
     global line
-    create_test_file = kwargs.pop( 'create_test_file', "" )
+    file = kwargs.pop( 'file', "" )
 
-    if create_test_file:
-        kwargs['file'] = utilities.get_relative_path( create_test_file, __file__ )
+    if file:
+        kwargs['file'] = utilities.get_relative_path( file, __file__ )
 
     log = debug_tools.logger.getLogger( debug_level, logger_name, **kwargs )
     _stdout.clear( log )
@@ -325,7 +325,7 @@ class StdErrUnitTests(testing_utilities.MultipleAssertionFailures):
             regex_pattern.sub( "", output ) )
 
     def test_exception_throwing_from_file(self):
-        getLogger( "testing.main_unit_tests", 127, create_test_file='main_unit_tests.txt', stderr=True )
+        getLogger( "testing.main_unit_tests", 127, file='main_unit_tests.txt', stderr=True )
 
         try:
             log( 1, "I am catching you..." )
@@ -353,13 +353,11 @@ class StdErrUnitTests(testing_utilities.MultipleAssertionFailures):
             regex_pattern.sub( "", output ) )
 
     def test_infinity_recursion_fix(self):
-        getLogger( 1, 'LSP.boot', create_test_file='main_unit_tests.txt', delete=False, stdout=False, stderr=True )
-
-        log.setup( "", delete=False )
+        getLogger( 1, 'LSP.boot', file='main_unit_tests.txt', stream=True, stdout=False, stderr=True )
         log( 1, 'No LSP clients enabled.' )
 
         output = _stderr.file_contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- ", log )
-        self.assertEqual( "LSP.boot.test_infinity_recursion_fix:{} - No LSP clients enabled.".format( line + 3 ), output )
+        self.assertEqual( "LSP.boot.test_infinity_recursion_fix:{} - No LSP clients enabled.".format( line + 1 ), output )
 
 
 class StdOutUnitTests(testing_utilities.MultipleAssertionFailures):
@@ -378,34 +376,68 @@ class StdOutUnitTests(testing_utilities.MultipleAssertionFailures):
         log.reset()
 
     def test_helloWordToStdOut(self):
-        getLogger( 127, "testing.main_unit_tests", create_test_file='main_unit_tests.txt', stdout=True )
+        getLogger( 127, "testing.main_unit_tests", file='main_unit_tests.txt', stdout=True )
 
         print("Std out logging capture test!")
         output = _stdout.file_contents( r"", log )
 
         self.assertEqual( "Std out logging capture test!", output )
 
-    def test_stdout_stderr_and_file_loggging(self):
-        getLogger( "testing.main_unit_tests", 127, create_test_file='main_unit_tests.txt', stdout=True, stderr=True )
+    def test_stdout_stderr_and_file_loggging_with_no_stream(self):
+        getLogger( "testing.main_unit_tests", 127, file='main_unit_tests.txt', stream=False, stdout=True, stderr=True )
 
         log( 1, "Before adding StreamHandler" )
-        sys.stdout.write("std OUT Before adding StreamHandler\n")
-        sys.stderr.write("std ERR Before adding StreamHandler\n")
+        sys.stdout.write( "std OUT Before adding StreamHandler\n" )
+        sys.stderr.write( "std ERR Before adding StreamHandler\n" )
 
-        log.setup()
         log( 1, "After adding StreamHandler" )
-        sys.stdout.write("std OUT After adding StreamHandler\n")
-        sys.stderr.write("std ERR After adding StreamHandler\n")
+        sys.stdout.write( "std OUT After adding StreamHandler\n" )
+        sys.stderr.write( "std ERR After adding StreamHandler\n" )
 
         file_output = _stdout.file_contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- ", log )
         stderr_contents = _stderr.contents( r"" )
         stdout_contents = _stdout.contents( r"" )
 
         self.assertEqual( utilities.wrap_text( """\
-                + testing.main_unit_tests.test_stdout_stderr_and_file_loggging:{} - Before adding StreamHandler
+                + testing.main_unit_tests.test_stdout_stderr_and_file_loggging_with_no_stream:{} - Before adding StreamHandler
                 + std OUT Before adding StreamHandler
                 + std ERR Before adding StreamHandler
-                + testing.main_unit_tests.test_stdout_stderr_and_file_loggging:{} - After adding StreamHandler
+                + testing.main_unit_tests.test_stdout_stderr_and_file_loggging_with_no_stream:{} - After adding StreamHandler
+                + std OUT After adding StreamHandler
+                + std ERR After adding StreamHandler
+                """.format( line + 2 , line + 6 ) ), file_output )
+
+        self.assertEqual( utilities.wrap_text( """\
+                + std OUT Before adding StreamHandler
+                + std OUT After adding StreamHandler
+                """.format() ), stdout_contents )
+
+        self.assertEqual( utilities.wrap_text( """\
+                + std ERR Before adding StreamHandler
+                + std ERR After adding StreamHandler
+                """.format( line + 7 ) ), stderr_contents )
+
+    def test_stdout_stderr_and_file_loggging_with_stream(self):
+        getLogger( "testing.main_unit_tests", 127, file='main_unit_tests.txt', stream=False, stdout=True, stderr=True )
+
+        log( 1, "Before adding StreamHandler" )
+        sys.stdout.write( "std OUT Before adding StreamHandler\n" )
+        sys.stderr.write( "std ERR Before adding StreamHandler\n" )
+
+        log.setup( stream=True )
+        log( 1, "After adding StreamHandler" )
+        sys.stdout.write( "std OUT After adding StreamHandler\n" )
+        sys.stderr.write( "std ERR After adding StreamHandler\n" )
+
+        file_output = _stdout.file_contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- ", log )
+        stderr_contents = _stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+        stdout_contents = _stdout.contents( r"" )
+
+        self.assertEqual( utilities.wrap_text( """\
+                + testing.main_unit_tests.test_stdout_stderr_and_file_loggging_with_stream:{} - Before adding StreamHandler
+                + std OUT Before adding StreamHandler
+                + std ERR Before adding StreamHandler
+                + testing.main_unit_tests.test_stdout_stderr_and_file_loggging_with_stream:{} - After adding StreamHandler
                 + std OUT After adding StreamHandler
                 + std ERR After adding StreamHandler
                 """.format( line + 2 , line + 7 ) ), file_output )
@@ -417,8 +449,9 @@ class StdOutUnitTests(testing_utilities.MultipleAssertionFailures):
 
         self.assertEqual( utilities.wrap_text( """\
                 + std ERR Before adding StreamHandler
+                + testing.main_unit_tests.test_stdout_stderr_and_file_loggging_with_stream:{} - After adding StreamHandler
                 + std ERR After adding StreamHandler
-                """.format() ), stderr_contents )
+                """.format( line + 7 ) ), stderr_contents )
 
 
 class LogRecordUnitTests(testing_utilities.MultipleAssertionFailures):

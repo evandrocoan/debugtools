@@ -116,11 +116,8 @@ else: #pragma: no cover
 class Debugger(Logger):
     """
         https://docs.python.org/2.6/library/logging.html
-
-        How to define global function in Python?
+        https://stackoverflow.com/questions/394770/override-a-method-at-instance-level
         https://stackoverflow.com/questions/27930038/how-to-define-global-function-in-python
-
-        How to print list inside python print?
         https://stackoverflow.com/questions/45427500/how-to-print-list-inside-python-print
     """
     _debugme = False
@@ -294,7 +291,7 @@ class Debugger(Logger):
         {
             "file": None,
             "mode": 'a',
-            "delete": True,
+            "stream": True,
             "date": False,
             "level": False,
             "function": True,
@@ -712,31 +709,29 @@ class Debugger(Logger):
         # print('active._force_debug %s' % active._force_debug)
         # print('logger.debug_level %s' % logger.debug_level)
 
-    def setup(self, file=EMPTY_KWARG, mode=EMPTY_KWARG, delete=EMPTY_KWARG, date=EMPTY_KWARG, level=EMPTY_KWARG,
+    def setup(self, file=EMPTY_KWARG, mode=EMPTY_KWARG, stream=EMPTY_KWARG, date=EMPTY_KWARG, level=EMPTY_KWARG,
             function=EMPTY_KWARG, name=EMPTY_KWARG, time=EMPTY_KWARG, msecs=EMPTY_KWARG, tick=EMPTY_KWARG,
             separator=EMPTY_KWARG, formatter=EMPTY_KWARG, rotation=EMPTY_KWARG, **kwargs):
         """
+            Configures the aspects of the current logger.
+
             If `file` parameter is passed, instead of output the debug to the standard output
             stream, send it to a file on the file system, which is faster for large outputs.
 
-            As this function remembers most of its parameters passed from previous calls, you need to
-            explicitly pass `file=None` with `delete=True` if you want to disable the file
-            system output after setting up it to log to a file. See the function Debugger::reset()
-            for the default parameters values used on this setup utility.
+            As this function remembers most of its parameters passed from previous calls. See the
+            function Debugger::reset() for the default and saved parameters values used on this
+            setup utility.
 
             If the parameters `date`, `level`, `function`, `name`, `time`, `tick` and `msecs` are
             nonempty strings, their value will be used to defining their configuration formatting.
             For example, if you pass name="%(name)s: " the function name will be displayed as
             `name: `, instead of the default `[name] `.
 
-            If you change your `sys.stderr` after creating an StreamHandler, you need to pass `handlers=True`
-            to make it to recreate the StreamHandler because of the old reference to `sys.stderr`.
+            If you change your `sys.stderr` after creating a StreamHandler, you need to pass `handlers=True`
+            to make it to recreate the StreamHandler to update old references to `sys.stderr`.
 
             Single page cheat-sheet about Python string formatting pyformat.info
             https://github.com/ulope/pyformat.info
-
-            Override a method at instance level
-            https://stackoverflow.com/questions/394770/override-a-method-at-instance-level
 
             @param `file`       a relative or absolute path to the log file. If empty the output
                                 will be sent to the standard output stream.
@@ -748,11 +743,7 @@ class Debugger(Logger):
                                 be keep when doing the file rotation as specified on
                                 logging::handlers::RotatingFileHandler documentation.
 
-            @param `delete`     if True (default False), it will delete the other handler before
-                                activate the current one, otherwise it will only activate the
-                                selected handler. Useful for enabling multiple handlers
-                                simultaneously.
-
+            @param `stream`     if True, create a StreamHandler() logger.
             @param `date`       if True, add to the `full_formatter` the date on the format `%Y-%m-%d`.
             @param `level`      if True, add to the `full_formatter` the log levels.
             @param `function`   if True, add to the `full_formatter` the function name.
@@ -769,7 +760,7 @@ class Debugger(Logger):
                                 information. See the parameter `mode` to specify how many files at
                                 most should be created by the rotation algorithm.
 
-            @param `handlers`   if True (default False), it will force to create the handlers,
+            @param `delete`     if True (default False), it will delete and recreate any active handlers,
                                 even if there are no changes on the current saved default parameters.
                                 Its value is not saved between calls to this setup().
 
@@ -794,7 +785,7 @@ class Debugger(Logger):
                                 10.000.000 log calls, when the logging debug level is set as
                                 disabled.
         """
-        self._setup( file=file, mode=mode, delete=delete, date=date, level=level,
+        self._setup( file=file, mode=mode, stream=stream, date=date, level=level,
                 function=function, name=name, time=time, msecs=msecs, tick=tick,
                 separator=separator, formatter=formatter, rotation=rotation, **kwargs )
 
@@ -802,7 +793,7 @@ class Debugger(Logger):
         """
             Allow to pass positional arguments to `setup()`.
         """
-        handlers = kwargs.pop( 'handlers', False )
+        delete = kwargs.pop( 'delete', False )
 
         force_debug = kwargs.pop( "force", None )
         _fix_children = kwargs.pop( '_fix_children', False )
@@ -829,7 +820,7 @@ class Debugger(Logger):
                     arguments[kwarg] = value
 
         if has_changes \
-                or handlers \
+                or delete \
                 or ( not logger._stream \
                     and not logger._file ):
 
@@ -837,30 +828,32 @@ class Debugger(Logger):
                 logger.fix_children( lambda logger: logger.removeHandlers() )
 
             logger.full_formatter = logger._setup_formatter( logger._arguments )
-            logger._setup_log_handlers()
+            logger._setup_log_handlers( delete )
 
-    def _setup_log_handlers(self):
+    def _setup_log_handlers(self, delete):
         self._setup_fast_loggers()
-        arguments = self._arguments
 
         # import traceback
         # traceback.print_stack()
 
-        if arguments['file']:
-            output_file = self.get_debug_file_path( arguments['file'] )
+        if self._file and self._arguments['file'] and delete or not self._file and self._arguments['file']:
+            # print('On if file')
+            output_file = self.get_debug_file_path( self._arguments['file'] )
 
             sys.stderr.write( "".join( self._get_time_prefix( datetime.datetime.now() ) )
                     + "Logging to the file %s\n" % output_file )
 
-            self._create_file( output_file, arguments['rotation'], arguments['mode'] )
-            self._disable( stream=arguments['delete'] )
+            self._create_file( output_file, self._arguments['rotation'], self._arguments['mode'] )
 
-        else:
+        elif not self._arguments['file']:
+            self._disable( file=True )
+
+        if self._stream and self._arguments['stream'] and delete or not self._stream and self._arguments['stream']:
+            # print('On if stream, self._stream:', self._stream)
             self._disable( stream=True )
             _acquireLock()
 
             try:
-
                 self._stream = logging.StreamHandler()
                 self._stream.formatter = self.full_formatter
 
@@ -871,7 +864,9 @@ class Debugger(Logger):
                 _releaseLock()
 
             self.addHandler( self._stream )
-            self._disable( file=arguments['delete'] )
+
+        elif not self._arguments['stream']:
+            self._disable( stream=True )
 
     def _create_file(self, output_file, rotation, mode, clear=False, delete=False):
         backup_count = mode
@@ -1029,13 +1024,11 @@ class Debugger(Logger):
         if self._stderr or self._stdout:
 
             if self._file and self._stream:
-                handler.addFilter( self._file_context_filter )
+                # handler.addFilter( self._file_context_filter )
+
                 self._has_file_context_filter = True
-
-                for other_handler in self.handlers:
-                    other_handler.addFilter( self._file_context_filter )
-
                 self.handle_stderr( self._stderr, self._stdout )
+                return
 
             # else: # TODO: Support other this logic also for other handlers and the builtin _stream and _file
 
@@ -1462,7 +1455,7 @@ Debugger.manager.setLoggerClass( Debugger )
 
 
 def getLogger(debug_level=127, logger_name=None,
-            file=EMPTY_KWARG, mode=EMPTY_KWARG, delete=EMPTY_KWARG, date=EMPTY_KWARG, level=EMPTY_KWARG,
+            file=EMPTY_KWARG, mode=EMPTY_KWARG, stream=EMPTY_KWARG, date=EMPTY_KWARG, level=EMPTY_KWARG,
             function=EMPTY_KWARG, name=EMPTY_KWARG, time=EMPTY_KWARG, msecs=EMPTY_KWARG, tick=EMPTY_KWARG,
             separator=EMPTY_KWARG, formatter=EMPTY_KWARG, rotation=EMPTY_KWARG, **kwargs):
     """
@@ -1491,7 +1484,7 @@ def getLogger(debug_level=127, logger_name=None,
     @seealso Debugger::setup()
     """
     return _getLogger( debug_level, logger_name,
-            file=file, mode=mode, delete=delete, date=date, level=level,
+            file=file, mode=mode, stream=stream, date=date, level=level,
             function=function, name=name, time=time, msecs=msecs, tick=tick,
             separator=separator, formatter=formatter, rotation=rotation, **kwargs )
 
