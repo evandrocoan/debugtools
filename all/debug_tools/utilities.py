@@ -660,7 +660,7 @@ def get_representation(self, ignore=[], emquote=False, repr=repr):
     for attribute in valid_attributes:
 
         if not attribute.startswith( '_' ) and attribute not in ignore:
-            clean_attributes.append( "{}: {}".format( attribute, pack_attribute( repr( self.__dict__[attribute] ) ) ) )
+            clean_attributes.append( "{}: {}".format( attribute, pack_attribute( self.__dict__[attribute] ) ) )
 
     return "%s %s;" % ( self.__class__.__name__, ", ".join( clean_attributes ) )
 
