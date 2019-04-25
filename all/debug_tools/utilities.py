@@ -574,47 +574,47 @@ def getCleanSpaces(inputText, minimumLength=0, lineCutTrigger="", keepSpaceSepat
     return clean_lines
 
 
-def wrap_text(text, wrap=0, trim_tabs=False, trim_spaces=False, trim_lines=False,
-        trim_plus=True, indent="", single_lines=False):
+def wrap_text(text, wrap=0, trim_tabs=None, trim_spaces=None, trim_lines=None,
+        trim_plus='+', indent="", single_lines=False):
     """
         1. Remove input text leading common indentation, trailing white spaces
-        2. If `wrap`, wraps big lists on 80 characters.
-        3. If `trim_tabs` replace tabs with 2 spaces.
-        4. If `trim_spaces`, remove leading ' ' symbols
-        5. If `trim_lines`, remove all new line characters.
-        5. If `indent`, the subsequent indent to use.
-        6. If `trim_plus`, remove leading '+' symbols.
-        7. If `single_lines`, remove single new lines but keep consecutive new lines.
+        2. If `wrap`, wraps big lists on 80 characters
+        3. If `trim_tabs`, replace all tabs this value
+        4. If `trim_spaces`, remove this leading symbols
+        5. If `trim_lines`, replace all new line characters by this value
+        5. If `indent`, the subsequent indent to use
+        6. If `trim_plus`, remove this leading symbols
+        7. If `single_lines`, remove single new lines but keep consecutive new lines
     """
     clean_lines = []
 
     if not isinstance( text, str ):
         text = str( text )
 
-    if trim_tabs:
-        text = text.replace( '\t', '  ' )
+    if trim_tabs is not None:
+        text = text.replace( '\t', trim_tabs )
 
     dedent_lines = textwrap.dedent( text ).strip( '\n' )
 
     if trim_spaces and trim_plus:
 
         for line in dedent_lines.split( '\n' ):
-            line = line.rstrip( ' ' ).lstrip( '+' )
+            line = line.rstrip( trim_spaces ).lstrip( trim_plus )
             clean_lines.append( line )
 
     elif trim_spaces:
 
         for line in dedent_lines.split( '\n' ):
-            line = line.rstrip( ' ' )
+            line = line.rstrip( trim_spaces )
             clean_lines.append( line )
 
     elif trim_plus:
 
         for line in dedent_lines.split( '\n' ):
-            line = line.lstrip( '+' )
+            line = line.lstrip( trim_plus )
             clean_lines.append( line )
 
-    if trim_spaces or trim_plus:
+    if trim_spaces is not None or trim_plus is not None:
         dedent_lines = textwrap.dedent( "\n".join( clean_lines ) )
 
     if wrap:
@@ -626,8 +626,8 @@ def wrap_text(text, wrap=0, trim_tabs=False, trim_spaces=False, trim_lines=False
 
         dedent_lines = "\n".join( clean_lines )
 
-    if trim_lines:
-        dedent_lines = "".join( dedent_lines.split( '\n' ) )
+    if trim_lines is not None:
+        dedent_lines = trim_lines.join( dedent_lines.split( '\n' ) )
 
     if single_lines:
         dedent_lines = re.sub( r'(?<!\n)\n(?!\n)', ' ', dedent_lines)

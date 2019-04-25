@@ -177,7 +177,7 @@ class TestingUtilities(unittest.TestCase):
         LockableType.USE_STRING = True
         super(TestingUtilities, self).tearDown()
 
-    def assertTextEqual(self, goal, results, msg=None, trim_tabs=True, trim_spaces=True, trim_plus=True, trim_lines=False, indent=""):
+    def assertTextEqual(self, goal, results, msg=None, trim_tabs='  ', trim_spaces=' ', trim_plus='+', trim_lines=None, indent=""):
         """
             Remove both input texts indentation and trailing white spaces, then assertEquals() both
             of the inputs.

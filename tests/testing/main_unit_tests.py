@@ -451,7 +451,7 @@ class LogRecordUnitTests(testing_utilities.MultipleAssertionFailures):
                 + testing.main_unit_tests.test_dictionaryLogging:{line1} - dictionary
                 + testing.main_unit_tests.test_dictionaryLogging:{line2} - dictionary {{1: 'defined_chunk'}}
             """.format( line1=line+3, line2=line+4 ) ),
-            utilities.wrap_text( output, trim_spaces=True ) )
+            utilities.wrap_text( output, trim_spaces='+' ) )
 
     def test_nonDictionaryLogging(self):
         getLogger( 127, "testing.main_unit_tests", date=True )
@@ -466,7 +466,7 @@ class LogRecordUnitTests(testing_utilities.MultipleAssertionFailures):
                 + testing.main_unit_tests.test_nonDictionaryLogging:{line1} - dictionary
                 + testing.main_unit_tests.test_nonDictionaryLogging:{line2} - dictionary {{1: 'defined_chunk'}}
             """.format( line1=line+3, line2=line+4 ) ),
-            utilities.wrap_text( output, trim_spaces=True ) )
+            utilities.wrap_text( output, trim_spaces='+' ) )
 
     def test_dictionaryBasicLogging(self):
         getLogger( 127, "testing.main_unit_tests", date=True )
@@ -481,7 +481,7 @@ class LogRecordUnitTests(testing_utilities.MultipleAssertionFailures):
                 + testing.main_unit_tests - dictionary
                 + testing.main_unit_tests - dictionary {{1: 'defined_chunk'}}
             """.format( line1=line+3, line2=line+4 ) ),
-            utilities.wrap_text( output, trim_spaces=True ) )
+            utilities.wrap_text( output, trim_spaces='+' ) )
 
     def test_dictionaryCleanLogging(self):
         getLogger( 127, "testing.main_unit_tests", date=True )
@@ -496,7 +496,7 @@ class LogRecordUnitTests(testing_utilities.MultipleAssertionFailures):
                 + dictionary
                 + dictionary {1: 'defined_chunk'}
             """ ),
-            utilities.wrap_text( output, trim_spaces=True ) )
+            utilities.wrap_text( output, trim_spaces='+' ) )
 
     def test_integerCleanLogging(self):
         getLogger( 127, "testing.main_unit_tests", date=True )
@@ -507,7 +507,7 @@ class LogRecordUnitTests(testing_utilities.MultipleAssertionFailures):
         self.assertEqual( utilities.wrap_text( """\
             1
             """ ),
-            utilities.wrap_text( output, trim_spaces=True ) )
+            utilities.wrap_text( output, trim_spaces='+' ) )
 
     def test_integerBasicLogging(self):
         getLogger( 127, "testing.main_unit_tests", date=True )
@@ -518,7 +518,7 @@ class LogRecordUnitTests(testing_utilities.MultipleAssertionFailures):
         self.assertEqual( utilities.wrap_text( """\
             + testing.main_unit_tests - 1
             """ ),
-            utilities.wrap_text( output, trim_spaces=True ) )
+            utilities.wrap_text( output, trim_spaces='+' ) )
 
     def test_integerFullLogging(self):
         getLogger( 127, "testing.main_unit_tests" )
@@ -529,7 +529,7 @@ class LogRecordUnitTests(testing_utilities.MultipleAssertionFailures):
         self.assertEqual( utilities.wrap_text( """\
             + testing.main_unit_tests.test_integerFullLogging:{} - 1
             """.format( line + 2 ) ),
-            utilities.wrap_text( output, trim_spaces=True ) )
+            utilities.wrap_text( output, trim_spaces='+' ) )
 
     def test_integerFullLoggingEdge(self):
         getLogger( 127, "testing.main_unit_tests" )
@@ -540,7 +540,7 @@ class LogRecordUnitTests(testing_utilities.MultipleAssertionFailures):
         self.assertEqual( utilities.wrap_text( """\
             + testing.main_unit_tests.test_integerFullLoggingEdge:{} - 2
             """.format( line + 2 ) ),
-            utilities.wrap_text( output, trim_spaces=True ) )
+            utilities.wrap_text( output, trim_spaces='+' ) )
 
 
 def load_tests(loader, standard_tests, pattern):
