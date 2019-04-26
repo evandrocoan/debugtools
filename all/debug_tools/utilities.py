@@ -644,7 +644,6 @@ def get_representation(objectname, ignore=[], emquote=False, repr=repr):
         `emquote` if True, puts the attributes values inside single or double quotes accordingly.
         `repr` is the callback to call recursively on nested objects, can be either `repr` or `str`.
     """
-    valid_attributes = objectname.__dict__.keys()
     clean_attributes = []
 
     if emquote:
@@ -657,12 +656,22 @@ def get_representation(objectname, ignore=[], emquote=False, repr=repr):
         def pack_attribute(string):
             return string
 
-    for attribute in valid_attributes:
+    if hasattr( objectname, '__dict__' ):
+        valid_attributes = objectname.__dict__.keys()
 
-        if not attribute.startswith( '_' ) and attribute not in ignore:
-            clean_attributes.append( "{}: {}".format( attribute, pack_attribute( objectname.__dict__[attribute] ) ) )
+        for attribute in valid_attributes:
 
-    return "%s %s;" % ( objectname.__class__.__name__, ", ".join( clean_attributes ) )
+            if not attribute.startswith( '_' ) and attribute not in ignore:
+                clean_attributes.append( "{}: {}".format( attribute, pack_attribute( objectname.__dict__[attribute] ) ) )
+
+        return "%s %s;" % ( objectname.__class__.__name__, ", ".join( clean_attributes ) )
+
+    else:
+        for attribute in objectname:
+            if attribute not in ignore:
+                clean_attributes.append( "{}".format( pack_attribute( attribute ) ) )
+
+        return "%s" % ", ".join( clean_attributes )
 
 
 def _create_stdout_handler():
