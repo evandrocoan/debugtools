@@ -1372,7 +1372,9 @@ class _SmartLogRecord(object):
 
             return False
 
-        except TypeError as error:
+        # A logging error should not stop the running program
+        # except (TypeError, ValueError) as error:
+        except Exception as error:
             self.args = args[:-1]
 
             # print('error', error)
