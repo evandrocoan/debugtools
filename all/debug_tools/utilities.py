@@ -635,7 +635,7 @@ def wrap_text(text, wrap=0, trim_tabs=None, trim_spaces=None, trim_lines=None,
     return dedent_lines
 
 
-def get_representation(self, ignore=[], emquote=False, repr=repr):
+def get_representation(objectname, ignore=[], emquote=False, repr=repr):
     """
         Given a object, iterating through all its public attributes and return then as a string
         representation.
@@ -644,7 +644,7 @@ def get_representation(self, ignore=[], emquote=False, repr=repr):
         `emquote` if True, puts the attributes values inside single or double quotes accordingly.
         `repr` is the callback to call recursively on nested objects, can be either `repr` or `str`.
     """
-    valid_attributes = self.__dict__.keys()
+    valid_attributes = objectname.__dict__.keys()
     clean_attributes = []
 
     if emquote:
@@ -660,9 +660,9 @@ def get_representation(self, ignore=[], emquote=False, repr=repr):
     for attribute in valid_attributes:
 
         if not attribute.startswith( '_' ) and attribute not in ignore:
-            clean_attributes.append( "{}: {}".format( attribute, pack_attribute( self.__dict__[attribute] ) ) )
+            clean_attributes.append( "{}: {}".format( attribute, pack_attribute( objectname.__dict__[attribute] ) ) )
 
-    return "%s %s;" % ( self.__class__.__name__, ", ".join( clean_attributes ) )
+    return "%s %s;" % ( objectname.__class__.__name__, ", ".join( clean_attributes ) )
 
 
 def _create_stdout_handler():
