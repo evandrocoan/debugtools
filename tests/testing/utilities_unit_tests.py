@@ -68,8 +68,14 @@ except ImportError:
     from debug_tools import utilities
     from debug_tools import testing_utilities
 
+try:
+    import diff_match_patch
 
-class UtilitiesUnitTests(testing_utilities.TestingUtilities):
+except( ImportError, ValueError ):
+    diff_match_patch = None
+
+@unittest.skipIf( not diff_match_patch, "The diff-match-patch library is not installed..." )
+class DiffMatchPatchUnitTests(testing_utilities.TestingUtilities):
 
     def test_characthersDiffModeExample1(self):
         self.diffMode = 0
@@ -193,6 +199,9 @@ class UtilitiesUnitTests(testing_utilities.TestingUtilities):
             "+ 2. Duplicated master scope name defined in your grammar on: free_input_string\n"
             "+   text_chunk_end  source.sma"
             , str(error.exception) )
+
+
+class UtilitiesUnitTests(testing_utilities.TestingUtilities):
 
     def test_createStdoutHandler(self):
         std_replacement_path = utilities.get_relative_path('stdout_replacement.py', utilities.__file__)
