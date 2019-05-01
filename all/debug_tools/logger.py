@@ -1505,7 +1505,12 @@ def _getLogger(debug_level=127, logger_name=None, **kwargs):
     level = kwargs.get( "level", EMPTY_KWARG )
     Debugger._debugme = kwargs.get( "debugme", False )
 
-    debug_level, logger_name = _get_debug_level( debug_level, logger_name )
+    try:
+        debug_level, logger_name = _get_debug_level( debug_level, logger_name )
+
+    except Exception as error:
+        sys.stderr.write('%s\n\n' % error)
+        debug_level, logger_name = 127, "logger"
 
     logger = Debugger.manager.getLogger( logger_name )
     logger.debug_level = debug_level
@@ -1535,12 +1540,12 @@ def _get_debug_level(debug_level, logger_name):
         else:
 
             if not isinstance( debug_level, int ):
-                raise ValueError( "The variable `logger_name` must be an instance of int, instead of `%s`." % logger_name )
+                raise ValueError( "The variable `debug_level` must be an instance of int, instead of `%s`." % debug_level )
 
     else:
 
         if isinstance( debug_level, int ):
-            logger_name = os.path.basename( "logger" )
+            logger_name = "logger"
 
         else:
             logger_name = debug_level

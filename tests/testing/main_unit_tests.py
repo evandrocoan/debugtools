@@ -438,6 +438,12 @@ class LogRecordUnitTests(testing_utilities.MultipleAssertionFailures):
         log.clear( True )
         log.reset()
 
+    def test_invalid_logger_creation(self):
+        getLogger( "testing.main_unit_tests", "testing.main_unit_tests" )
+        log('Something...')
+        output = _stderr.contents( r"\d{4}\-\d{2}\-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+        self.assertIn("Something...", output)
+
     def test_dictionaryLogging(self):
         getLogger( 127, "testing.main_unit_tests", date=True )
 
