@@ -51,6 +51,9 @@ except ImportError:
     from setuptools import setup
     from setuptools import __version__ as setuptools_version
 
+    install_requires=[
+    ]
+
     # https://setuptools.readthedocs.io/en/latest/history.html
     required_setup_tools = '20.5'
 
@@ -87,12 +90,9 @@ except ImportError:
             ],
         }
 
-    install_requires=[
-    ]
-
-    if sys.platform.startswith("win") or sys.platform.startswith("cyg"):
-        extras_require['full'].append('pypiwin32;python_version>"3.4"')
-        extras_require['lock'].append('pypiwin32;python_version>"3.4"')
+        if sys.platform.startswith("win") or sys.platform.startswith("cyg"):
+            extras_require['full'].append('pypiwin32;python_version>"3.4"')
+            extras_require['lock'].append('pypiwin32;python_version>"3.4"')
 
     setup \
     (
