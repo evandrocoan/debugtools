@@ -15,7 +15,7 @@ except ImportError:
     # keyring set https://upload.pypi.org/legacy/ your-username
     #
     # Run this to build the `dist/PACKAGE_NAME-xxx.tar.gz` file
-    #     rm -r ./dist && python setup.py sdist
+    #     rm -rf ./dist && python3 setup.py sdist
     #
     # Run this to build & upload it to `pypi`, type addons_zz when prompted.
     #     twine upload dist/*
@@ -27,18 +27,24 @@ except ImportError:
     import sys
     import codecs
 
-    __version__ ,= re.findall('__version__ = "(.*)"', open('all/debug_tools/version.py').read())
-
     try:
+        filepath = 'all/debug_tools/version.py'
 
-        # https://stackoverflow.com/questions/30700166/python-open-file-error
-        readme_file = codecs.open( "README.md", 'r', errors='ignore' )
-        readme_contents = readme_file.read()
+        with open( filepath, 'r' ) as file:
+            __version__ ,= re.findall('__version__ = "(.*)"', file.read())
 
     except Exception as error:
-        readme_file.close()
-        sys.stderr.write( "Warning: Could not open README.md due %s" % error )
+        __version__ = "0.0.1"
+        sys.stderr.write( "Warning: Could not open '%s' due %s" % ( filepath, error ) )
+
+    try:
+        # https://stackoverflow.com/questions/30700166/python-open-file-error
+        with codecs.open( "README.md", 'r', errors='ignore' ) as file:
+            readme_contents = file.read()
+
+    except Exception as error:
         readme_contents = ""
+        sys.stderr.write( "Warning: Could not open README.md due %s" % error )
 
     # https://setuptools.readthedocs.io/en/latest/setuptools.html
     from distutils.version import StrictVersion
