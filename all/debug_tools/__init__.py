@@ -38,4 +38,5 @@
 
 from .utilities import SleepEvent
 from .logger import getLogger
+from .version import __version__
 

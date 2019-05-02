@@ -31,9 +31,9 @@ install:
 
     # Install/setup tox
     - IF NOT "%TOXENV%"=="" (C:\Python27\python -m pip install --disable-pip-version-check --pre -U tox)
-    - IF %INSTALL_DEPENDENCIES%==true (pip install --disable-pip-version-check -e .[full])
+    - IF %INSTALL_DEPENDENCIES%==true (pip install --disable-pip-version-check debug_tools)
+    - IF %INSTALL_DEPENDENCIES%==true (pip install --disable-pip-version-check -e .[full] --upgrade)
     - IF %INSTALL_DEPENDENCIES%==true (pip install --disable-pip-version-check diff-match-patch)
-    - IF %INSTALL_DEPENDENCIES%==true (pip install --disable-pip-version-check diff_match_patch)
 
     # Install coverage tools
     - IF "%COVERAGE%"=="py36" (pip install --disable-pip-version-check codecov )

@@ -85,8 +85,8 @@ before_install:
 install:
     - if ! [ -z "$TOXENV" ] && [ "$TRAVIS_OS_NAME" == "linux" ]; then
             pip install --disable-pip-version-check tox;
-            pip install --disable-pip-version-check -e .[full];
-            pip install --disable-pip-version-check diff_match_patch;
+            pip install --disable-pip-version-check debug_tools;
+            pip install --disable-pip-version-check -e .[full] --upgrade;
             pip install --disable-pip-version-check diff-match-patch;
             pip list;
       fi
@@ -96,9 +96,9 @@ install:
             brew install python3;
             sudo -H pip3 install --disable-pip-version-check virtualenv;
             pip3 install --disable-pip-version-check tox;
-            pip3 install --disable-pip-version-check -e .[full];
+            pip3 install --disable-pip-version-check debug_tools;
+            pip3 install --disable-pip-version-check -e .[full] --upgrade;
             pip3 install --disable-pip-version-check diff-match-patch;
-            pip3 install --disable-pip-version-check diff_match_patch;
             pip3 list;
       fi
 

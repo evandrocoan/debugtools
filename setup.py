@@ -5,11 +5,6 @@ try:
     import sublime_api
 
 except ImportError:
-    import sys
-
-    # https://setuptools.readthedocs.io/en/latest/setuptools.html
-    from setuptools import setup
-
     #
     # Release process setup see:
     # https://github.com/pypa/twine
@@ -28,32 +23,66 @@ except ImportError:
     # All in one command:
     #     rm -rf ./dist && python3 setup.py sdist && twine upload dist/* && rm -rf ./dist
     #
-    version = '2.6.8'
+    import re
+    import sys
+    import codecs
+
+    __version__ ,= re.findall('__version__ = "(.*)"', open('all/debug_tools/version.py').read())
+
+    try:
+
+        # https://stackoverflow.com/questions/30700166/python-open-file-error
+        readme_file = codecs.open( "README.md", 'r', errors='ignore' )
+        readme_contents = readme_file.read()
+
+    except Exception as error:
+        readme_file.close()
+        sys.stderr.write( "Warning: Could not open README.md due %s" % error )
+        readme_contents = ""
+
+    # https://setuptools.readthedocs.io/en/latest/setuptools.html
+    from distutils.version import StrictVersion
+    from setuptools import setup
+    from setuptools import __version__ as setuptools_version
+
+    # https://setuptools.readthedocs.io/en/latest/history.html
+    required_setup_tools = '20.5'
+
+    # https://stackoverflow.com/questions/48048745/setup-py-require-a-recent-version-of-setuptools-before-trying-to-install
+    if StrictVersion( setuptools_version ) < StrictVersion( required_setup_tools ):
+        sys.stderr.write( " Warning: Your setuptools version '%s' is not fully support this package.\n"
+                "Please upgrade your setuptools to '%s' or newer and repeat the installation.\n"
+                "     pip install setuptools --upgrade\n"
+                "     pip3 install setuptools --upgrade\n" % (
+                setuptools_version, required_setup_tools )
+            )
+        extras_require = {}
+
+    else:
+        # To install use: pip install -e .[full]
+        # To install use: pip install -e debug_tools[full]
+        # To install use: pip install -e debug_tools debug_tools[full]
+        extras_require = {
+            'full': [
+                "natsort",
+                "diff-match-patch",
+                'portalocker; python_version>"3.4"',
+                'concurrent-log-handler; python_version>"3.4"',
+            ],
+            'diff': [
+                "diff-match-patch",
+            ],
+            'sort': [
+                "natsort",
+            ],
+            'lock': [
+                'portalocker; python_version>"3.4"',
+                'concurrent-log-handler; python_version>"3.4"',
+            ],
+        }
 
     install_requires=[
     ]
-
-    # To install use: pip install -e .[full]
-    # To install use: pip install -e debug_tools[full]
-    # To install use: pip install -e debug_tools debug_tools[full]
-    extras_require = {
-        'full': [
-            "natsort",
-            "diff-match-patch",
-            'portalocker; python_version>"3.4"',
-            'concurrent-log-handler; python_version>"3.4"',
-        ],
-        'diff': [
-            "diff-match-patch",
-        ],
-        'sort': [
-            "natsort",
-        ],
-        'lock': [
-            'portalocker; python_version>"3.4"',
-            'concurrent-log-handler; python_version>"3.4"',
-        ],
-    }
 
     if sys.platform.startswith("win") or sys.platform.startswith("cyg"):
         extras_require['full'].append('pypiwin32;python_version>"3.4"')
@@ -62,7 +91,7 @@ except ImportError:
     setup \
     (
         name='debug_tools',
-        version = version,
+        version = __version__,
         description = 'Python Distribution Logger, Debugger and Utilities',
         author = 'Evandro Coan',
         license = "GPLv3",
@@ -82,7 +111,7 @@ except ImportError:
 
         extras_require = extras_require,
         install_requires = install_requires,
-        long_description = open('README.md').read(),
+        long_description = readme_contents,
         long_description_content_type='text/markdown',
         classifiers=[
             'Development Status :: 5 - Production/Stable',
