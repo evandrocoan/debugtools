@@ -53,6 +53,7 @@ import traceback
 import logging
 import logging.handlers
 
+from collections import MutableMapping
 from logging import getLevelName
 
 from logging import Logger
@@ -99,7 +100,10 @@ EMPTY_KWARG = -sys.maxsize
 
 if sys.version_info[0] < 3:
     is_python2 = True
+    from collections import MutableMapping
 
+else:
+    from collections.abc import MutableMapping
 
 if hasattr(sys, '_getframe'):
     currentframe = lambda level: sys._getframe(level)
@@ -1354,7 +1358,7 @@ class _SmartLogRecord(object):
             if args:
 
                 # https://stackoverflow.com/questions/53002709/why-var-1-variable-prints-var-instead-of-raising-the-exception-typeer
-                if isinstance( args, dict ):
+                if isinstance( args, MutableMapping ):
                     new_msg = self.msg % args
 
                     if new_msg == self.msg:
