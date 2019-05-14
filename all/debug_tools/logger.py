@@ -312,6 +312,7 @@ class Debugger(Logger):
             "stderr": False,
             "stdout": False,
             "fast": False,
+            "stream": None,
         }
 
     def newline(self, debug_level=1, count=1):
@@ -797,6 +798,9 @@ class Debugger(Logger):
                                 gains dropping from about 10 seconds to about 7 seconds each
                                 10.000.000 log calls, when the logging debug level is set as
                                 disabled.
+
+            @param `stream`     (default sys.stderr), an file like object to the StreamHandler use
+                                to print things when outputting results.
         """
         self._setup( file=file, mode=mode, delete=delete, date=date, level=level,
                 function=function, name=name, time=time, msecs=msecs, tick=tick,
@@ -865,7 +869,7 @@ class Debugger(Logger):
 
             try:
 
-                self._stream = logging.StreamHandler()
+                self._stream = logging.StreamHandler( arguments['stream'] )
                 self._stream.formatter = self.full_formatter
 
             except Exception:
