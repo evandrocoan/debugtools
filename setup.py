@@ -9,15 +9,15 @@ except ImportError:
     # Release process setup see:
     # https://github.com/pypa/twine
     #
-    # Run pip install --user keyring
-    #
-    # Run on cmd.exe and then type your password when prompted
-    # keyring set https://upload.pypi.org/legacy/ your-username
+    # To setup password cache:
+    # sudo apt-get install python3-dbus
+    # pip3 install --user keyring
+    # python3 -m keyring set https://test.pypi.org/legacy/ your-username
     #
     # Run this to build the `dist/PACKAGE_NAME-xxx.tar.gz` file
     #     rm -rf ./dist && python3 setup.py sdist
     #
-    # Run this to build & upload it to `pypi`, type addons_zz when prompted.
+    # Run this to build & upload it to `pypi`, type your account name when prompted.
     #     twine upload dist/*
     #
     # All in one command:
