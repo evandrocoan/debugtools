@@ -80,14 +80,8 @@ except ImportError:
     from debug_tools import utilities
     from debug_tools import testing_utilities
 
+    from debug_tools.std_capture import TeeNoFile
 
-# Relative imports in Python 3
-# https://stackoverflow.com/questions/16981921/relative-imports-in-python-3
-try:
-    from .std_capture import TeeNoFile
-
-except (ImportError, ValueError, SystemError):
-    from std_capture import TeeNoFile
 
 # We need to keep a global reference to this because the logging module internally grabs an
 # reference to the first `sys.strerr` it can get its hands on it.
@@ -341,7 +335,7 @@ class StdErrUnitTests(testing_utilities.MultipleAssertionFailures):
                 log_traceback( error )
 
         regex_pattern = re.compile( r"File \".*\"," )
-        output = _stderr.file_contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- ", log )
+        output = _stderr.file_contents( log, r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
 
         self.assertEqual( utilities.wrap_text( """\
                 testing.main_unit_tests.test_exception_throwing_from_file:{} - I am catching you...
@@ -358,7 +352,7 @@ class StdErrUnitTests(testing_utilities.MultipleAssertionFailures):
         log.setup( "", delete=False )
         log( 1, 'No LSP clients enabled.' )
 
-        output = _stderr.file_contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- ", log )
+        output = _stderr.file_contents( log, r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
         self.assertEqual( "LSP.boot.test_infinity_recursion_fix:{} - No LSP clients enabled.".format( line + 3 ), output )
 
 
@@ -381,7 +375,7 @@ class StdOutUnitTests(testing_utilities.MultipleAssertionFailures):
         getLogger( 127, "testing.main_unit_tests", create_test_file='main_unit_tests.txt', stdout=True )
 
         print("Std out logging capture test!")
-        output = _stdout.file_contents( r"", log )
+        output = _stdout.file_contents( log, r"" )
 
         self.assertEqual( "Std out logging capture test!", output )
 
@@ -397,7 +391,7 @@ class StdOutUnitTests(testing_utilities.MultipleAssertionFailures):
         sys.stdout.write("std OUT After adding StreamHandler\n")
         sys.stderr.write("std ERR After adding StreamHandler\n")
 
-        file_output = _stdout.file_contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- ", log )
+        file_output = _stdout.file_contents( log, r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
         stderr_contents = _stderr.contents( r"" )
         stdout_contents = _stdout.contents( r"" )
 
