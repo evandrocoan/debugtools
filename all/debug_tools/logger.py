@@ -147,6 +147,7 @@ class Debugger(Logger):
 
         # Forces this debug_level into all children
         self._force_debug = None
+        self.trimname = 0
 
         # Enable debug messages: (bitwise)
         # 0 - Disabled debugging
@@ -313,6 +314,7 @@ class Debugger(Logger):
             "stdout": False,
             "fast": False,
             "stream": None,
+            "trimname": 0,
         }
 
     def newline(self, debug_level=1, count=1):
@@ -801,6 +803,10 @@ class Debugger(Logger):
 
             @param `stream`     (default sys.stderr), an file like object to the StreamHandler use
                                 to print things when outputting results.
+
+            @param `trimname` (default 0), Remove these nth characters from the logger name
+                                while creating the log record to print on the screen. Useful to keep
+                                several loggers grouped together but hide their parent.
         """
         self._setup( file=file, mode=mode, delete=delete, date=date, level=level,
                 function=function, name=name, time=time, msecs=msecs, tick=tick,
@@ -835,6 +841,9 @@ class Debugger(Logger):
                 if value != arguments[kwarg]:
                     has_changes = True
                     arguments[kwarg] = value
+
+                    if kwarg == 'trimname':
+                        self.trimname = len( value ) + 1
 
         if has_changes \
                 or handlers \
@@ -1307,7 +1316,7 @@ class Debugger(Logger):
             A factory method which can be overridden in subclasses to create
             specialized LogRecords.
             """
-            rv = SmartLogRecord(name, level, fn, lno, msg, args, exc_info, func)
+            rv = SmartLogRecord(name[self.trimname:], level, fn, lno, msg, args, exc_info, func)
             if extra is not None:
                 for key in extra:
                     if (key in ["message", "asctime"]) or (key in rv.__dict__):
@@ -1322,7 +1331,7 @@ class Debugger(Logger):
             A factory method which can be overridden in subclasses to create
             specialized LogRecords.
             """
-            rv = SmartLogRecord(name, level, fn, lno, msg, args, exc_info, func, sinfo)
+            rv = SmartLogRecord(name[self.trimname:], level, fn, lno, msg, args, exc_info, func, sinfo)
             if extra is not None:
                 for key in extra:
                     if (key in ["message", "asctime"]) or (key in rv.__dict__):
