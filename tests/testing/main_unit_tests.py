@@ -53,11 +53,10 @@ if sys.version_info[0] < 3:
 try:
     import sublime_plugin
 
-    import debug_tools.logger
-    import debug_tools.testing_utilities
-
+    import debug_tools
     from debug_tools import utilities
     from debug_tools import testing_utilities
+    from debug_tools import TeeNoFile
 
     # Import and reload the debugger
     sublime_plugin.reload_plugin( "debug_tools.logger" )
@@ -74,13 +73,10 @@ except ImportError:
     # Import the debug tools
     assert_path( os.path.join( os.path.dirname( os.path.dirname( os.path.dirname( os.path.realpath( __file__ ) ) ) ), 'all' ) )
 
-    import debug_tools.logger
-    import debug_tools.testing_utilities
-
+    import debug_tools
     from debug_tools import utilities
     from debug_tools import testing_utilities
-
-    from debug_tools.std_capture import TeeNoFile
+    from debug_tools import TeeNoFile
 
 
 # We need to keep a global reference to this because the logging module internally grabs an
