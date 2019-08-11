@@ -50,9 +50,9 @@ try:
     from debug_tools import testing_utilities
 
     # Import and reload the debugger
-    sublime_plugin.reload_plugin( "debug_tools.logger" )
-    sublime_plugin.reload_plugin( "debug_tools.utilities" )
-    sublime_plugin.reload_plugin( "debug_tools.testing_utilities" )
+    # sublime_plugin.reload_plugin( "debug_tools.logger" )
+    # sublime_plugin.reload_plugin( "debug_tools.utilities" )
+    # sublime_plugin.reload_plugin( "debug_tools.testing_utilities" )
 
 except ImportError:
 
