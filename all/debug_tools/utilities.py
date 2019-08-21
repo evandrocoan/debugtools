@@ -48,6 +48,7 @@ import time
 import random
 
 import threading
+import traceback
 import textwrap
 
 from collections import OrderedDict
@@ -635,11 +636,24 @@ def wrap_text(text, wrap=0, trim_tabs=None, trim_spaces=None, trim_lines=None,
     return dedent_lines
 
 
-def get_representation(objectname, ignore=[], emquote=False, repr=repr):
+def recursive_get_representation(*args, recursive_depth=2, **kwargs):
+    """ It attempt to detect the `get_representation` function was called recursively
+    It can happen when one attribute contains the other and vice-versa.
     """
-        Given a object, iterating through all its public attributes and return then as a string
-        representation.
+    # https://stackoverflow.com/questions/7900345/can-a-python-method-check-if-it-has-been-called-from-within-itself
+    is_recursive = len(
+            [ stack[-3]
+                for stack in traceback.extract_stack()
+                    if stack[2] == 'recursive_get_representation'
+            ]
+        ) > recursive_depth
 
+    kwargs['is_recursive'] = is_recursive
+    return get_representation(*args, **kwargs)
+
+
+def get_representation(objectname, ignore=[], emquote=False, repr=repr, is_recursive=False):
+    """ Iterating through all its public attributes and return then as a string representation
         `ignore` a list of attributes to be ignored
         `emquote` if True, puts the attributes values inside single or double quotes accordingly.
         `repr` is the callback to call recursively on nested objects, can be either `repr` or `str`.
@@ -659,10 +673,14 @@ def get_representation(objectname, ignore=[], emquote=False, repr=repr):
     if hasattr( objectname, '__dict__' ):
         valid_attributes = objectname.__dict__.keys()
 
-        for attribute in valid_attributes:
+        if is_recursive:
+            clean_attributes.append( "{}".format( '<recursive>' ) )
 
-            if not attribute.startswith( '_' ) and attribute not in ignore:
-                clean_attributes.append( "{}: {}".format( attribute, pack_attribute( objectname.__dict__[attribute] ) ) )
+        else:
+            for attribute in valid_attributes:
+
+                if not attribute.startswith( '_' ) and attribute not in ignore:
+                    clean_attributes.append( "{}: {}".format( attribute, pack_attribute( objectname.__dict__[attribute] ) ) )
 
         return "%s %s;" % ( objectname.__class__.__name__, ", ".join( clean_attributes ) )
 
