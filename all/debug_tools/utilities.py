@@ -639,9 +639,11 @@ def wrap_text(text, wrap=0, trim_tabs=None, trim_spaces=None, trim_lines=None,
 def recursive_get_representation(*args, **kwargs):
     """ It attempt to detect the `get_representation` function was called recursively
     It can happen when one attribute contains the other and vice-versa.
+
+    kwargs `recursive_depth=2` how many recursions levels to dive in
     """
     # https://stackoverflow.com/questions/22435992/python-trying-to-place-keyword-arguments-after-args
-    recursive_depth = kwargs.get( "recursive_depth", 2 )
+    recursive_depth = kwargs.pop( "recursive_depth", 2 )
 
     # https://stackoverflow.com/questions/7900345/can-a-python-method-check-if-it-has-been-called-from-within-itself
     is_recursive = len(
