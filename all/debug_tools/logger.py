@@ -1557,7 +1557,12 @@ def _get_debug_level(debug_level, logger_name):
         else:
 
             if not isinstance( debug_level, int ):
-                raise ValueError( "The variable `debug_level` must be an instance of int, instead of `%s`." % debug_level )
+
+                try:
+                    debug_level = int( debug_level )
+
+                except Exception as error:
+                    raise ValueError( "The variable `debug_level` must be an instance of int, instead of `%s` (%s)." % ( debug_level, error ) )
 
     else:
 
