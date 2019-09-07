@@ -120,7 +120,7 @@ class TestingUtilities(unittest.TestCase):
     maxDiff = None
 
     ## Whether `characters diff=0`, `words diff=1` or `lines diff=2` will be used
-    diffMode = 0
+    diffMode = 1
 
     def __init__(self, *args, **kwargs):
         diffMode = kwargs.pop('diffMode', -1)
