@@ -377,25 +377,22 @@ class Debugger(Logger):
 
         if self._debugger_level & debug_level != 0:
             self = self.active or self
-            _file = self._file
-            _stream = self._stream
 
-            if _stream:
-                stream_formatter = _stream.formatter
-                _stream.formatter = self.clean_formatter
+            old_formatters = {}
+            _acquireLock()
+            try:
+                for handler in self.handlers:
+                    old_formatters[handler] = handler.formatter
+                    handler.formatter = self.clean_formatter
 
-            if _file:
-                file_formatter = _file.formatter
-                _file.formatter = self.clean_formatter
+            finally:
+                _releaseLock()
 
             kwargs['debug_level'] = debug_level
             self._log_clean( msg, args, kwargs )
 
-            if self._stream:
-                _stream.formatter = stream_formatter
-
-            if self._file:
-                _file.formatter = file_formatter
+            for handler in old_formatters:
+                handler.formatter = old_formatters[handler]
 
     def clean(self, debug_level=1, msg=EMPTY_KWARG, *args, **kwargs):
         """
@@ -411,47 +408,41 @@ class Debugger(Logger):
 
                 if self._debugger_level & 1 != 0:
                     self = self.active or self
-                    _file = self._file
-                    _stream = self._stream
 
-                    if _stream:
-                        stream_formatter = _stream.formatter
-                        _stream.formatter = self.clean_formatter
+                    old_formatters = {}
+                    _acquireLock()
+                    try:
+                        for handler in self.handlers:
+                            old_formatters[handler] = handler.formatter
+                            handler.formatter = self.clean_formatter
 
-                    if _file:
-                        file_formatter = _file.formatter
-                        _file.formatter = self.clean_formatter
+                    finally:
+                        _releaseLock()
 
                     kwargs['debug_level'] = 1
                     self._log_clean( debug_level, args, kwargs )
 
-                    if self._stream:
-                        _stream.formatter = stream_formatter
-
-                    if self._file:
-                        _file.formatter = file_formatter
+                    for handler in old_formatters:
+                        handler.formatter = old_formatters[handler]
 
             elif self._debugger_level & debug_level != 0:
                 self = self.active or self
-                _file = self._file
-                _stream = self._stream
 
-                if _stream:
-                    stream_formatter = _stream.formatter
-                    _stream.formatter = self.clean_formatter
+                old_formatters = {}
+                _acquireLock()
+                try:
+                    for handler in self.handlers:
+                        old_formatters[handler] = handler.formatter
+                        handler.formatter = self.clean_formatter
 
-                if _file:
-                    file_formatter = _file.formatter
-                    _file.formatter = self.clean_formatter
+                finally:
+                    _releaseLock()
 
                 kwargs['debug_level'] = debug_level
                 self._log_clean( msg, args, kwargs )
 
-                if self._stream:
-                    _stream.formatter = stream_formatter
-
-                if self._file:
-                    _file.formatter = file_formatter
+                for handler in old_formatters:
+                    handler.formatter = old_formatters[handler]
 
         else:
 
@@ -459,71 +450,62 @@ class Debugger(Logger):
 
                 if msg is EMPTY_KWARG:
                     self = self.active or self
-                    _file = self._file
-                    _stream = self._stream
 
-                    if _stream:
-                        stream_formatter = _stream.formatter
-                        _stream.formatter = self.clean_formatter
+                    old_formatters = {}
+                    _acquireLock()
+                    try:
+                        for handler in self.handlers:
+                            old_formatters[handler] = handler.formatter
+                            handler.formatter = self.clean_formatter
 
-                    if _file:
-                        file_formatter = _file.formatter
-                        _file.formatter = self.clean_formatter
+                    finally:
+                        _releaseLock()
 
                     kwargs['debug_level'] = 1
                     self._log_clean( debug_level, args, kwargs )
 
-                    if self._stream:
-                        _stream.formatter = stream_formatter
-
-                    if self._file:
-                        _file.formatter = file_formatter
+                    for handler in old_formatters:
+                        handler.formatter = old_formatters[handler]
 
                 else:
                     self = self.active or self
-                    _file = self._file
-                    _stream = self._stream
 
-                    if _stream:
-                        stream_formatter = _stream.formatter
-                        _stream.formatter = self.clean_formatter
+                    old_formatters = {}
+                    _acquireLock()
+                    try:
+                        for handler in self.handlers:
+                            old_formatters[handler] = handler.formatter
+                            handler.formatter = self.clean_formatter
 
-                    if _file:
-                        file_formatter = _file.formatter
-                        _file.formatter = self.clean_formatter
+                    finally:
+                        _releaseLock()
 
                     kwargs['debug_level'] = 1
                     self._log_clean( debug_level, (msg,) + args, kwargs )
 
-                    if self._stream:
-                        _stream.formatter = stream_formatter
-
-                    if self._file:
-                        _file.formatter = file_formatter
+                    for handler in old_formatters:
+                        handler.formatter = old_formatters[handler]
 
     def _fast_basic(self, debug_level=1, msg=EMPTY_KWARG, *args, **kwargs):
 
         if self._debugger_level & debug_level != 0:
             self = self.active or self
-            _file = self._file
-            _stream = self._stream
 
-            if _stream:
-                stream_formatter = _stream.formatter
-                _stream.formatter = self.basic_formatter
+            old_formatters = {}
+            _acquireLock()
+            try:
+                for handler in self.handlers:
+                    old_formatters[handler] = handler.formatter
+                    handler.formatter = self.basic_formatter
 
-            if _file:
-                file_formatter = _file.formatter
-                _file.formatter = self.basic_formatter
+            finally:
+                _releaseLock()
 
             kwargs['debug_level'] = debug_level
             self._log( DEBUG, msg, args, **kwargs )
 
-            if _stream:
-                _stream.formatter = stream_formatter
-
-            if _file:
-                _file.formatter = file_formatter
+            for handler in old_formatters:
+                handler.formatter = old_formatters[handler]
 
     def basic(self, debug_level=1, msg=EMPTY_KWARG, *args, **kwargs):
         """
@@ -540,49 +522,42 @@ class Debugger(Logger):
             if msg is EMPTY_KWARG:
 
                 if self._debugger_level & 1 != 0:
-
                     self = self.active or self
-                    _file = self._file
-                    _stream = self._stream
 
-                    if _stream:
-                        stream_formatter = _stream.formatter
-                        _stream.formatter = self.basic_formatter
+                    old_formatters = {}
+                    _acquireLock()
+                    try:
+                        for handler in self.handlers:
+                            old_formatters[handler] = handler.formatter
+                            handler.formatter = self.basic_formatter
 
-                    if _file:
-                        file_formatter = _file.formatter
-                        _file.formatter = self.basic_formatter
+                    finally:
+                        _releaseLock()
 
                     kwargs['debug_level'] = 1
                     self._log( DEBUG, debug_level, args, **kwargs )
 
-                    if _stream:
-                        _stream.formatter = stream_formatter
-
-                    if _file:
-                        _file.formatter = file_formatter
+                    for handler in old_formatters:
+                        handler.formatter = old_formatters[handler]
 
             elif self._debugger_level & debug_level != 0:
                 self = self.active or self
-                _file = self._file
-                _stream = self._stream
 
-                if _stream:
-                    stream_formatter = _stream.formatter
-                    _stream.formatter = self.basic_formatter
+                old_formatters = {}
+                _acquireLock()
+                try:
+                    for handler in self.handlers:
+                        old_formatters[handler] = handler.formatter
+                        handler.formatter = self.basic_formatter
 
-                if _file:
-                    file_formatter = _file.formatter
-                    _file.formatter = self.basic_formatter
+                finally:
+                    _releaseLock()
 
                 kwargs['debug_level'] = debug_level
                 self._log( DEBUG, msg, args, **kwargs )
 
-                if _stream:
-                    _stream.formatter = stream_formatter
-
-                if _file:
-                    _file.formatter = file_formatter
+                for handler in old_formatters:
+                    handler.formatter = old_formatters[handler]
 
         else:
 
@@ -590,47 +565,41 @@ class Debugger(Logger):
 
                 if msg is EMPTY_KWARG:
                     self = self.active or self
-                    _file = self._file
-                    _stream = self._stream
 
-                    if _stream:
-                        stream_formatter = _stream.formatter
-                        _stream.formatter = self.basic_formatter
+                    old_formatters = {}
+                    _acquireLock()
+                    try:
+                        for handler in self.handlers:
+                            old_formatters[handler] = handler.formatter
+                            handler.formatter = self.basic_formatter
 
-                    if _file:
-                        file_formatter = _file.formatter
-                        _file.formatter = self.basic_formatter
+                    finally:
+                        _releaseLock()
 
                     kwargs['debug_level'] = 1
                     self._log( DEBUG, debug_level, args, **kwargs )
 
-                    if _stream:
-                        _stream.formatter = stream_formatter
-
-                    if _file:
-                        _file.formatter = file_formatter
+                    for handler in old_formatters:
+                        handler.formatter = old_formatters[handler]
 
                 else:
                     self = self.active or self
-                    _file = self._file
-                    _stream = self._stream
 
-                    if _stream:
-                        stream_formatter = _stream.formatter
-                        _stream.formatter = self.basic_formatter
+                    old_formatters = {}
+                    _acquireLock()
+                    try:
+                        for handler in self.handlers:
+                            old_formatters[handler] = handler.formatter
+                            handler.formatter = self.basic_formatter
 
-                    if _file:
-                        file_formatter = _file.formatter
-                        _file.formatter = self.basic_formatter
+                    finally:
+                        _releaseLock()
 
                     kwargs['debug_level'] = 1
                     self._log( DEBUG, debug_level, (msg,) + args, **kwargs )
 
-                    if _stream:
-                        _stream.formatter = stream_formatter
-
-                    if _file:
-                        _file.formatter = file_formatter
+                    for handler in old_formatters:
+                        handler.formatter = old_formatters[handler]
 
     _old_clean = clean
     _old_basic = basic
@@ -978,24 +947,21 @@ class Debugger(Logger):
 
                 new_formatter = self._create_formatter( new_arguments )
 
-                # for
+                old_formatters = {}
+                _acquireLock()
+                try:
+                    for handler in self.handlers:
+                        old_formatters[handler] = handler.formatter
+                        handler.formatter = new_formatter
 
-                if _stream:
-                    stream_formatter = _stream.formatter
-                    _stream.formatter = new_formatter
-
-                if _file:
-                    file_formatter = _file.formatter
-                    _file.formatter = new_formatter
+                finally:
+                    _releaseLock()
 
                 super( Debugger, self )._log( level, msg, args, exc_info, extra )
                 self._last_tick = self._current_tick
 
-                if _stream:
-                    _stream.formatter = stream_formatter
-
-                if _file:
-                    _file.formatter = file_formatter
+                for handler in old_formatters:
+                    handler.formatter = old_formatters[handler]
 
             else:
                 super( Debugger, self )._log( level, msg, args, exc_info, extra )
@@ -1021,22 +987,21 @@ class Debugger(Logger):
 
                 new_formatter = self._create_formatter( new_arguments )
 
-                if _stream:
-                    stream_formatter = _stream.formatter
-                    _stream.formatter = new_formatter
+                old_formatters = {}
+                _acquireLock()
+                try:
+                    for handler in self.handlers:
+                        old_formatters[handler] = handler.formatter
+                        handler.formatter = new_formatter
 
-                if _file:
-                    file_formatter = _file.formatter
-                    _file.formatter = new_formatter
+                finally:
+                    _releaseLock()
 
                 super()._log( level, msg, args, exc_info, extra, stack_info )
                 self._last_tick = self._current_tick
 
-                if _stream:
-                    _stream.formatter = stream_formatter
-
-                if _file:
-                    _file.formatter = file_formatter
+                for handler in old_formatters:
+                    handler.formatter = old_formatters[handler]
 
             else:
                 super()._log( level, msg, args, exc_info, extra, stack_info )
