@@ -94,6 +94,16 @@ except( ImportError, ValueError ):
 from .stderr_replacement import stderr_replacement
 from .stdout_replacement import stdout_replacement
 
+changeable_setup_arguments = (
+    "date",
+    "levels",
+    "function",
+    "name",
+    "time",
+    "tick",
+    "separator",
+    "msecs",
+)
 
 is_python2 = False
 EMPTY_KWARG = -sys.maxsize
@@ -877,7 +887,6 @@ class Debugger(Logger):
             _acquireLock()
 
             try:
-
                 self._stream = logging.StreamHandler( arguments['stream'] )
                 self._stream.formatter = self.full_formatter
 
@@ -951,25 +960,85 @@ class Debugger(Logger):
 
     if is_python2:
 
-        def _log(self, level, msg, args, exc_info=None, extra={}, stack_info=False, debug_level=0):
+        def _log(self, level, msg, args, exc_info=None, extra={}, stack_info=False, debug_level=0, **kwargs):
             self._current_tick = timeit.default_timer()
 
             debug_level = "(%d)" % debug_level if debug_level else ""
             extra.update( {"debugLevel": debug_level, "tickDifference": self._current_tick - self._last_tick} )
 
-            super( Debugger, self )._log( level, msg, args, exc_info, extra )
-            self._last_tick = self._current_tick
+            if any( setup_arg in kwargs for setup_arg in changeable_setup_arguments ):
+                self = self.active or self
+                _file = self._file
+                _stream = self._stream
+
+                new_arguments = dict( self._arguments )
+
+                for setup_arg in changeable_setup_arguments:
+                    new_arguments[setup_arg] = kwargs.pop( setup_arg, new_arguments.get( setup_arg ) )
+
+                new_formatter = self._create_formatter( new_arguments )
+
+                if _stream:
+                    stream_formatter = _stream.formatter
+                    _stream.formatter = new_formatter
+
+                if _file:
+                    file_formatter = _file.formatter
+                    _file.formatter = new_formatter
+
+                super( Debugger, self )._log( level, msg, args, exc_info, extra )
+                self._last_tick = self._current_tick
+
+                if _stream:
+                    _stream.formatter = stream_formatter
+
+                if _file:
+                    _file.formatter = file_formatter
+
+            else:
+                super( Debugger, self )._log( level, msg, args, exc_info, extra )
+                self._last_tick = self._current_tick
 
     else:
 
-        def _log(self, level, msg, args, exc_info=None, extra={}, stack_info=False, debug_level=0):
+        def _log(self, level, msg, args, exc_info=None, extra={}, stack_info=False, debug_level=0, **kwargs):
             self._current_tick = timeit.default_timer()
 
             debug_level = "(%d)" % debug_level if debug_level else ""
             extra.update( {"debugLevel": debug_level, "tickDifference": self._current_tick - self._last_tick} )
 
-            super()._log( level, msg, args, exc_info, extra, stack_info )
-            self._last_tick = self._current_tick
+            if any( setup_arg in kwargs for setup_arg in changeable_setup_arguments ):
+                self = self.active or self
+                _file = self._file
+                _stream = self._stream
+
+                new_arguments = dict( self._arguments )
+
+                for setup_arg in changeable_setup_arguments:
+                    new_arguments[setup_arg] = kwargs.pop( setup_arg, new_arguments.get( setup_arg ) )
+
+                new_formatter = self._create_formatter( new_arguments )
+
+                if _stream:
+                    stream_formatter = _stream.formatter
+                    _stream.formatter = new_formatter
+
+                if _file:
+                    file_formatter = _file.formatter
+                    _file.formatter = new_formatter
+
+                super()._log( level, msg, args, exc_info, extra, stack_info )
+                self._last_tick = self._current_tick
+
+                if _stream:
+                    _stream.formatter = stream_formatter
+
+                if _file:
+                    _file.formatter = file_formatter
+
+            else:
+                super()._log( level, msg, args, exc_info, extra, stack_info )
+                self._last_tick = self._current_tick
 
     def _log_clean(self, msg, args, kwargs):
         record = CleanLogRecord( self.level, self.name, msg, args, kwargs )
@@ -988,29 +1057,33 @@ class Debugger(Logger):
                 raise ValueError( "Error: The formatter %s must be an instance of logging.Formatter" % arguments['formatter'] )
 
         else:
-            tick  = cls.getFormat( arguments, 'tick', "%(tickDifference).2e" )
-            msecs = cls.getFormat( arguments, 'msecs', "%(msecs)010.6f", tick )
-            levels = cls.getFormat( arguments, 'levels', "%(levelname)s%(debugLevel)s" )
+            return cls._create_formatter( arguments )
 
-            time_format = cls.getFormat( arguments, 'time', "%H:%M:%S", not msecs )
-            msecs = ":" + msecs if msecs and arguments['time'] else msecs
+    @classmethod
+    def _create_formatter(cls, arguments):
+        tick  = cls.getFormat( arguments, 'tick', "%(tickDifference).2e" )
+        msecs = cls.getFormat( arguments, 'msecs', "%(msecs)010.6f", tick )
+        levels = cls.getFormat( arguments, 'levels', "%(levelname)s%(debugLevel)s" )
 
-            date_format = cls.getFormat( arguments, 'date', "%Y-%m-%d", time_format )
-            date_format += time_format
-            time = "%(asctime)s" if date_format else ""
+        time_format = cls.getFormat( arguments, 'time', "%H:%M:%S", not msecs and tick )
+        msecs = ":" + msecs if msecs and arguments['time'] else msecs
 
-            separator_format = cls.getFormat( arguments, 'separator', " - " )
-            function = cls.getFormat( arguments, 'function', "%(funcName)s:%(lineno)d", levels )
-            name     = cls.getFormat( arguments, 'name', "%(name)s", levels and not function )
+        date_format = cls.getFormat( arguments, 'date', "%Y-%m-%d", time_format )
+        date_format += time_format
+        time = "%(asctime)s" if date_format else ""
 
-            name += "." if name and function else ""
-            extra_spacing = separator_format if ( name or function or levels ) and ( time or msecs or tick ) else ""
-            separator = separator_format if time or msecs or tick or name or function or levels else ""
+        separator_format = cls.getFormat( arguments, 'separator', " - " )
+        function = cls.getFormat( arguments, 'function', "%(funcName)s:%(lineno)d", levels )
+        name     = cls.getFormat( arguments, 'name', "%(name)s", levels and not function )
 
-            # print("time '%s', msecs '%s', tick '%s', extra_spacing '%s', name '%s', function '%s', levels '%s', separator '%s' date_format '%s'" % ( time, msecs, tick, extra_spacing, name, function, levels, separator, date_format ) )
+        name += "." if name and function else ""
+        extra_spacing = separator_format if ( name or function or levels ) and ( time or msecs or tick ) else ""
+        separator = separator_format if time or msecs or tick or name or function or levels else ""
 
-            return logging.Formatter( "{}{}{}{}{}{}{}{}%(message)s".format(
-                    time, msecs, tick, extra_spacing, name, function, levels, separator ), date_format )
+        # print("time '%s', msecs '%s', tick '%s', extra_spacing '%s', name '%s', function '%s', levels '%s', separator '%s' date_format '%s'" % ( time, msecs, tick, extra_spacing, name, function, levels, separator, date_format ) )
+
+        return logging.Formatter( "{}{}{}{}{}{}{}{}%(message)s".format(
+                time, msecs, tick, extra_spacing, name, function, levels, separator ), date_format )
 
     @staticmethod
     def getFormat(arguments, setting, default, next_parameter=""):
