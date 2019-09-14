@@ -391,8 +391,8 @@ class Debugger(Logger):
             kwargs['debug_level'] = debug_level
             self._log_clean( msg, args, kwargs )
 
-            for handler in old_formatters:
-                handler.formatter = old_formatters[handler]
+            for handler, formatter in old_formatters.items():
+                handler.formatter = formatter
 
     def clean(self, debug_level=1, msg=EMPTY_KWARG, *args, **kwargs):
         """
@@ -422,8 +422,8 @@ class Debugger(Logger):
                     kwargs['debug_level'] = 1
                     self._log_clean( debug_level, args, kwargs )
 
-                    for handler in old_formatters:
-                        handler.formatter = old_formatters[handler]
+                    for handler, formatter in old_formatters.items():
+                        handler.formatter = formatter
 
             elif self._debugger_level & debug_level != 0:
                 self = self.active or self
@@ -441,8 +441,8 @@ class Debugger(Logger):
                 kwargs['debug_level'] = debug_level
                 self._log_clean( msg, args, kwargs )
 
-                for handler in old_formatters:
-                    handler.formatter = old_formatters[handler]
+                for handler, formatter in old_formatters.items():
+                    handler.formatter = formatter
 
         else:
 
@@ -464,8 +464,8 @@ class Debugger(Logger):
                     kwargs['debug_level'] = 1
                     self._log_clean( debug_level, args, kwargs )
 
-                    for handler in old_formatters:
-                        handler.formatter = old_formatters[handler]
+                    for handler, formatter in old_formatters.items():
+                        handler.formatter = formatter
 
                 else:
                     self = self.active or self
@@ -483,8 +483,8 @@ class Debugger(Logger):
                     kwargs['debug_level'] = 1
                     self._log_clean( debug_level, (msg,) + args, kwargs )
 
-                    for handler in old_formatters:
-                        handler.formatter = old_formatters[handler]
+                    for handler, formatter in old_formatters.items():
+                        handler.formatter = formatter
 
     def _fast_basic(self, debug_level=1, msg=EMPTY_KWARG, *args, **kwargs):
 
@@ -504,8 +504,8 @@ class Debugger(Logger):
             kwargs['debug_level'] = debug_level
             self._log( DEBUG, msg, args, **kwargs )
 
-            for handler in old_formatters:
-                handler.formatter = old_formatters[handler]
+            for handler, formatter in old_formatters.items():
+                handler.formatter = formatter
 
     def basic(self, debug_level=1, msg=EMPTY_KWARG, *args, **kwargs):
         """
@@ -537,8 +537,8 @@ class Debugger(Logger):
                     kwargs['debug_level'] = 1
                     self._log( DEBUG, debug_level, args, **kwargs )
 
-                    for handler in old_formatters:
-                        handler.formatter = old_formatters[handler]
+                    for handler, formatter in old_formatters.items():
+                        handler.formatter = formatter
 
             elif self._debugger_level & debug_level != 0:
                 self = self.active or self
@@ -556,8 +556,8 @@ class Debugger(Logger):
                 kwargs['debug_level'] = debug_level
                 self._log( DEBUG, msg, args, **kwargs )
 
-                for handler in old_formatters:
-                    handler.formatter = old_formatters[handler]
+                for handler, formatter in old_formatters.items():
+                    handler.formatter = formatter
 
         else:
 
@@ -579,8 +579,8 @@ class Debugger(Logger):
                     kwargs['debug_level'] = 1
                     self._log( DEBUG, debug_level, args, **kwargs )
 
-                    for handler in old_formatters:
-                        handler.formatter = old_formatters[handler]
+                    for handler, formatter in old_formatters.items():
+                        handler.formatter = formatter
 
                 else:
                     self = self.active or self
@@ -598,8 +598,8 @@ class Debugger(Logger):
                     kwargs['debug_level'] = 1
                     self._log( DEBUG, debug_level, (msg,) + args, **kwargs )
 
-                    for handler in old_formatters:
-                        handler.formatter = old_formatters[handler]
+                    for handler, formatter in old_formatters.items():
+                        handler.formatter = formatter
 
     _old_clean = clean
     _old_basic = basic
@@ -960,8 +960,8 @@ class Debugger(Logger):
                 super( Debugger, self )._log( level, msg, args, exc_info, extra )
                 self._last_tick = self._current_tick
 
-                for handler in old_formatters:
-                    handler.formatter = old_formatters[handler]
+                for handler, formatter in old_formatters.items():
+                    handler.formatter = formatter
 
             else:
                 super( Debugger, self )._log( level, msg, args, exc_info, extra )
@@ -1000,8 +1000,8 @@ class Debugger(Logger):
                 super()._log( level, msg, args, exc_info, extra, stack_info )
                 self._last_tick = self._current_tick
 
-                for handler in old_formatters:
-                    handler.formatter = old_formatters[handler]
+                for handler, formatter in old_formatters.items():
+                    handler.formatter = formatter
 
             else:
                 super()._log( level, msg, args, exc_info, extra, stack_info )
