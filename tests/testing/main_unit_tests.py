@@ -555,7 +555,7 @@ class SetupFormattingSpacingUnitTests(testing_utilities.MultipleAssertionFailure
         log( 'Something...' )
 
         output = _stderr.contents()
-        self.assertRegex( output,
+        self.assertRegexpMatches( output,
                 r"\d\d:\d\d:\d\d:\d\d\d.\d\d\d\d\d\d \d.\d\de(\+|\-)\d\d - logger.test_default_logger_creation:\d\d\d - Something..." )
 
     def test_not_time(self):
@@ -563,7 +563,7 @@ class SetupFormattingSpacingUnitTests(testing_utilities.MultipleAssertionFailure
         log( 'Something...' )
 
         output = _stderr.contents()
-        self.assertRegex( output,
+        self.assertRegexpMatches( output,
                 r"\d\d\d.\d\d\d\d\d\d \d.\d\de(\+|\-)\d\d - logger.test_not_time:\d\d\d - Something..." )
 
     def test_not_time_and_msecs(self):
@@ -571,7 +571,7 @@ class SetupFormattingSpacingUnitTests(testing_utilities.MultipleAssertionFailure
         log( 'Something...' )
 
         output = _stderr.contents()
-        self.assertRegex( output,
+        self.assertRegexpMatches( output,
                 r"\d.\d\de(\+|\-)\d\d - logger.test_not_time_and_msecs:\d\d\d - Something..." )
 
     def test_not_time_and_msecs_and_tick(self):
@@ -579,7 +579,7 @@ class SetupFormattingSpacingUnitTests(testing_utilities.MultipleAssertionFailure
         log( 'Something...' )
 
         output = _stderr.contents()
-        self.assertRegex( output,
+        self.assertRegexpMatches( output,
                 r"logger.test_not_time_and_msecs_and_tick:\d\d\d - Something..." )
 
     def test_not_time_and_msecs_and_tick_and_name(self):
@@ -587,7 +587,7 @@ class SetupFormattingSpacingUnitTests(testing_utilities.MultipleAssertionFailure
         log( 'Something...' )
 
         output = _stderr.contents()
-        self.assertRegex( output,
+        self.assertRegexpMatches( output,
                 r"test_not_time_and_msecs_and_tick_and_name:\d\d\d - Something..." )
 
     def test_not_time_and_msecs_and_tick_and_name_function(self):
@@ -595,7 +595,7 @@ class SetupFormattingSpacingUnitTests(testing_utilities.MultipleAssertionFailure
         log( 'Something...' )
 
         output = _stderr.contents()
-        self.assertRegex( output,
+        self.assertRegexpMatches( output,
                 r"Something..." )
 
     def test_not_time_and_msecs_and_tick_and_name_function_but_level(self):
@@ -603,7 +603,7 @@ class SetupFormattingSpacingUnitTests(testing_utilities.MultipleAssertionFailure
         log( 'Something...' )
 
         output = _stderr.contents()
-        self.assertRegex( output,
+        self.assertRegexpMatches( output,
                 r"DEBUG\(\d+\) - Something..." )
 
     def test_not_time_and_msecs_and_tick_and_name_function_level_separator(self):
@@ -611,7 +611,7 @@ class SetupFormattingSpacingUnitTests(testing_utilities.MultipleAssertionFailure
         log( 'Something...' )
 
         output = _stderr.contents()
-        self.assertRegex( output,
+        self.assertRegexpMatches( output,
                 r"\d\d\d.\d\d\d\d\d\dDEBUG\(\d+\)Something..." )
 
     def test_not_time_and_msecs_and_tick_and_name_function_level_but_separator(self):
@@ -619,7 +619,7 @@ class SetupFormattingSpacingUnitTests(testing_utilities.MultipleAssertionFailure
         log( 'Something...' )
 
         output = _stderr.contents()
-        self.assertRegex( output,
+        self.assertRegexpMatches( output,
                 r"\d\d\d.\d\d\d\d\d\d DEBUG\(\d+\) Something..." )
 
 
