@@ -376,12 +376,12 @@ class Debugger(Logger):
     def _fast_clean(self, debug_level=1, msg=EMPTY_KWARG, *args, **kwargs):
 
         if self._debugger_level & debug_level != 0:
-            self = self.active or self
+            other = self.active or self
 
             old_formatters = {}
             _acquireLock()
             try:
-                for handler in self.handlers:
+                for handler in other.handlers:
                     old_formatters[handler] = handler.formatter
                     handler.formatter = self.clean_formatter
 
@@ -407,12 +407,12 @@ class Debugger(Logger):
             if msg is EMPTY_KWARG:
 
                 if self._debugger_level & 1 != 0:
-                    self = self.active or self
+                    other = self.active or self
 
                     old_formatters = {}
                     _acquireLock()
                     try:
-                        for handler in self.handlers:
+                        for handler in other.handlers:
                             old_formatters[handler] = handler.formatter
                             handler.formatter = self.clean_formatter
 
@@ -426,12 +426,12 @@ class Debugger(Logger):
                         handler.formatter = formatter
 
             elif self._debugger_level & debug_level != 0:
-                self = self.active or self
+                other = self.active or self
 
                 old_formatters = {}
                 _acquireLock()
                 try:
-                    for handler in self.handlers:
+                    for handler in other.handlers:
                         old_formatters[handler] = handler.formatter
                         handler.formatter = self.clean_formatter
 
@@ -449,12 +449,12 @@ class Debugger(Logger):
             if self._debugger_level & 1 != 0:
 
                 if msg is EMPTY_KWARG:
-                    self = self.active or self
+                    other = self.active or self
 
                     old_formatters = {}
                     _acquireLock()
                     try:
-                        for handler in self.handlers:
+                        for handler in other.handlers:
                             old_formatters[handler] = handler.formatter
                             handler.formatter = self.clean_formatter
 
@@ -468,12 +468,12 @@ class Debugger(Logger):
                         handler.formatter = formatter
 
                 else:
-                    self = self.active or self
+                    other = self.active or self
 
                     old_formatters = {}
                     _acquireLock()
                     try:
-                        for handler in self.handlers:
+                        for handler in other.handlers:
                             old_formatters[handler] = handler.formatter
                             handler.formatter = self.clean_formatter
 
@@ -489,12 +489,12 @@ class Debugger(Logger):
     def _fast_basic(self, debug_level=1, msg=EMPTY_KWARG, *args, **kwargs):
 
         if self._debugger_level & debug_level != 0:
-            self = self.active or self
+            other = self.active or self
 
             old_formatters = {}
             _acquireLock()
             try:
-                for handler in self.handlers:
+                for handler in other.handlers:
                     old_formatters[handler] = handler.formatter
                     handler.formatter = self.basic_formatter
 
@@ -522,12 +522,12 @@ class Debugger(Logger):
             if msg is EMPTY_KWARG:
 
                 if self._debugger_level & 1 != 0:
-                    self = self.active or self
+                    other = self.active or self
 
                     old_formatters = {}
                     _acquireLock()
                     try:
-                        for handler in self.handlers:
+                        for handler in other.handlers:
                             old_formatters[handler] = handler.formatter
                             handler.formatter = self.basic_formatter
 
@@ -541,12 +541,12 @@ class Debugger(Logger):
                         handler.formatter = formatter
 
             elif self._debugger_level & debug_level != 0:
-                self = self.active or self
+                other = self.active or self
 
                 old_formatters = {}
                 _acquireLock()
                 try:
-                    for handler in self.handlers:
+                    for handler in other.handlers:
                         old_formatters[handler] = handler.formatter
                         handler.formatter = self.basic_formatter
 
@@ -564,12 +564,12 @@ class Debugger(Logger):
             if self._debugger_level & 1 != 0:
 
                 if msg is EMPTY_KWARG:
-                    self = self.active or self
+                    other = self.active or self
 
                     old_formatters = {}
                     _acquireLock()
                     try:
-                        for handler in self.handlers:
+                        for handler in other.handlers:
                             old_formatters[handler] = handler.formatter
                             handler.formatter = self.basic_formatter
 
@@ -583,12 +583,12 @@ class Debugger(Logger):
                         handler.formatter = formatter
 
                 else:
-                    self = self.active or self
+                    other = self.active or self
 
                     old_formatters = {}
                     _acquireLock()
                     try:
-                        for handler in self.handlers:
+                        for handler in other.handlers:
                             old_formatters[handler] = handler.formatter
                             handler.formatter = self.basic_formatter
 
@@ -936,10 +936,7 @@ class Debugger(Logger):
             extra.update( {"debugLevel": debug_level, "tickDifference": self._current_tick - self._last_tick} )
 
             if any( setup_arg in kwargs for setup_arg in changeable_setup_arguments ):
-                self = self.active or self
-                _file = self._file
-                _stream = self._stream
-
+                other = self.active or self
                 new_arguments = dict( self._arguments )
 
                 for setup_arg in changeable_setup_arguments:
@@ -950,7 +947,7 @@ class Debugger(Logger):
                 old_formatters = {}
                 _acquireLock()
                 try:
-                    for handler in self.handlers:
+                    for handler in other.handlers:
                         old_formatters[handler] = handler.formatter
                         handler.formatter = new_formatter
 
@@ -976,10 +973,7 @@ class Debugger(Logger):
             extra.update( {"debugLevel": debug_level, "tickDifference": self._current_tick - self._last_tick} )
 
             if any( setup_arg in kwargs for setup_arg in changeable_setup_arguments ):
-                self = self.active or self
-                _file = self._file
-                _stream = self._stream
-
+                other = self.active or self
                 new_arguments = dict( self._arguments )
 
                 for setup_arg in changeable_setup_arguments:
@@ -990,7 +984,7 @@ class Debugger(Logger):
                 old_formatters = {}
                 _acquireLock()
                 try:
-                    for handler in self.handlers:
+                    for handler in other.handlers:
                         old_formatters[handler] = handler.formatter
                         handler.formatter = new_formatter
 
