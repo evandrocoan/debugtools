@@ -978,6 +978,8 @@ class Debugger(Logger):
 
                 new_formatter = self._create_formatter( new_arguments )
 
+                # for
+
                 if _stream:
                     stream_formatter = _stream.formatter
                     _stream.formatter = new_formatter
@@ -1121,10 +1123,16 @@ class Debugger(Logger):
 
             if self._file and self._stream:
                 handler.addFilter( self._file_context_filter )
-                self._has_file_context_filter = True
 
-                for other_handler in self.handlers:
-                    other_handler.addFilter( self._file_context_filter )
+                self._has_file_context_filter = True
+                _acquireLock()
+
+                try:
+                    for other_handler in self.handlers:
+                        other_handler.addFilter( self._file_context_filter )
+
+                finally:
+                    _releaseLock()
 
                 self.handle_stderr( self._stderr, self._stdout )
 
@@ -1143,12 +1151,17 @@ class Debugger(Logger):
         if self._has_file_context_filter:
 
             if not self._stderr and not self._stdout or not self._file or not self._stream:
-
                 handler.removeFilter( self._file_context_filter )
-                self._has_file_context_filter = False
 
-                for other_handler in self.handlers:
-                    other_handler.removeFilter( self._file_context_filter )
+                self._has_file_context_filter = False
+                _acquireLock()
+
+                try:
+                    for other_handler in self.handlers:
+                        other_handler.removeFilter( self._file_context_filter )
+
+                finally:
+                    _releaseLock()
 
                 self.handle_stderr( self._stderr, self._stdout )
 
