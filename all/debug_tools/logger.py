@@ -977,6 +977,7 @@ class Debugger(Logger):
 
     @classmethod
     def _setup_formatter(cls, arguments):
+        # print('arguments', arguments)
 
         if arguments['formatter']:
 
@@ -987,26 +988,26 @@ class Debugger(Logger):
                 raise ValueError( "Error: The formatter %s must be an instance of logging.Formatter" % arguments['formatter'] )
 
         else:
-            # These 2 do not need extra spacing because they are the last of their chain
             tick  = cls.getFormat( arguments, 'tick', "%(tickDifference).2e" )
+            msecs = cls.getFormat( arguments, 'msecs', "%(msecs)010.6f", tick )
             levels = cls.getFormat( arguments, 'levels', "%(levelname)s%(debugLevel)s" )
 
-            separator = cls.getFormat( arguments, 'separator', " - " )
-            msecs = cls.getFormat( arguments, 'msecs', ":%(msecs)010.6f", tick )
-
             time_format = cls.getFormat( arguments, 'time', "%H:%M:%S", not msecs )
+            msecs = ":" + msecs if msecs and arguments['time'] else msecs
+
             date_format = cls.getFormat( arguments, 'date', "%Y-%m-%d", time_format )
-
             date_format += time_format
+            time = "%(asctime)s" if date_format else ""
 
-            time  = "%(asctime)s" if len( date_format ) else ""
-            time += "" if msecs else " " if arguments['time'] else ""
-
+            separator_format = cls.getFormat( arguments, 'separator', " - " )
             function = cls.getFormat( arguments, 'function', "%(funcName)s:%(lineno)d", levels )
             name     = cls.getFormat( arguments, 'name', "%(name)s", levels and not function )
 
             name += "." if name and function else ""
-            extra_spacing = " - " if name or levels or function else ""
+            extra_spacing = separator_format if ( name or function or levels ) and ( time or msecs or tick ) else ""
+            separator = separator_format if time or msecs or tick or name or function or levels else ""
+
+            # print("time '%s', msecs '%s', tick '%s', extra_spacing '%s', name '%s', function '%s', levels '%s', separator '%s' date_format '%s'" % ( time, msecs, tick, extra_spacing, name, function, levels, separator, date_format ) )
 
             return logging.Formatter( "{}{}{}{}{}{}{}{}%(message)s".format(
                     time, msecs, tick, extra_spacing, name, function, levels, separator ), date_format )
