@@ -301,7 +301,7 @@ class Debugger(Logger):
             "mode": 'a',
             "delete": True,
             "date": False,
-            "level": False,
+            "levels": False,
             "function": True,
             "name": True,
             "time": True,
@@ -719,7 +719,7 @@ class Debugger(Logger):
         # print('active._force_debug %s' % active._force_debug)
         # print('logger.debug_level %s' % logger.debug_level)
 
-    def setup(self, file=EMPTY_KWARG, mode=EMPTY_KWARG, delete=EMPTY_KWARG, date=EMPTY_KWARG, level=EMPTY_KWARG,
+    def setup(self, file=EMPTY_KWARG, mode=EMPTY_KWARG, delete=EMPTY_KWARG, date=EMPTY_KWARG, levels=EMPTY_KWARG,
             function=EMPTY_KWARG, name=EMPTY_KWARG, time=EMPTY_KWARG, msecs=EMPTY_KWARG, tick=EMPTY_KWARG,
             separator=EMPTY_KWARG, formatter=EMPTY_KWARG, rotation=EMPTY_KWARG, **kwargs):
         """
@@ -731,7 +731,7 @@ class Debugger(Logger):
             system output after setting up it to log to a file. See the function Debugger::reset()
             for the default parameters values used on this setup utility.
 
-            If the parameters `date`, `level`, `function`, `name`, `time`, `tick` and `msecs` are
+            If the parameters `date`, `levels`, `function`, `name`, `time`, `tick` and `msecs` are
             nonempty strings, their value will be used to defining their configuration formatting.
             For example, if you pass name="%(name)s: " the function name will be displayed as
             `name: `, instead of the default `[name] `.
@@ -761,7 +761,7 @@ class Debugger(Logger):
                                 simultaneously.
 
             @param `date`       if True, add to the `full_formatter` the date on the format `%Y-%m-%d`.
-            @param `level`      if True, add to the `full_formatter` the log levels.
+            @param `levels`      if True, add to the `full_formatter` the log levels.
             @param `function`   if True, add to the `full_formatter` the function name.
             @param `name`       if True, add to the `full_formatter` the logger name.
             @param `time`       if True, add to the `full_formatter` the time on the format `%H:%M:%S:milliseconds.microseconds`.
@@ -808,7 +808,7 @@ class Debugger(Logger):
                                 while creating the log record to print on the screen. Useful to keep
                                 several loggers grouped together but hide their parent.
         """
-        self._setup( file=file, mode=mode, delete=delete, date=date, level=level,
+        self._setup( file=file, mode=mode, delete=delete, date=date, levels=levels,
                 function=function, name=name, time=time, msecs=msecs, tick=tick,
                 separator=separator, formatter=formatter, rotation=rotation, **kwargs )
 
@@ -989,7 +989,7 @@ class Debugger(Logger):
         else:
             # These 2 do not need extra spacing because they are the last of their chain
             tick  = cls.getFormat( arguments, 'tick', "%(tickDifference).2e" )
-            level = cls.getFormat( arguments, 'level', "%(levelname)s%(debugLevel)s" )
+            levels = cls.getFormat( arguments, 'levels', "%(levelname)s%(debugLevel)s" )
 
             separator = cls.getFormat( arguments, 'separator', " - " )
             msecs = cls.getFormat( arguments, 'msecs', ":%(msecs)010.6f", tick )
@@ -1002,14 +1002,14 @@ class Debugger(Logger):
             time  = "%(asctime)s" if len( date_format ) else ""
             time += "" if msecs else " " if arguments['time'] else ""
 
-            function = cls.getFormat( arguments, 'function', "%(funcName)s:%(lineno)d", level )
-            name     = cls.getFormat( arguments, 'name', "%(name)s", level and not function )
+            function = cls.getFormat( arguments, 'function', "%(funcName)s:%(lineno)d", levels )
+            name     = cls.getFormat( arguments, 'name', "%(name)s", levels and not function )
 
             name += "." if name and function else ""
-            extra_spacing = " - " if name or level or function else ""
+            extra_spacing = " - " if name or levels or function else ""
 
             return logging.Formatter( "{}{}{}{}{}{}{}{}%(message)s".format(
-                    time, msecs, tick, extra_spacing, name, function, level, separator ), date_format )
+                    time, msecs, tick, extra_spacing, name, function, levels, separator ), date_format )
 
     @staticmethod
     def getFormat(arguments, setting, default, next_parameter=""):
@@ -1481,9 +1481,9 @@ Debugger.manager.setLoggerClass( Debugger )
 
 
 def getLogger(debug_level=127, logger_name=None,
-            file=EMPTY_KWARG, mode=EMPTY_KWARG, delete=EMPTY_KWARG, date=EMPTY_KWARG, level=EMPTY_KWARG,
+            file=EMPTY_KWARG, mode=EMPTY_KWARG, delete=EMPTY_KWARG, date=EMPTY_KWARG, levels=EMPTY_KWARG,
             function=EMPTY_KWARG, name=EMPTY_KWARG, time=EMPTY_KWARG, msecs=EMPTY_KWARG, tick=EMPTY_KWARG,
-            separator=EMPTY_KWARG, formatter=EMPTY_KWARG, rotation=EMPTY_KWARG, **kwargs):
+            separator=EMPTY_KWARG, formatter=EMPTY_KWARG, rotation=EMPTY_KWARG, level=EMPTY_KWARG, **kwargs):
     """
     Return a logger with the specified name, creating it if necessary.
 
@@ -1494,10 +1494,9 @@ def getLogger(debug_level=127, logger_name=None,
     @param `logger_name` the name of this logger accordingly with the standard logging.Logger()
             documentation.
 
-    @param `logger_level` an integer/string with the enabled log level from logging module
+    @param `level` an integer/string with the enabled log level from logging module
 
-    @param `level` if True, add to the `full_formatter` the log levels. If not a boolean,
-            it should be the initial logging level accordingly to logging::Logger::setLevel(level)
+    @param `levels` if True, add to the `full_formatter` the log levels.
 
     @param from `file` until `**kwargs` there are the named parameters passed to the Debugger.setup()
             member function.
@@ -1510,9 +1509,9 @@ def getLogger(debug_level=127, logger_name=None,
     @seealso Debugger::setup()
     """
     return _getLogger( debug_level, logger_name,
-            file=file, mode=mode, delete=delete, date=date, level=level,
+            file=file, mode=mode, delete=delete, date=date, levels=levels,
             function=function, name=name, time=time, msecs=msecs, tick=tick,
-            separator=separator, formatter=formatter, rotation=rotation, **kwargs )
+            separator=separator, formatter=formatter, rotation=rotation, level=level, **kwargs )
 
 
 def _getLogger(debug_level=127, logger_name=None, **kwargs):
@@ -1532,9 +1531,7 @@ def _getLogger(debug_level=127, logger_name=None, **kwargs):
     logger = Debugger.manager.getLogger( logger_name )
     logger.debug_level = debug_level
 
-    if level != EMPTY_KWARG \
-            and not isinstance( level, bool ):
-
+    if level != EMPTY_KWARG:
         kwargs.pop( "level" )
         logger.setLevel( level )
 
