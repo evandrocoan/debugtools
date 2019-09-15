@@ -38,4 +38,6 @@
 
 from .utilities import SleepEvent
 from .logger import getLogger
+from .version import __version__
 
+from .std_capture import TeeNoFile

@@ -8,12 +8,17 @@ env:
         # - UNITTESTING_TAG="master"
 
 
+# https://github.com/SublimeText/UnitTesting/issues/163
+services:
+  - xvfb
+
+
 # mutliple os matrix
 # https://docs.travis-ci.com/user/multi-os/#Python-example-(unsupported-languages)
 matrix:
     include:
         - os: linux
-          python: 3.3
+          python: 3.4
           language: python
 
         - os: linux
@@ -63,7 +68,7 @@ before_install:
 
     # if $TOXENV is empty
     - if [ -z "$TOXENV" ]; then
-            curl -OL https://raw.githubusercontent.com/evandroforks/UnitTesting/master/sbin/travis.sh;
+            curl -OL https://raw.githubusercontent.com/evandrocoan/UnitTesting/master/sbin/travis.sh;
       fi
 
     - if [ -z "$TOXENV" ] && [ "$TRAVIS_OS_NAME" == "osx" ]; then
@@ -75,18 +80,12 @@ before_install:
             python3 --version;
       fi
 
-    # enable gui, see https://docs.travis-ci.com/user/gui-and-headless-browsers
-    - if [ -z "$TOXENV" ] && [ "$TRAVIS_OS_NAME" == "linux"  ]; then
-            export DISPLAY=:99.0;
-            sh -e /etc/init.d/xvfb start;
-      fi
-
 
 install:
     - if ! [ -z "$TOXENV" ] && [ "$TRAVIS_OS_NAME" == "linux" ]; then
             pip install --disable-pip-version-check tox;
-            pip install --disable-pip-version-check -e .[full];
-            pip install --disable-pip-version-check diff_match_patch;
+            pip install --disable-pip-version-check debug_tools;
+            pip install --disable-pip-version-check -e .[full] --upgrade;
             pip install --disable-pip-version-check diff-match-patch;
             pip list;
       fi
@@ -96,9 +95,9 @@ install:
             brew install python3;
             sudo -H pip3 install --disable-pip-version-check virtualenv;
             pip3 install --disable-pip-version-check tox;
-            pip3 install --disable-pip-version-check -e .[full];
+            pip3 install --disable-pip-version-check debug_tools;
+            pip3 install --disable-pip-version-check -e .[full] --upgrade;
             pip3 install --disable-pip-version-check diff-match-patch;
-            pip3 install --disable-pip-version-check diff_match_patch;
             pip3 list;
       fi
 
@@ -116,7 +115,7 @@ install:
 script:
     # run tests with test coverage report
     - if [ -z "$TOXENV" ]; then
-            sh travis.sh run_tests;
+            sh travis.sh run_tests; sh travis.sh show_full_sublime_text_console $?;
       fi
 
     - if ! [ -z "$TOXENV" ]; then

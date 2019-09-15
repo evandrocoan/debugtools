@@ -48,6 +48,7 @@ import time
 import random
 
 import threading
+import traceback
 import textwrap
 
 from collections import OrderedDict
@@ -574,60 +575,60 @@ def getCleanSpaces(inputText, minimumLength=0, lineCutTrigger="", keepSpaceSepat
     return clean_lines
 
 
-def wrap_text(text, wrap=0, trim_tabs=False, trim_spaces=False, trim_lines=False,
-        trim_plus=True, indent="", single_lines=False):
+def wrap_text(text, wrap=0, trim_tabs=None, trim_spaces=None, trim_lines=None,
+        trim_plus='+', indent="", initial="", single_lines=False):
     """
         1. Remove input text leading common indentation, trailing white spaces
-        2. If `wrap`, wraps big lists on 80 characters.
-        3. If `trim_tabs` replace tabs with 2 spaces.
-        4. If `trim_spaces`, remove leading ' ' symbols
-        5. If `trim_lines`, remove all new line characters.
-        5. If `indent`, the subsequent indent to use.
-        6. If `trim_plus`, remove leading '+' symbols.
-        7. If `single_lines`, remove single new lines but keep consecutive new lines.
+        2. If `wrap`, wraps big lists on 80 characters
+        3. If `trim_tabs`, replace all tabs this value
+        4. If `trim_spaces`, remove this leading symbols
+        5. If `trim_lines`, replace all new line characters by this value
+        5. If `indent`, the subsequent indent to use
+        6. If `trim_plus`, remove this leading symbols
+        7. If `single_lines`, remove single new lines but keep consecutive new lines
     """
     clean_lines = []
 
     if not isinstance( text, str ):
         text = str( text )
 
-    if trim_tabs:
-        text = text.replace( '\t', '  ' )
+    if trim_tabs is not None:
+        text = text.replace( '\t', trim_tabs )
 
     dedent_lines = textwrap.dedent( text ).strip( '\n' )
 
     if trim_spaces and trim_plus:
 
         for line in dedent_lines.split( '\n' ):
-            line = line.rstrip( ' ' ).lstrip( '+' )
+            line = line.rstrip( trim_spaces ).lstrip( trim_plus )
             clean_lines.append( line )
 
     elif trim_spaces:
 
         for line in dedent_lines.split( '\n' ):
-            line = line.rstrip( ' ' )
+            line = line.rstrip( trim_spaces )
             clean_lines.append( line )
 
     elif trim_plus:
 
         for line in dedent_lines.split( '\n' ):
-            line = line.lstrip( '+' )
+            line = line.lstrip( trim_plus )
             clean_lines.append( line )
 
-    if trim_spaces or trim_plus:
+    if trim_spaces is not None or trim_plus is not None:
         dedent_lines = textwrap.dedent( "\n".join( clean_lines ) )
 
     if wrap:
         clean_lines.clear()
 
         for line in dedent_lines.split( '\n' ):
-            line = textwrap.fill( line, width=wrap, subsequent_indent=indent )
+            line = textwrap.fill( line, width=wrap, initial_indent=initial, subsequent_indent=indent )
             clean_lines.append( line )
 
         dedent_lines = "\n".join( clean_lines )
 
-    if trim_lines:
-        dedent_lines = "".join( dedent_lines.split( '\n' ) )
+    if trim_lines is not None:
+        dedent_lines = trim_lines.join( dedent_lines.split( '\n' ) )
 
     if single_lines:
         dedent_lines = re.sub( r'(?<!\n)\n(?!\n)', ' ', dedent_lines)
@@ -635,16 +636,33 @@ def wrap_text(text, wrap=0, trim_tabs=False, trim_spaces=False, trim_lines=False
     return dedent_lines
 
 
-def get_representation(self, ignore=[], emquote=False, repr=repr):
-    """
-        Given a object, iterating through all its public attributes and return then as a string
-        representation.
+def recursive_get_representation(*args, **kwargs):
+    """ It attempt to detect the `get_representation` function was called recursively
+    It can happen when one attribute contains the other and vice-versa.
 
+    kwargs `recursive_depth=2` how many recursions levels to dive in
+    """
+    # https://stackoverflow.com/questions/22435992/python-trying-to-place-keyword-arguments-after-args
+    recursive_depth = kwargs.pop( "recursive_depth", 2 )
+
+    # https://stackoverflow.com/questions/7900345/can-a-python-method-check-if-it-has-been-called-from-within-itself
+    is_recursive = len(
+            [ stack[-3]
+                for stack in traceback.extract_stack()
+                    if stack[2] == 'recursive_get_representation'
+            ]
+        ) > recursive_depth
+
+    kwargs['is_recursive'] = is_recursive
+    return get_representation(*args, **kwargs)
+
+
+def get_representation(objectname, ignore=[], emquote=False, repr=repr, is_recursive=False):
+    """ Iterating through all its public attributes and return then as a string representation
         `ignore` a list of attributes to be ignored
         `emquote` if True, puts the attributes values inside single or double quotes accordingly.
         `repr` is the callback to call recursively on nested objects, can be either `repr` or `str`.
     """
-    valid_attributes = self.__dict__.keys()
     clean_attributes = []
 
     if emquote:
@@ -657,12 +675,26 @@ def get_representation(self, ignore=[], emquote=False, repr=repr):
         def pack_attribute(string):
             return string
 
-    for attribute in valid_attributes:
+    if hasattr( objectname, '__dict__' ):
+        valid_attributes = objectname.__dict__.keys()
 
-        if not attribute.startswith( '_' ) and attribute not in ignore:
-            clean_attributes.append( "{}: {}".format( attribute, pack_attribute( repr( self.__dict__[attribute] ) ) ) )
+        if is_recursive:
+            clean_attributes.append( "{}".format( '<recursive>' ) )
 
-    return "%s %s;" % ( self.__class__.__name__, ", ".join( clean_attributes ) )
+        else:
+            for attribute in valid_attributes:
+
+                if not attribute.startswith( '_' ) and attribute not in ignore:
+                    clean_attributes.append( "{}: {}".format( attribute, pack_attribute( objectname.__dict__[attribute] ) ) )
+
+        return "%s %s;" % ( objectname.__class__.__name__, ", ".join( clean_attributes ) )
+
+    else:
+        for attribute in objectname:
+            if attribute not in ignore:
+                clean_attributes.append( "{}".format( pack_attribute( attribute ) ) )
+
+        return "%s" % ", ".join( clean_attributes )
 
 
 def _create_stdout_handler():

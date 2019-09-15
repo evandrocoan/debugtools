@@ -51,7 +51,9 @@ class TeeNoFile(object):
     """
     __closed = False
 
-    def __init__(self, stdout=False):
+    def __init__(self, stdout=False, ignoredefault=False):
+        """ If `ignoredefault` is True, only write to this object stream.
+        """
         self._contents = []
         self.stdout_type = stdout
 
@@ -62,6 +64,11 @@ class TeeNoFile(object):
         else:
             self._std_original = sys.stderr
             sys.stderr = self
+
+        if ignoredefault:
+            self.write = self.writethis
+        else:
+            self.write = self.writeboth
 
         # sys.stdout.write( "inspect.getmro(sys.stderr):  %s\n" % str( inspect.getmro( type( sys.stderr ) ) ) )
         # sys.stdout.write( "inspect.getmro(self.stderr): %s\n" % str( inspect.getmro( type( self._std_original ) ) ) )
@@ -91,8 +98,9 @@ class TeeNoFile(object):
         except:
             pass
 
-    def clear(self, log):
-        log.clear()
+    def clear(self, log=None):
+        if log is not None:
+            log.clear()
         del self._contents[:]
 
     def flush(self):
@@ -108,17 +116,22 @@ class TeeNoFile(object):
             else:
                 raise
 
-    def write(self, *args, **kwargs):
+    def writeboth(self, *args, **kwargs):
         # self._std_original.write( " 111111 %s" % self._std_original.write + str( args ), **kwargs )
         # self._contents.append( " 555555" + str( args ), **kwargs )
         self._std_original.write( *args, **kwargs )
         self._contents.append( *args, **kwargs )
 
-    def contents(self, date_regex):
+    def writethis(self, *args, **kwargs):
+        self._contents.append( *args, **kwargs )
+
+    write = writeboth
+
+    def contents(self, date_regex=""):
         contents = self._process_contents( date_regex, "".join( self._contents ) )
         return contents
 
-    def file_contents(self, date_regex, log):
+    def file_contents(self, log, date_regex=""):
 
         with io.open( log.output_file, "r", encoding='utf-8', newline=None ) as file:
             output = file.read()

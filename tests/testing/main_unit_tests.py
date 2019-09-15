@@ -53,16 +53,15 @@ if sys.version_info[0] < 3:
 try:
     import sublime_plugin
 
-    import debug_tools.logger
-    import debug_tools.testing_utilities
-
+    import debug_tools
     from debug_tools import utilities
     from debug_tools import testing_utilities
+    from debug_tools import TeeNoFile
 
     # Import and reload the debugger
-    sublime_plugin.reload_plugin( "debug_tools.logger" )
-    sublime_plugin.reload_plugin( "debug_tools.utilities" )
-    sublime_plugin.reload_plugin( "debug_tools.testing_utilities" )
+    # sublime_plugin.reload_plugin( "debug_tools.logger" )
+    # sublime_plugin.reload_plugin( "debug_tools.utilities" )
+    # sublime_plugin.reload_plugin( "debug_tools.testing_utilities" )
 
 except ImportError:
 
@@ -74,20 +73,11 @@ except ImportError:
     # Import the debug tools
     assert_path( os.path.join( os.path.dirname( os.path.dirname( os.path.dirname( os.path.realpath( __file__ ) ) ) ), 'all' ) )
 
-    import debug_tools.logger
-    import debug_tools.testing_utilities
-
+    import debug_tools
     from debug_tools import utilities
     from debug_tools import testing_utilities
+    from debug_tools import TeeNoFile
 
-
-# Relative imports in Python 3
-# https://stackoverflow.com/questions/16981921/relative-imports-in-python-3
-try:
-    from .std_capture import TeeNoFile
-
-except (ImportError, ValueError, SystemError):
-    from std_capture import TeeNoFile
 
 # We need to keep a global reference to this because the logging module internally grabs an
 # reference to the first `sys.strerr` it can get its hands on it.
@@ -130,7 +120,7 @@ def log_traceback(ex, ex_traceback=None):
     sys.stderr.write( "\n".join( tb_lines ) )
 
 
-class StdErrUnitTests(unittest.TestCase):
+class StdErrUnitTests(testing_utilities.MultipleAssertionFailures):
     """
         How to assert output with nosetest/unittest in python?
         https://stackoverflow.com/questions/4219717/how-to-assert-output-with-nosetest-unittest-in-python
@@ -138,10 +128,14 @@ class StdErrUnitTests(unittest.TestCase):
 
     def setUp(self):
         self.maxDiff = None
+        super(StdErrUnitTests, self).setUp()
+
         sys.stderr.write("\n")
         sys.stderr.write("\n")
 
     def tearDown(self):
+        super(StdErrUnitTests, self).tearDown()
+
         log.clear( True )
         log.reset()
 
@@ -186,7 +180,7 @@ class StdErrUnitTests(unittest.TestCase):
             ) ), output )
 
     def test_no_function_name_and_level(self):
-        getLogger( 127, "testing.main_unit_tests", date=True, function=False, level=True )
+        getLogger( 127, "testing.main_unit_tests", date=True, function=False, levels=True )
 
         log( 1, "Bitwise" )
         log( 8, "Bitwise" )
@@ -297,7 +291,7 @@ class StdErrUnitTests(unittest.TestCase):
 
         log.basic( 1, "Debug" )
 
-        output = _stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+        output = _stderr.contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} " )
         self.assertEqual( "testing.main_unit_tests.test_basic_formatter:{} Debug".format( line + 3 ), output )
 
     def test_exception_throwing(self):
@@ -337,7 +331,7 @@ class StdErrUnitTests(unittest.TestCase):
                 log_traceback( error )
 
         regex_pattern = re.compile( r"File \".*\"," )
-        output = _stderr.file_contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- ", log )
+        output = _stderr.file_contents( log, r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
 
         self.assertEqual( utilities.wrap_text( """\
                 testing.main_unit_tests.test_exception_throwing_from_file:{} - I am catching you...
@@ -354,18 +348,22 @@ class StdErrUnitTests(unittest.TestCase):
         log.setup( "", delete=False )
         log( 1, 'No LSP clients enabled.' )
 
-        output = _stderr.file_contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- ", log )
+        output = _stderr.file_contents( log, r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
         self.assertEqual( "LSP.boot.test_infinity_recursion_fix:{} - No LSP clients enabled.".format( line + 3 ), output )
 
 
-class StdOutUnitTests(unittest.TestCase):
+class StdOutUnitTests(testing_utilities.MultipleAssertionFailures):
 
     def setUp(self):
         self.maxDiff = None
+        super(StdOutUnitTests, self).setUp()
+
         sys.stderr.write("\n")
         sys.stderr.write("\n")
 
     def tearDown(self):
+        super(StdOutUnitTests, self).tearDown()
+
         log.clear( True )
         log.reset()
 
@@ -373,7 +371,7 @@ class StdOutUnitTests(unittest.TestCase):
         getLogger( 127, "testing.main_unit_tests", create_test_file='main_unit_tests.txt', stdout=True )
 
         print("Std out logging capture test!")
-        output = _stdout.file_contents( r"", log )
+        output = _stdout.file_contents( log, r"" )
 
         self.assertEqual( "Std out logging capture test!", output )
 
@@ -389,7 +387,7 @@ class StdOutUnitTests(unittest.TestCase):
         sys.stdout.write("std OUT After adding StreamHandler\n")
         sys.stderr.write("std ERR After adding StreamHandler\n")
 
-        file_output = _stdout.file_contents( r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- ", log )
+        file_output = _stdout.file_contents( log, r"\d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
         stderr_contents = _stderr.contents( r"" )
         stdout_contents = _stdout.contents( r"" )
 
@@ -413,7 +411,7 @@ class StdOutUnitTests(unittest.TestCase):
                 """.format() ), stderr_contents )
 
 
-class LogRecordUnitTests(testing_utilities.TestingUtilities):
+class LogRecordUnitTests(testing_utilities.MultipleAssertionFailures):
     """
         Test the SmartLogRecord class usage.
 
@@ -430,6 +428,12 @@ class LogRecordUnitTests(testing_utilities.TestingUtilities):
         log.clear( True )
         log.reset()
 
+    def test_invalid_logger_creation(self):
+        getLogger( "testing.main_unit_tests", "testing.main_unit_tests" )
+        log('Something...')
+        output = _stderr.contents( r"\d{4}\-\d{2}\-\d{2} \d{2}:\d{2}:\d{2}:\d{3}\.\d{6} \d\.\d{2}e.\d{2} \- " )
+        self.assertIn("Something...", output)
+
     def test_dictionaryLogging(self):
         getLogger( 127, "testing.main_unit_tests", date=True )
 
@@ -443,7 +447,7 @@ class LogRecordUnitTests(testing_utilities.TestingUtilities):
                 + testing.main_unit_tests.test_dictionaryLogging:{line1} - dictionary
                 + testing.main_unit_tests.test_dictionaryLogging:{line2} - dictionary {{1: 'defined_chunk'}}
             """.format( line1=line+3, line2=line+4 ) ),
-            utilities.wrap_text( output, trim_spaces=True ) )
+            utilities.wrap_text( output, trim_spaces='+' ) )
 
     def test_nonDictionaryLogging(self):
         getLogger( 127, "testing.main_unit_tests", date=True )
@@ -458,7 +462,7 @@ class LogRecordUnitTests(testing_utilities.TestingUtilities):
                 + testing.main_unit_tests.test_nonDictionaryLogging:{line1} - dictionary
                 + testing.main_unit_tests.test_nonDictionaryLogging:{line2} - dictionary {{1: 'defined_chunk'}}
             """.format( line1=line+3, line2=line+4 ) ),
-            utilities.wrap_text( output, trim_spaces=True ) )
+            utilities.wrap_text( output, trim_spaces='+' ) )
 
     def test_dictionaryBasicLogging(self):
         getLogger( 127, "testing.main_unit_tests", date=True )
@@ -473,7 +477,7 @@ class LogRecordUnitTests(testing_utilities.TestingUtilities):
                 + testing.main_unit_tests - dictionary
                 + testing.main_unit_tests - dictionary {{1: 'defined_chunk'}}
             """.format( line1=line+3, line2=line+4 ) ),
-            utilities.wrap_text( output, trim_spaces=True ) )
+            utilities.wrap_text( output, trim_spaces='+' ) )
 
     def test_dictionaryCleanLogging(self):
         getLogger( 127, "testing.main_unit_tests", date=True )
@@ -488,7 +492,7 @@ class LogRecordUnitTests(testing_utilities.TestingUtilities):
                 + dictionary
                 + dictionary {1: 'defined_chunk'}
             """ ),
-            utilities.wrap_text( output, trim_spaces=True ) )
+            utilities.wrap_text( output, trim_spaces='+' ) )
 
     def test_integerCleanLogging(self):
         getLogger( 127, "testing.main_unit_tests", date=True )
@@ -499,7 +503,7 @@ class LogRecordUnitTests(testing_utilities.TestingUtilities):
         self.assertEqual( utilities.wrap_text( """\
             1
             """ ),
-            utilities.wrap_text( output, trim_spaces=True ) )
+            utilities.wrap_text( output, trim_spaces='+' ) )
 
     def test_integerBasicLogging(self):
         getLogger( 127, "testing.main_unit_tests", date=True )
@@ -510,7 +514,7 @@ class LogRecordUnitTests(testing_utilities.TestingUtilities):
         self.assertEqual( utilities.wrap_text( """\
             + testing.main_unit_tests - 1
             """ ),
-            utilities.wrap_text( output, trim_spaces=True ) )
+            utilities.wrap_text( output, trim_spaces='+' ) )
 
     def test_integerFullLogging(self):
         getLogger( 127, "testing.main_unit_tests" )
@@ -521,7 +525,7 @@ class LogRecordUnitTests(testing_utilities.TestingUtilities):
         self.assertEqual( utilities.wrap_text( """\
             + testing.main_unit_tests.test_integerFullLogging:{} - 1
             """.format( line + 2 ) ),
-            utilities.wrap_text( output, trim_spaces=True ) )
+            utilities.wrap_text( output, trim_spaces='+' ) )
 
     def test_integerFullLoggingEdge(self):
         getLogger( 127, "testing.main_unit_tests" )
@@ -532,13 +536,136 @@ class LogRecordUnitTests(testing_utilities.TestingUtilities):
         self.assertEqual( utilities.wrap_text( """\
             + testing.main_unit_tests.test_integerFullLoggingEdge:{} - 2
             """.format( line + 2 ) ),
-            utilities.wrap_text( output, trim_spaces=True ) )
+            utilities.wrap_text( output, trim_spaces='+' ) )
+
+
+class SetupFormattingSpacingUnitTests(testing_utilities.MultipleAssertionFailures):
+
+    def setUp(self):
+        self.maxDiff = None
+        sys.stderr.write("\n")
+        sys.stderr.write("\n")
+
+    def tearDown(self):
+        log.clear( True )
+        log.reset()
+
+    def test_default_logger_creation(self):
+        getLogger( 1 )
+        log( 'Something...' )
+
+        output = _stderr.contents()
+        self.assertRegexpMatches( output,
+                r"\d\d:\d\d:\d\d:\d\d\d.\d\d\d\d\d\d \d.\d\de(\+|\-)\d\d - logger.test_default_logger_creation:\d\d\d - Something..." )
+
+    def test_not_time(self):
+        getLogger( 1, time=0 )
+        log( 'Something...' )
+
+        output = _stderr.contents()
+        self.assertRegexpMatches( output,
+                r"\d\d\d.\d\d\d\d\d\d \d.\d\de(\+|\-)\d\d - logger.test_not_time:\d\d\d - Something..." )
+
+    def test_not_time_msecs(self):
+        getLogger( 1, time=0, msecs=0 )
+        log( 'Something...' )
+
+        output = _stderr.contents()
+        self.assertRegexpMatches( output,
+                r"\d.\d\de(\+|\-)\d\d - logger.test_not_time_msecs:\d\d\d - Something..." )
+
+    def test_not_time_msecs_tick(self):
+        getLogger( 1, time=0, msecs=0, tick=0 )
+        log( 'Something...' )
+
+        output = _stderr.contents()
+        self.assertRegexpMatches( output,
+                r"logger.test_not_time_msecs_tick:\d\d\d - Something..." )
+
+    def test_not_time_msecs_tick_name(self):
+        getLogger( 1, time=0, msecs=0, tick=0, name=0 )
+        log( 'Something...' )
+
+        output = _stderr.contents()
+        self.assertRegexpMatches( output,
+                r"test_not_time_msecs_tick_name:\d\d\d - Something..." )
+
+    def test_not_time_msecs_tick_name_function(self):
+        getLogger( 1, time=0, msecs=0, tick=0, name=0, function=0 )
+        log( 'Something...' )
+
+        output = _stderr.contents()
+        self.assertRegexpMatches( output,
+                r"Something..." )
+
+    def test_not_time_msecs_tick_name_function_but_level(self):
+        getLogger( 1, time=0, msecs=0, tick=0, name=0, function=0, levels=1 )
+        log( 'Something...' )
+
+        output = _stderr.contents()
+        self.assertRegexpMatches( output,
+                r"DEBUG\(\d+\) - Something..." )
+
+    def test_not_time_msecs_tick_name_function_level_separator(self):
+        getLogger( 1, time=0, msecs=1, tick=0, name=0, function=0, levels=1, separator=0 )
+        log( 'Something...' )
+
+        output = _stderr.contents()
+        self.assertRegexpMatches( output,
+                r"\d\d\d.\d\d\d\d\d\dDEBUG\(\d+\)Something..." )
+
+    def test_not_time_msecs_tick_name_function_level_but_separator(self):
+        getLogger( 1, time=0, msecs=1, tick=0, name=0, function=0, levels=1, separator=" " )
+        log( 'Something...' )
+
+        output = _stderr.contents()
+        self.assertRegexpMatches( output,
+                r"\d\d\d.\d\d\d\d\d\d DEBUG\(\d+\) Something..." )
+
+
+class DynamicSetupFormattingUnitTests(testing_utilities.MultipleAssertionFailures):
+
+    def setUp(self):
+        self.maxDiff = None
+        sys.stderr.write("\n")
+        sys.stderr.write("\n")
+
+    def tearDown(self):
+        log.clear( True )
+        log.reset()
+
+    def test_not_msecs(self):
+        getLogger( 1 )
+        log( 'Something...', msecs=0 )
+
+        output = _stderr.contents()
+        self.assertRegexpMatches( output,
+                r"\d\d:\d\d:\d\d \d.\d\de(\+|\-)\d\d - logger.test_not_msecs:\d\d\d - Something..." )
+
+    def test_not_msecs_tick(self):
+        getLogger( 1 )
+        log( 'Something...', msecs=0, tick=0 )
+
+        output = _stderr.contents()
+        self.assertRegexpMatches( output,
+                r"\d\d:\d\d:\d\d - logger.test_not_msecs_tick:\d\d\d - Something..." )
+
+    def test_not_msecs_tick_time(self):
+        getLogger( 1 )
+        log( 'Something...', msecs=0, tick=0, time=0 )
+
+        output = _stderr.contents()
+        self.assertRegexpMatches( output,
+                r"logger.test_not_msecs_tick_time:\d\d\d - Something..." )
 
 
 def load_tests(loader, standard_tests, pattern):
     suite = unittest.TestSuite()
-    suite.addTest( LogRecordUnitTests( 'test_dictionaryBasicLogging' ) )
+    # suite.addTest( LogRecordUnitTests( 'test_dictionaryBasicLogging' ) )
+    # suite.addTest( SetupFormattingSpacingUnitTests( 'test_time' ) )
+    suite.addTests( unittest.TestLoader().loadTestsFromTestCase( SetupFormattingSpacingUnitTests ) )
     return suite
+
 
 # Comment this to run individual Unit Tests
 load_tests = None
