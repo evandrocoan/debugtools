@@ -53,9 +53,7 @@ import traceback
 import logging
 import logging.handlers
 
-from collections import MutableMapping
 from logging import getLevelName
-
 from logging import Logger
 from logging import Manager
 from logging import PlaceHolder
