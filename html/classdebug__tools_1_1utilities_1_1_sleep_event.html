@@ -96,15 +96,11 @@ $(document).ready(function(){initNavTree('classdebug__tools_1_1utilities_1_1_sle
 Inheritance diagram for SleepEvent:</div>
 <div class="dyncontent">
 <div class="center"><img src="classdebug__tools_1_1utilities_1_1_sleep_event__inherit__graph.png" border="0" usemap="#_sleep_event_inherit__map" alt="Inheritance graph"/></div>
-<map name="_sleep_event_inherit__map" id="_sleep_event_inherit__map">
-</map>
 <center><span class="legend">[<a target="top" href="graph_legend.html">legend</a>]</span></center></div>
 <div class="dynheader">
 Collaboration diagram for SleepEvent:</div>
 <div class="dyncontent">
 <div class="center"><img src="classdebug__tools_1_1utilities_1_1_sleep_event__coll__graph.png" border="0" usemap="#_sleep_event_coll__map" alt="Collaboration graph"/></div>
-<map name="_sleep_event_coll__map" id="_sleep_event_coll__map">
-</map>
 <center><span class="legend">[<a target="top" href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
@@ -123,7 +119,7 @@ def&#160;</td><td class="memItemRight" valign="bottom"><b>disableSleepCall</b> (
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
-<p class="definition">Definition at line <a class="el" href="utilities_8py_source.html#l00080">80</a> of file <a class="el" href="utilities_8py_source.html">utilities.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="utilities_8py_source.html#l00081">81</a> of file <a class="el" href="utilities_8py_source.html">utilities.py</a>.</p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="aa43cf4d674ea170b359c6e6da7a57b68"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aa43cf4d674ea170b359c6e6da7a57b68">&#9670;&nbsp;</a></span>sleep()</h2>
@@ -157,37 +153,39 @@ def&#160;</td><td class="memItemRight" valign="bottom"><b>disableSleepCall</b> (
     If disableSleepCall() is called before the timeout has passed, it will immediately get
     out of sleep and this thread will wake up.
 </pre> 
-<p class="definition">Definition at line <a class="el" href="utilities_8py_source.html#l00085">85</a> of file <a class="el" href="utilities_8py_source.html">utilities.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="utilities_8py_source.html#l00086">86</a> of file <a class="el" href="utilities_8py_source.html">utilities.py</a>.</p>
 
-<p class="reference">References <a class="el" href="dynamic__iteration_8py_source.html#l00489">DynamicIterationDict.clear()</a>, and <a class="el" href="logger_8py_source.html#l00621">Debugger.clear()</a>.</p>
-<div class="fragment"><div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    <span class="keyword">def </span>sleep(self, timeout=None):</div><div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        <span class="stringliteral">&quot;&quot;&quot;</span></div><div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="stringliteral">            If blockOnSleepCall() was called before, this will sleep the current thread for ever if</span></div><div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="stringliteral">            not arguments are passed. Otherwise, it accepts a positive floating point number for</span></div><div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="stringliteral">            seconds in which this thread will sleep.</span></div><div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="stringliteral"></span></div><div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="stringliteral">            If disableSleepCall() is called before the timeout has passed, it will immediately get</span></div><div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="stringliteral">            out of sleep and this thread will wake up.</span></div><div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="stringliteral">        &quot;&quot;&quot;</span></div><div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;        self.wait( timeout )</div><div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;</div></div><!-- fragment --><div class="dynheader">
+<p class="reference">References <a class="el" href="std__capture_8py_source.html#l00101">TeeNoFile.clear()</a>, <a class="el" href="dynamic__iteration_8py_source.html#l00489">DynamicIterationDict.clear()</a>, and <a class="el" href="logger_8py_source.html#l00607">Debugger.clear()</a>.</p>
+<div class="fragment"><div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    <span class="keyword">def </span>sleep(self, timeout=None):</div><div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;        <span class="stringliteral">&quot;&quot;&quot;</span></div><div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="stringliteral">            If blockOnSleepCall() was called before, this will sleep the current thread for ever if</span></div><div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="stringliteral">            not arguments are passed. Otherwise, it accepts a positive floating point number for</span></div><div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="stringliteral">            seconds in which this thread will sleep.</span></div><div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="stringliteral"></span></div><div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="stringliteral">            If disableSleepCall() is called before the timeout has passed, it will immediately get</span></div><div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="stringliteral">            out of sleep and this thread will wake up.</span></div><div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;<span class="stringliteral">        &quot;&quot;&quot;</span></div><div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;        self.wait( timeout )</div><div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;</div></div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classdebug__tools_1_1utilities_1_1_sleep_event_aa43cf4d674ea170b359c6e6da7a57b68_cgraph.png" border="0" usemap="#classdebug__tools_1_1utilities_1_1_sleep_event_aa43cf4d674ea170b359c6e6da7a57b68_cgraph" alt=""/></div>
 <map name="classdebug__tools_1_1utilities_1_1_sleep_event_aa43cf4d674ea170b359c6e6da7a57b68_cgraph" id="classdebug__tools_1_1utilities_1_1_sleep_event_aa43cf4d674ea170b359c6e6da7a57b68_cgraph">
-<area shape="rect" id="node2" href="classdebug__tools_1_1dynamic__iteration_1_1_dynamic_iteration_dict.html#ad149341d7d849ff957baee565b19c123" title="debug_tools.dynamic\l_iteration.DynamicIteration\lDict.clear" alt="" coords="128,266,305,322"/>
-<area shape="rect" id="node3" href="classdebug__tools_1_1logger_1_1_debugger.html#a2299e2300cebaa176eaca8bffc003d14" title="debug_tools.logger.Debugger.clear" alt="" coords="107,346,327,373"/>
-<area shape="rect" id="node4" href="classdebug__tools_1_1logger_1_1_debugger.html#a4d4439aeff5c9489b7ba217d8e39c55e" title="debug_tools.logger.Debugger.\l_stderr" alt="" coords="1253,35,1445,76"/>
-<area shape="rect" id="node5" href="classdebug__tools_1_1logger_1_1_debugger.html#a5c806a99c5da9ec53bfc2c933643675f" title="debug_tools.logger.Debugger.\l_stdout" alt="" coords="1253,144,1445,186"/>
-<area shape="rect" id="node6" href="classdebug__tools_1_1logger_1_1_debugger.html#a1c80bf0168c5dc69938429761c9993b0" title="debug_tools.logger.Debugger.active" alt="" coords="947,850,1173,877"/>
-<area shape="rect" id="node7" href="classdebug__tools_1_1logger_1_1_debugger.html#aab117d5d2281fdef24066fd08d24f19e" title="debug_tools.logger.Debugger.handle\l_stderr" alt="" coords="375,160,605,202"/>
-<area shape="rect" id="node8" href="classdebug__tools_1_1logger_1_1_debugger.html#a4211befe35a6e62248f59010e91033ae" title="debug_tools.logger.Debugger.exception" alt="" coords="936,210,1184,237"/>
-<area shape="rect" id="node11" href="classdebug__tools_1_1logger_1_1_debugger.html#a52bf8e76ca1b89b9cded89c2d04cb9e2" title="debug_tools.logger.Debugger.has\lStreamHandlers" alt="" coords="664,36,877,78"/>
-<area shape="rect" id="node12" href="classdebug__tools_1_1logger_1_1_debugger.html#a0b42ce896284718bb14dfcb159c5de08" title="debug_tools.logger.Debugger.remove\lHandler" alt="" coords="653,102,888,143"/>
-<area shape="rect" id="node13" href="classdebug__tools_1_1logger_1_1_debugger.html#a498b24a62e25b8656fdf3d9c8cdf2395" title="debug_tools.logger.Debugger.setup" alt="" coords="659,465,883,492"/>
-<area shape="rect" id="node9" href="classdebug__tools_1_1logger_1_1_debugger.html#a50def3020236fcd0c142573cd26750a0" title="debug_tools.logger.Debugger._log" alt="" coords="1241,210,1457,237"/>
-<area shape="rect" id="node10" href="classdebug__tools_1_1logger_1_1_debugger.html#ab8b34f37943f2f7c7d13150a7fd21ef7" title="debug_tools.logger.Debugger.get\lFormat" alt="" coords="1244,262,1455,303"/>
-<area shape="rect" id="node14" href="classdebug__tools_1_1logger_1_1_debugger.html#a36873091e4b6ceb8dbb6b71d24b9c11b" title="debug_tools.logger.Debugger.\l_configure_force" alt="" coords="964,392,1156,434"/>
-<area shape="rect" id="node15" href="classdebug__tools_1_1logger_1_1_debugger.html#a38f66ca75c6bae8a47c0c14fcc92f542" title="debug_tools.logger.Debugger.\l_create_file" alt="" coords="964,458,1156,499"/>
-<area shape="rect" id="node16" href="classdebug__tools_1_1logger_1_1_debugger.html#ae30d78ab972b764d49b55088fda73e4e" title="debug_tools.logger.Debugger.\l_disable" alt="" coords="964,588,1156,630"/>
-<area shape="rect" id="node17" href="classdebug__tools_1_1logger_1_1_debugger.html#a4aa0001f6c56aac29f87ab0fb2bb6a4a" title="debug_tools.logger.Debugger.\l_fast_basic" alt="" coords="964,654,1156,695"/>
-<area shape="rect" id="node18" href="classdebug__tools_1_1logger_1_1_debugger.html#ac6b022a5fdc272eab9f1749661cd5e44" title="debug_tools.logger.Debugger.\l_fast_clean" alt="" coords="964,719,1156,760"/>
-<area shape="rect" id="node19" href="classdebug__tools_1_1logger_1_1_debugger.html#ab5d191c2081fbee0c856883f13e55b6f" title="debug_tools.logger.Debugger.\l_get_time_prefix" alt="" coords="964,784,1156,826"/>
-<area shape="rect" id="node20" href="classdebug__tools_1_1logger_1_1_debugger.html#a5b2e0f5bc80a5e067a7ec4dd1d510862" title="debug_tools.logger.Debugger.\l_setup" alt="" coords="964,262,1156,303"/>
-<area shape="rect" id="node21" href="classdebug__tools_1_1logger_1_1_debugger.html#ab21ed73506e6670afe8af5cb731d9879" title="debug_tools.logger.Debugger.\l_setup_fast_loggers" alt="" coords="964,327,1156,368"/>
-<area shape="rect" id="node22" href="classdebug__tools_1_1logger_1_1_debugger.html#a312fa499c41ded002ce8bccb8b5cb83a" title="debug_tools.logger.Debugger.add\lHandler" alt="" coords="953,144,1167,186"/>
-<area shape="rect" id="node23" href="classdebug__tools_1_1logger_1_1_debugger.html#ab7ce1b5b744fdd3120fe1da64772f273" title="debug_tools.logger.Debugger.get\l_debug_file_path" alt="" coords="955,523,1165,564"/>
-<area shape="rect" id="node24" href="classdebug__tools_1_1logger_1_1_debugger.html#a26aa8b0422336144c57505e2f3123b85" title="debug_tools.logger.Debugger.remove\l_windows_driver_letter" alt="" coords="1232,523,1467,564"/>
+<area shape="rect" id="node2" href="classdebug__tools_1_1std__capture_1_1_tee_no_file.html#adfdd37855875523a90f8d0c4979d36c1" title="debug_tools.std_capture.\lTeeNoFile.clear" alt="" coords="133,791,301,832"/>
+<area shape="rect" id="node3" href="classdebug__tools_1_1dynamic__iteration_1_1_dynamic_iteration_dict.html#ad149341d7d849ff957baee565b19c123" title="debug_tools.dynamic\l_iteration.DynamicIteration\lDict.clear" alt="" coords="128,857,305,913"/>
+<area shape="rect" id="node4" href="classdebug__tools_1_1logger_1_1_debugger.html#a2299e2300cebaa176eaca8bffc003d14" title="debug_tools.logger.Debugger.clear" alt="" coords="107,937,327,963"/>
+<area shape="rect" id="node5" href="classdebug__tools_1_1logger_1_1_debugger.html#a4d4439aeff5c9489b7ba217d8e39c55e" title="debug_tools.logger.Debugger.\l_stderr" alt="" coords="1253,901,1445,943"/>
+<area shape="rect" id="node6" href="classdebug__tools_1_1logger_1_1_debugger.html#a5c806a99c5da9ec53bfc2c933643675f" title="debug_tools.logger.Debugger.\l_stdout" alt="" coords="1253,967,1445,1008"/>
+<area shape="rect" id="node7" href="classdebug__tools_1_1logger_1_1_debugger.html#a1c80bf0168c5dc69938429761c9993b0" title="debug_tools.logger.Debugger.active" alt="" coords="1236,187,1463,214"/>
+<area shape="rect" id="node8" href="classdebug__tools_1_1logger_1_1_debugger.html#aab117d5d2281fdef24066fd08d24f19e" title="debug_tools.logger.Debugger.handle\l_stderr" alt="" coords="375,849,605,891"/>
+<area shape="rect" id="node9" href="classdebug__tools_1_1logger_1_1_debugger.html#a4211befe35a6e62248f59010e91033ae" title="debug_tools.logger.Debugger.exception" alt="" coords="936,107,1184,134"/>
+<area shape="rect" id="node13" href="classdebug__tools_1_1logger_1_1_debugger.html#a52bf8e76ca1b89b9cded89c2d04cb9e2" title="debug_tools.logger.Debugger.has\lStreamHandlers" alt="" coords="664,791,877,832"/>
+<area shape="rect" id="node14" href="classdebug__tools_1_1logger_1_1_debugger.html#a0b42ce896284718bb14dfcb159c5de08" title="debug_tools.logger.Debugger.remove\lHandler" alt="" coords="653,908,888,949"/>
+<area shape="rect" id="node15" href="classdebug__tools_1_1logger_1_1_debugger.html#afd644626e83187f3c4e40673f1d40faa" title="debug_tools.logger.Debugger.setup" alt="" coords="659,543,883,570"/>
+<area shape="rect" id="node10" href="classdebug__tools_1_1logger_1_1_debugger.html#ac928b1c1f4289dc8bf63f949bec7b9c4" title="debug_tools.logger.Debugger.\l_create_formatter" alt="" coords="1253,71,1445,112"/>
+<area shape="rect" id="node11" href="classdebug__tools_1_1logger_1_1_debugger.html#a0c0dcaf43e46cbcedc969bc3600216cc" title="debug_tools.logger.Debugger._log" alt="" coords="1241,137,1457,163"/>
+<area shape="rect" id="node12" href="classdebug__tools_1_1logger_1_1_debugger.html#ab8b34f37943f2f7c7d13150a7fd21ef7" title="debug_tools.logger.Debugger.get\lFormat" alt="" coords="1244,5,1455,47"/>
+<area shape="rect" id="node16" href="classdebug__tools_1_1logger_1_1_debugger.html#a36873091e4b6ceb8dbb6b71d24b9c11b" title="debug_tools.logger.Debugger.\l_configure_force" alt="" coords="964,719,1156,760"/>
+<area shape="rect" id="node17" href="classdebug__tools_1_1logger_1_1_debugger.html#a38f66ca75c6bae8a47c0c14fcc92f542" title="debug_tools.logger.Debugger.\l_create_file" alt="" coords="964,784,1156,825"/>
+<area shape="rect" id="node18" href="classdebug__tools_1_1logger_1_1_debugger.html#ae30d78ab972b764d49b55088fda73e4e" title="debug_tools.logger.Debugger.\l_disable" alt="" coords="964,209,1156,251"/>
+<area shape="rect" id="node19" href="classdebug__tools_1_1logger_1_1_debugger.html#a4aa0001f6c56aac29f87ab0fb2bb6a4a" title="debug_tools.logger.Debugger.\l_fast_basic" alt="" coords="964,275,1156,316"/>
+<area shape="rect" id="node20" href="classdebug__tools_1_1logger_1_1_debugger.html#ac6b022a5fdc272eab9f1749661cd5e44" title="debug_tools.logger.Debugger.\l_fast_clean" alt="" coords="964,340,1156,381"/>
+<area shape="rect" id="node21" href="classdebug__tools_1_1logger_1_1_debugger.html#ab5d191c2081fbee0c856883f13e55b6f" title="debug_tools.logger.Debugger.\l_get_time_prefix" alt="" coords="964,405,1156,447"/>
+<area shape="rect" id="node22" href="classdebug__tools_1_1logger_1_1_debugger.html#a5b2e0f5bc80a5e067a7ec4dd1d510862" title="debug_tools.logger.Debugger.\l_setup" alt="" coords="964,471,1156,512"/>
+<area shape="rect" id="node23" href="classdebug__tools_1_1logger_1_1_debugger.html#ab21ed73506e6670afe8af5cb731d9879" title="debug_tools.logger.Debugger.\l_setup_fast_loggers" alt="" coords="964,536,1156,577"/>
+<area shape="rect" id="node24" href="classdebug__tools_1_1logger_1_1_debugger.html#a312fa499c41ded002ce8bccb8b5cb83a" title="debug_tools.logger.Debugger.add\lHandler" alt="" coords="953,849,1167,891"/>
+<area shape="rect" id="node25" href="classdebug__tools_1_1logger_1_1_debugger.html#ab7ce1b5b744fdd3120fe1da64772f273" title="debug_tools.logger.Debugger.get\l_debug_file_path" alt="" coords="955,653,1165,695"/>
+<area shape="rect" id="node26" href="classdebug__tools_1_1logger_1_1_debugger.html#a26aa8b0422336144c57505e2f3123b85" title="debug_tools.logger.Debugger.remove\l_windows_driver_letter" alt="" coords="1232,653,1467,695"/>
 </map>
 </div>
 

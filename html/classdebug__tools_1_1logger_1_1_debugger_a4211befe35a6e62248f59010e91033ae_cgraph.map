@@ -1,4 +1,6 @@
 <map id="exception" name="exception">
-<area shape="rect" id="node2" href="$classdebug__tools_1_1logger_1_1_debugger.html#a50def3020236fcd0c142573cd26750a0" title="_log" alt="" coords="149,5,196,32"/>
-<area shape="rect" id="node3" href="$classdebug__tools_1_1logger_1_1_debugger.html#ab8b34f37943f2f7c7d13150a7fd21ef7" title="getFormat" alt="" coords="132,56,213,83"/>
+<area shape="rect" id="node2" href="$classdebug__tools_1_1logger_1_1_debugger.html#ac928b1c1f4289dc8bf63f949bec7b9c4" title="_create_formatter" alt="" coords="132,5,256,32"/>
+<area shape="rect" id="node3" href="$classdebug__tools_1_1logger_1_1_debugger.html#a0c0dcaf43e46cbcedc969bc3600216cc" title="_log" alt="" coords="171,56,217,83"/>
+<area shape="rect" id="node4" href="$classdebug__tools_1_1logger_1_1_debugger.html#a1c80bf0168c5dc69938429761c9993b0" title="active" alt="" coords="165,107,223,133"/>
+<area shape="rect" id="node5" href="$classdebug__tools_1_1logger_1_1_debugger.html#ab8b34f37943f2f7c7d13150a7fd21ef7" title="getFormat" alt="" coords="153,157,235,184"/>
 </map>

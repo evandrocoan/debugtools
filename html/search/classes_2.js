@@ -1,7 +1,6 @@
 var searchData=
 [
-  ['debugger',['Debugger',['../classdebug__tools_1_1logger_1_1_debugger.html',1,'debug_tools::logger']]],
-  ['diffmatchpatch',['diffmatchpatch',['../classdebug__tools_1_1utilities_1_1diffmatchpatch.html',1,'debug_tools::utilities']]],
-  ['dynamiciterable',['DynamicIterable',['../classdebug__tools_1_1dynamic__iteration_1_1_dynamic_iterable.html',1,'debug_tools::dynamic_iteration']]],
-  ['dynamiciterationdict',['DynamicIterationDict',['../classdebug__tools_1_1dynamic__iteration_1_1_dynamic_iteration_dict.html',1,'debug_tools::dynamic_iteration']]]
+  ['cleanlogrecord',['CleanLogRecord',['../classdebug__tools_1_1logger_1_1_clean_log_record.html',1,'debug_tools::logger']]],
+  ['concurrentrotatingfilehandler',['ConcurrentRotatingFileHandler',['../classdebug__tools_1_1logger_1_1_concurrent_rotating_file_handler.html',1,'debug_tools::logger']]],
+  ['currentupdateprogress',['CurrentUpdateProgress',['../classdebug__tools_1_1estimated__time__left_1_1_current_update_progress.html',1,'debug_tools::estimated_time_left']]]
 ];

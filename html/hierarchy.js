@@ -18,11 +18,14 @@ var hierarchy =
         [ "CleanLogRecord", "classdebug__tools_1_1logger_1_1_clean_log_record.html", null ],
         [ "SmartLogRecord", "classdebug__tools_1_1logger_1_1_smart_log_record.html", null ]
       ] ],
+      [ "TeeNoFile", "classdebug__tools_1_1std__capture_1_1_tee_no_file.html", null ],
       [ "stderr_replacement", "classdebug__tools_1_1stderr__replacement_1_1stderr__replacement.html", null ],
-      [ "stdout_replacement", "classdebug__tools_1_1stdout__replacement_1_1stdout__replacement.html", null ]
+      [ "stdout_replacement", "classdebug__tools_1_1stdout__replacement_1_1stdout__replacement.html", null ],
+      [ "AssertionErrorData", "classdebug__tools_1_1testing__utilities_1_1_assertion_error_data.html", null ]
     ] ],
     [ "ProgressInfo", "classdebug__tools_1_1estimated__time__left_1_1_progress_info.html", null ],
     [ "TestCase", null, [
+      [ "MultipleAssertionFailures", "classdebug__tools_1_1testing__utilities_1_1_multiple_assertion_failures.html", null ],
       [ "TestingUtilities", "classdebug__tools_1_1testing__utilities_1_1_testing_utilities.html", null ]
     ] ],
     [ "FileHandler", null, [

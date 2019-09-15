@@ -30,7 +30,7 @@ var classdebug__tools_1_1logger_1_1_debugger =
     [ "removeHandler", "classdebug__tools_1_1logger_1_1_debugger.html#a0b42ce896284718bb14dfcb159c5de08", null ],
     [ "removeHandlers", "classdebug__tools_1_1logger_1_1_debugger.html#af2ee9fd5990c0daf7af239029af2acb0", null ],
     [ "reset", "classdebug__tools_1_1logger_1_1_debugger.html#a51829b63adb24ac48d350dee60181002", null ],
-    [ "setup", "classdebug__tools_1_1logger_1_1_debugger.html#a498b24a62e25b8656fdf3d9c8cdf2395", null ],
+    [ "setup", "classdebug__tools_1_1logger_1_1_debugger.html#afd644626e83187f3c4e40673f1d40faa", null ],
     [ "setup_basic", "classdebug__tools_1_1logger_1_1_debugger.html#a019eac876b1eb50e1fef231f3ce94775", null ],
     [ "traceback", "classdebug__tools_1_1logger_1_1_debugger.html#a5f93e4a5567516a02a8d41ce38ced41a", null ],
     [ "warn", "classdebug__tools_1_1logger_1_1_debugger.html#a4c6fc4838eced8efd71a729a0b7b62c5", null ],
@@ -39,5 +39,6 @@ var classdebug__tools_1_1logger_1_1_debugger =
     [ "clean", "classdebug__tools_1_1logger_1_1_debugger.html#a1f20f7a0def7f67585002bb5361a419b", null ],
     [ "clean_formatter", "classdebug__tools_1_1logger_1_1_debugger.html#a2f149b5c58981501bbd98bb6fa901225", null ],
     [ "debug_level", "classdebug__tools_1_1logger_1_1_debugger.html#a4ac568348fbda3f2ce37f4cfc14c9598", null ],
-    [ "full_formatter", "classdebug__tools_1_1logger_1_1_debugger.html#a8874a984f031919db0fd5ffe68af24cc", null ]
+    [ "full_formatter", "classdebug__tools_1_1logger_1_1_debugger.html#a8874a984f031919db0fd5ffe68af24cc", null ],
+    [ "trimname", "classdebug__tools_1_1logger_1_1_debugger.html#ac1b3a5102895f1b1174dfd6d1ffb6544", null ]
 ];

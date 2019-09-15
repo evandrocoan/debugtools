@@ -6,9 +6,11 @@ var files_dup =
     [ "examples.py", "examples_8py_source.html", null ],
     [ "lockable_type.py", "lockable__type_8py_source.html", null ],
     [ "logger.py", "logger_8py_source.html", null ],
+    [ "std_capture.py", "std__capture_8py_source.html", null ],
     [ "stderr_replacement.py", "stderr__replacement_8py_source.html", null ],
     [ "stdout_replacement.py", "stdout__replacement_8py_source.html", null ],
     [ "testing_utilities.py", "testing__utilities_8py_source.html", null ],
     [ "third_part.py", "third__part_8py_source.html", null ],
-    [ "utilities.py", "utilities_8py_source.html", null ]
+    [ "utilities.py", "utilities_8py_source.html", null ],
+    [ "version.py", "version_8py_source.html", null ]
 ];

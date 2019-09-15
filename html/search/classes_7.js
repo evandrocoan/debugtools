@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['testingutilities',['TestingUtilities',['../classdebug__tools_1_1testing__utilities_1_1_testing_utilities.html',1,'debug_tools::testing_utilities']]]
+  ['progressinfo',['ProgressInfo',['../classdebug__tools_1_1estimated__time__left_1_1_progress_info.html',1,'debug_tools::estimated_time_left']]]
 ];

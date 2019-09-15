@@ -1,7 +1,7 @@
 <map id="exception" name="exception">
 <area shape="rect" id="node2" href="$classdebug__tools_1_1logger_1_1_debugger.html#aae0175fc510ca4053538a56f87803efb" title="deleteAllLoggers" alt="" coords="660,5,779,32"/>
 <area shape="rect" id="node3" href="$classdebug__tools_1_1logger_1_1_debugger.html#aab117d5d2281fdef24066fd08d24f19e" title="handle_stderr" alt="" coords="132,107,232,133"/>
-<area shape="rect" id="node7" href="$classdebug__tools_1_1logger_1_1_debugger.html#a498b24a62e25b8656fdf3d9c8cdf2395" title="setup" alt="" coords="497,208,552,235"/>
+<area shape="rect" id="node7" href="$classdebug__tools_1_1logger_1_1_debugger.html#afd644626e83187f3c4e40673f1d40faa" title="setup" alt="" coords="497,208,552,235"/>
 <area shape="rect" id="node4" href="$classdebug__tools_1_1logger_1_1_debugger.html#a2299e2300cebaa176eaca8bffc003d14" title="clear" alt="" coords="309,107,360,133"/>
 <area shape="rect" id="node6" href="$classdebug__tools_1_1logger_1_1_debugger.html#a312fa499c41ded002ce8bccb8b5cb83a" title="addHandler" alt="" coords="291,208,378,235"/>
 <area shape="rect" id="node8" href="$classdebug__tools_1_1logger_1_1_debugger.html#a0b42ce896284718bb14dfcb159c5de08" title="removeHandler" alt="" coords="280,56,389,83"/>

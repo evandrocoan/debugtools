@@ -98,15 +98,11 @@ $(document).ready(function(){initNavTree('classdebug__tools_1_1lockable__type_1_
 Inheritance diagram for LockableType:</div>
 <div class="dyncontent">
 <div class="center"><img src="classdebug__tools_1_1lockable__type_1_1_lockable_type__inherit__graph.png" border="0" usemap="#_lockable_type_inherit__map" alt="Inheritance graph"/></div>
-<map name="_lockable_type_inherit__map" id="_lockable_type_inherit__map">
-</map>
 <center><span class="legend">[<a target="top" href="graph_legend.html">legend</a>]</span></center></div>
 <div class="dynheader">
 Collaboration diagram for LockableType:</div>
 <div class="dyncontent">
 <div class="center"><img src="classdebug__tools_1_1lockable__type_1_1_lockable_type__coll__graph.png" border="0" usemap="#_lockable_type_coll__map" alt="Collaboration graph"/></div>
-<map name="_lockable_type_coll__map" id="_lockable_type_coll__map">
-</map>
 <center><span class="legend">[<a target="top" href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
@@ -239,7 +235,7 @@ Here is the call graph for this function:</div>
 </pre> 
 <p class="definition">Definition at line <a class="el" href="lockable__type_8py_source.html#l00083">83</a> of file <a class="el" href="lockable__type_8py_source.html">lockable_type.py</a>.</p>
 
-<p class="reference">References <a class="el" href="logger_8py_source.html#l00911">Debugger.__class__</a>.</p>
+<p class="reference">References <a class="el" href="logger_8py_source.html#l00906">Debugger.__class__</a>.</p>
 <div class="fragment"><div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    <span class="keyword">def </span>__eq__(self, other):</div><div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;        <span class="stringliteral">&quot;&quot;&quot;</span></div><div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="stringliteral">            Determines whether this object is equal to another one based on their hashes.</span></div><div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="stringliteral">        &quot;&quot;&quot;</span></div><div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;</div><div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        <span class="keywordflow">if</span> isinstance( self, LockableType ) <span class="keywordflow">is</span> isinstance( other, LockableType ):</div><div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;            <span class="keywordflow">return</span> hash( self ) == hash( other )</div><div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;</div><div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;        <span class="keywordflow">raise</span> TypeError( <span class="stringliteral">&quot;&#39;=&#39; not supported between instances of &#39;%s&#39; and &#39;%s&#39;&quot;</span> % (</div><div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;                self.__class__.__name__, other.__class__.__name__ ) )</div><div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;</div></div><!-- fragment -->
 </div>
 </div>
@@ -286,7 +282,7 @@ Here is the call graph for this function:</div>
 </pre> 
 <p class="definition">Definition at line <a class="el" href="lockable__type_8py_source.html#l00133">133</a> of file <a class="el" href="lockable__type_8py_source.html">lockable_type.py</a>.</p>
 
-<p class="reference">References <a class="el" href="logger_8py_source.html#l00911">Debugger.__class__</a>, <a class="el" href="lockable__type_8py_source.html#l00065">LockableType._hash</a>, <a class="el" href="lockable__type_8py_source.html#l00156">LockableType._len</a>, <a class="el" href="lockable__type_8py_source.html#l00069">LockableType._original_hash</a>, <a class="el" href="lockable__type_8py_source.html#l00067">LockableType._original_len</a>, <a class="el" href="lockable__type_8py_source.html#l00068">LockableType._original_str</a>, <a class="el" href="lockable__type_8py_source.html#l00157">LockableType._str</a>, and <a class="el" href="lockable__type_8py_source.html#l00056">LockableType.locked</a>.</p>
+<p class="reference">References <a class="el" href="logger_8py_source.html#l00906">Debugger.__class__</a>, <a class="el" href="lockable__type_8py_source.html#l00065">LockableType._hash</a>, <a class="el" href="lockable__type_8py_source.html#l00156">LockableType._len</a>, <a class="el" href="lockable__type_8py_source.html#l00069">LockableType._original_hash</a>, <a class="el" href="lockable__type_8py_source.html#l00067">LockableType._original_len</a>, <a class="el" href="lockable__type_8py_source.html#l00068">LockableType._original_str</a>, <a class="el" href="lockable__type_8py_source.html#l00157">LockableType._str</a>, and <a class="el" href="lockable__type_8py_source.html#l00056">LockableType.locked</a>.</p>
 <div class="fragment"><div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;    <span class="keyword">def </span>__len__(self):</div><div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;        <span class="stringliteral">&quot;&quot;&quot;</span></div><div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;<span class="stringliteral">            Python does not allow to dynamically/monkey patch its build in functions. Then, we create</span></div><div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;<span class="stringliteral">            out own function and call it from the built-in function.</span></div><div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;<span class="stringliteral">        &quot;&quot;&quot;</span></div><div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;        <span class="keywordflow">return</span> self._len()</div><div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;</div></div><!-- fragment -->
 </div>
 </div>

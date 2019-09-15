@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['lockabletype',['LockableType',['../classdebug__tools_1_1lockable__type_1_1_lockable_type.html',1,'debug_tools::lockable_type']]]
+  ['fastdebugger',['FastDebugger',['../classdebug__tools_1_1logger_1_1_fast_debugger.html',1,'debug_tools::logger']]],
+  ['filehandlercontextfilter',['FileHandlerContextFilter',['../classdebug__tools_1_1logger_1_1_file_handler_context_filter.html',1,'debug_tools::logger']]]
 ];

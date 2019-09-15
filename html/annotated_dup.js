@@ -21,6 +21,9 @@ var annotated_dup =
         [ "FileHandlerContextFilter", "classdebug__tools_1_1logger_1_1_file_handler_context_filter.html", "classdebug__tools_1_1logger_1_1_file_handler_context_filter" ],
         [ "SmartLogRecord", "classdebug__tools_1_1logger_1_1_smart_log_record.html", null ]
       ] ],
+      [ "std_capture", null, [
+        [ "TeeNoFile", "classdebug__tools_1_1std__capture_1_1_tee_no_file.html", "classdebug__tools_1_1std__capture_1_1_tee_no_file" ]
+      ] ],
       [ "stderr_replacement", null, [
         [ "stderr_replacement", "classdebug__tools_1_1stderr__replacement_1_1stderr__replacement.html", "classdebug__tools_1_1stderr__replacement_1_1stderr__replacement" ]
       ] ],
@@ -28,6 +31,8 @@ var annotated_dup =
         [ "stdout_replacement", "classdebug__tools_1_1stdout__replacement_1_1stdout__replacement.html", "classdebug__tools_1_1stdout__replacement_1_1stdout__replacement" ]
       ] ],
       [ "testing_utilities", null, [
+        [ "AssertionErrorData", "classdebug__tools_1_1testing__utilities_1_1_assertion_error_data.html", "classdebug__tools_1_1testing__utilities_1_1_assertion_error_data" ],
+        [ "MultipleAssertionFailures", "classdebug__tools_1_1testing__utilities_1_1_multiple_assertion_failures.html", "classdebug__tools_1_1testing__utilities_1_1_multiple_assertion_failures" ],
         [ "TestingUtilities", "classdebug__tools_1_1testing__utilities_1_1_testing_utilities.html", "classdebug__tools_1_1testing__utilities_1_1_testing_utilities" ]
       ] ],
       [ "utilities", null, [
