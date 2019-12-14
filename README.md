@@ -2,7 +2,6 @@
 
 [![Build Status](https://travis-ci.org/evandrocoan/debugtools.svg?branch=master)](https://travis-ci.org/evandrocoan/debugtools)
 [![Build status](https://ci.appveyor.com/api/projects/status/github/evandrocoan/debugtools?branch=master&svg=true)](https://ci.appveyor.com/project/evandrocoan/PythonDebugTools/branch/master)
-[![codecov](https://codecov.io/gh/evandrocoan/debugtools/branch/master/graph/badge.svg)](https://codecov.io/gh/evandrocoan/debugtools)
 [![Coverage Status](https://coveralls.io/repos/github/evandrocoan/debugtools/badge.svg?branch=HEAD)](https://coveralls.io/github/evandrocoan/debugtools?branch=HEAD)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/5f3e2cd536b54774b193a1eeef930e3c)](https://www.codacy.com/app/evandrocoan/debugtools?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=evandrocoan/debugtools&amp;utm_campaign=Badge_Grade)
 [![Latest Release](https://img.shields.io/github/tag/evandrocoan/debugtools.svg?label=version)](https://github.com/evandrocoan/debugtools/releases)
