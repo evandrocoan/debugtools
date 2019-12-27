@@ -139,6 +139,49 @@ class StdErrUnitTests(testing_utilities.MultipleAssertionFailures):
         log.clear( True )
         log.reset()
 
+    @unittest.skipIf( sys.version_info < (3,8), "Feature only available in Python 3.8 or above..." )
+    def test_find_caller_with_stacklevel(self):
+        getLogger( 1, time=0, msecs=0, tick=0 )
+        the_level = 1
+
+        def innermost():
+            log( 'Something...', stacklevel=the_level )
+
+        def inner():
+            innermost()
+
+        def outer():
+            _stderr.clear( log )
+            inner()
+
+        outer()
+        the_level += 1
+        self.assertRegexpMatches( _stderr.contents(),
+                r"logger.innermost:\d+ - Something..." )
+
+        outer()
+        the_level += 1
+        self.assertRegexpMatches( _stderr.contents(),
+                r"logger.inner:\d+ - Something..." )
+
+        outer()
+        the_level += 1
+        self.assertRegexpMatches( _stderr.contents(),
+                r"logger.outer:\d+ - Something..." )
+
+        outer()
+        the_level += 1
+        self.assertRegexpMatches( _stderr.contents(),
+                r"logger.test_find_caller_with_stacklevel:\d+ - Something..." )
+
+    @unittest.skipIf( sys.version_info >= (3,8), "Feature only available in Python 3.8 or above..." )
+    def test_find_caller_with_stacklevel_on_older_versions(self):
+        getLogger( 1, time=0, msecs=0, tick=0 )
+        log( 'Something...', stacklevel=1 )
+
+        self.assertRegexpMatches( _stderr.contents(),
+                r"logger.test_find_caller_with_stacklevel_on_older_versions:\d+ - Something..." )
+
     def test_function_name(self):
         getLogger( 127, "testing.main_unit_tests", date=True )
 
