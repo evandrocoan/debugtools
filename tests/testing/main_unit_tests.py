@@ -65,13 +65,13 @@ try:
 
 except ImportError:
 
-    def assert_path(module):
-
+    def assert_path(*args):
+        module = os.path.realpath( os.path.join( *args ) )
         if module not in sys.path:
             sys.path.append( module )
 
     # Import the debug tools
-    assert_path( os.path.join( os.path.dirname( os.path.dirname( os.path.dirname( os.path.realpath( __file__ ) ) ) ), 'all' ) )
+    assert_path( os.path.dirname( os.path.dirname( os.path.dirname( os.path.realpath( __file__ ) ) ) ), 'all' )
 
     import debug_tools
     from debug_tools import utilities

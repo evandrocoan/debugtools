@@ -42,8 +42,7 @@ import sys
 import unittest
 
 def assert_path(*args):
-    module = os.path.join( *args )
-
+    module = os.path.realpath( os.path.join( *args ) )
     if module not in sys.path:
         sys.path.append( module )
 
