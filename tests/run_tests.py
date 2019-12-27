@@ -41,8 +41,14 @@ import sys
 
 import unittest
 
+def assert_path(*args):
+    module = os.path.join( *args )
+
+    if module not in sys.path:
+        sys.path.append( module )
 
 PACKAGE_ROOT_DIRECTORY = os.path.dirname( os.path.realpath( __file__ ) )
+assert_path( PACKAGE_ROOT_DIRECTORY )
 
 loader = unittest.TestLoader()
 start_dir = os.path.join( PACKAGE_ROOT_DIRECTORY, 'testing' )
