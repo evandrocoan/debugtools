@@ -13,6 +13,7 @@ environment:
         - TOXENV: py35
         - TOXENV: py36
         - TOXENV: py37
+        - TOXENV: py38
 
 
 install:

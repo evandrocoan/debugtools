@@ -47,6 +47,12 @@ matrix:
           env: TOXENV=py37
           dist: xenial
 
+        - os: linux
+          python: 3.8
+          language: python
+          env: TOXENV=py38
+          dist: xenial
+
         # Currently Travis OSX only supports Python 2.7 and 3.6
         - os: osx
           python: 2.7
@@ -58,9 +64,9 @@ matrix:
           env: TOXENV=py27
 
         - os: osx
-          python: 3.6
+          python: 3.7
           language: generic
-          env: TOXENV=py36
+          env: TOXENV=py37
 
 
 before_install:
