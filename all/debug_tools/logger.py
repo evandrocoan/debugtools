@@ -163,7 +163,7 @@ class Debugger(Logger):
         # Enable debug messages: (bitwise)
         # 0 - Disabled debugging
         # 1 - Errors messages
-        self._frame_level = 4
+        self._frame_level = 3
         self._debugger_level = 127
         self._reset()
 
@@ -1314,7 +1314,7 @@ class Debugger(Logger):
 
         # Python 2.7.14
         def findCaller(self):
-            f = currentframe(self._frame_level)
+            f = currentframe(self._frame_level + 1)
             #On some versions of IronPython, currentframe() returns None if
             #IronPython isn't run with -X:Frames.
             if f is not None:
@@ -1334,7 +1334,7 @@ class Debugger(Logger):
 
         # Python 3.6.3
         def findCaller(self, stack_info=False):
-            f = currentframe(self._frame_level)
+            f = currentframe(self._frame_level + 1)
             #On some versions of IronPython, currentframe() returns None if
             #IronPython isn't run with -X:Frames.
             if f is not None:
@@ -1367,17 +1367,11 @@ class Debugger(Logger):
             Find the stack frame of the caller so that we can note the source
             file name, line number and function name.
             """
-            f = currentframe(self._frame_level)
+            f = currentframe(self._frame_level + stacklevel)
             #On some versions of IronPython, currentframe() returns None if
             #IronPython isn't run with -X:Frames.
             if f is not None:
                 f = f.f_back
-            orig_f = f
-            while f and stacklevel > 1:
-                f = f.f_back
-                stacklevel -= 1
-            if not f:
-                f = orig_f
             rv = "(unknown file)", 0, "(unknown function)", None
             while hasattr(f, "f_code"):
                 co = f.f_code
