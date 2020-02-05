@@ -722,6 +722,33 @@ class DynamicSetupFormattingUnitTests(testing_utilities.MultipleAssertionFailure
         self.assertRegexpMatches( output,
                 r"\d\d:\d\d:\d\d:\d\d\d.\d\d\d\d\d\d \d.\d\de(\+|\-)\d\d - logger.test_logger_name_int_int:\d\d\d - Something..." )
 
+    def test_logger_name_none_int(self):
+        getLogger( None, "" )
+        log( 1, 'Something...' )
+        self.assertEqual( 1, log.debug_level )
+
+        output = _stderr.contents()
+        self.assertRegexpMatches( output,
+                r"\d\d:\d\d:\d\d:\d\d\d.\d\d\d\d\d\d \d.\d\de(\+|\-)\d\d - logger.test_logger_name_none_int:\d\d\d - Something..." )
+
+    def test_logger_name_empty_none(self):
+        getLogger( "", None )
+        log( 1, 'Something...' )
+        self.assertEqual( 1, log.debug_level )
+
+        output = _stderr.contents()
+        self.assertRegexpMatches( output,
+                r"\d\d:\d\d:\d\d:\d\d\d.\d\d\d\d\d\d \d.\d\de(\+|\-)\d\d - logger.test_logger_name_empty_none:\d\d\d - Something..." )
+
+    def test_logger_name_none_none(self):
+        getLogger( None, None )
+        log( 1, 'Something...' )
+        self.assertEqual( 1, log.debug_level )
+
+        output = _stderr.contents()
+        self.assertRegexpMatches( output,
+                r"\d\d:\d\d:\d\d:\d\d\d.\d\d\d\d\d\d \d.\d\de(\+|\-)\d\d - logger.test_logger_name_none_none:\d\d\d - Something..." )
+
     def test_not_msecs(self):
         getLogger( 1 )
         log( 'Something...', msecs=0 )

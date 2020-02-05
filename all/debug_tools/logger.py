@@ -1631,6 +1631,9 @@ def _get_debug_level(debug_level, logger_name):
         if len( debug_level ) == 0:
             debug_level = 1;
 
+    if debug_level is None:
+        debug_level = 1;
+
     if logger_name:
 
         if isinstance( logger_name, int ):
