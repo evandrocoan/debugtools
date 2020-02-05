@@ -127,7 +127,6 @@ class StdErrUnitTests(testing_utilities.MultipleAssertionFailures):
     """
 
     def setUp(self):
-        self.maxDiff = None
         super(StdErrUnitTests, self).setUp()
 
         sys.stderr.write("\n")
@@ -398,7 +397,6 @@ class StdErrUnitTests(testing_utilities.MultipleAssertionFailures):
 class StdOutUnitTests(testing_utilities.MultipleAssertionFailures):
 
     def setUp(self):
-        self.maxDiff = None
         super(StdOutUnitTests, self).setUp()
 
         sys.stderr.write("\n")
@@ -463,11 +461,12 @@ class LogRecordUnitTests(testing_utilities.MultipleAssertionFailures):
     """
 
     def setUp(self):
-        self.maxDiff = None
+        super(LogRecordUnitTests, self).setUp()
         sys.stderr.write("\n")
         sys.stderr.write("\n")
 
     def tearDown(self):
+        super(LogRecordUnitTests, self).tearDown()
         log.clear( True )
         log.reset()
 
@@ -585,21 +584,14 @@ class LogRecordUnitTests(testing_utilities.MultipleAssertionFailures):
 class SetupFormattingSpacingUnitTests(testing_utilities.MultipleAssertionFailures):
 
     def setUp(self):
-        self.maxDiff = None
+        super(SetupFormattingSpacingUnitTests, self).setUp()
         sys.stderr.write("\n")
         sys.stderr.write("\n")
 
     def tearDown(self):
+        super(SetupFormattingSpacingUnitTests, self).tearDown()
         log.clear( True )
         log.reset()
-
-    def test_default_logger_creation(self):
-        getLogger( 1 )
-        log( 'Something...' )
-
-        output = _stderr.contents()
-        self.assertRegexpMatches( output,
-                r"\d\d:\d\d:\d\d:\d\d\d.\d\d\d\d\d\d \d.\d\de(\+|\-)\d\d - logger.test_default_logger_creation:\d\d\d - Something..." )
 
     def test_not_time(self):
         getLogger( 1, time=0 )
@@ -669,13 +661,22 @@ class SetupFormattingSpacingUnitTests(testing_utilities.MultipleAssertionFailure
 class DynamicSetupFormattingUnitTests(testing_utilities.MultipleAssertionFailures):
 
     def setUp(self):
-        self.maxDiff = None
+        super(DynamicSetupFormattingUnitTests, self).setUp()
         sys.stderr.write("\n")
         sys.stderr.write("\n")
 
     def tearDown(self):
+        super(DynamicSetupFormattingUnitTests, self).tearDown()
         log.clear( True )
         log.reset()
+
+    def test_default_logger_creation(self):
+        getLogger( 1 )
+        log( 'Something...' )
+
+        output = _stderr.contents()
+        self.assertRegexpMatches( output,
+                r"\d\d:\d\d:\d\d:\d\d\d.\d\d\d\d\d\d \d.\d\de(\+|\-)\d\d - logger.test_default_logger_creation:\d\d\d - Something..." )
 
     def test_not_msecs(self):
         getLogger( 1 )

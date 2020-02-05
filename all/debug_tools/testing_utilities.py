@@ -83,6 +83,9 @@ class MultipleAssertionFailures(unittest.TestCase):
                 badtraces = traceback.format_list( traceback.extract_stack() )
                 self.verificationErrors.append( AssertionErrorData( "".join( badtraces[:-2] ), str(error) + '\n' + str(exception) ) )
 
+            if not self.verificationErrors:
+                raise error
+
     def _goodStackTraces(self):
         """
             Get only the relevant part of stacktrace.
