@@ -678,6 +678,50 @@ class DynamicSetupFormattingUnitTests(testing_utilities.MultipleAssertionFailure
         self.assertRegexpMatches( output,
                 r"\d\d:\d\d:\d\d:\d\d\d.\d\d\d\d\d\d \d.\d\de(\+|\-)\d\d - logger.test_default_logger_creation:\d\d\d - Something..." )
 
+    def test_logger_name_string_string(self):
+        getLogger( "", "mylogger" )
+        log( 1, 'Something...' )
+
+        output = _stderr.contents()
+        self.assertRegexpMatches( output,
+                r"\d\d:\d\d:\d\d:\d\d\d.\d\d\d\d\d\d \d.\d\de(\+|\-)\d\d - mylogger.test_logger_name_string_string:\d\d\d - Something..." )
+
+    def test_logger_name_string_int(self):
+        getLogger( "", 3 )
+        log( 1, 'Something...' )
+        self.assertEqual( 127, log.debug_level )
+
+        output = _stderr.contents()
+        self.assertRegexpMatches( output,
+                r"\d\d:\d\d:\d\d:\d\d\d.\d\d\d\d\d\d \d.\d\de(\+|\-)\d\d - logger.test_logger_name_string_int:\d\d\d - Something..." )
+
+    def test_logger_name_string_empty(self):
+        getLogger( "", "" )
+        log( 1, 'Something...' )
+        self.assertEqual( 1, log.debug_level )
+
+        output = _stderr.contents()
+        self.assertRegexpMatches( output,
+                r"\d\d:\d\d:\d\d:\d\d\d.\d\d\d\d\d\d \d.\d\de(\+|\-)\d\d - logger.test_logger_name_string_empty:\d\d\d - Something..." )
+
+    def test_logger_name_int_empty(self):
+        getLogger( 3, "" )
+        log( 1, 'Something...' )
+        self.assertEqual( 3, log.debug_level )
+
+        output = _stderr.contents()
+        self.assertRegexpMatches( output,
+                r"\d\d:\d\d:\d\d:\d\d\d.\d\d\d\d\d\d \d.\d\de(\+|\-)\d\d - logger.test_logger_name_int_empty:\d\d\d - Something..." )
+
+    def test_logger_name_int_int(self):
+        getLogger( 3, "" )
+        log( 1, 'Something...' )
+        self.assertEqual( 3, log.debug_level )
+
+        output = _stderr.contents()
+        self.assertRegexpMatches( output,
+                r"\d\d:\d\d:\d\d:\d\d\d.\d\d\d\d\d\d \d.\d\de(\+|\-)\d\d - logger.test_logger_name_int_int:\d\d\d - Something..." )
+
     def test_not_msecs(self):
         getLogger( 1 )
         log( 'Something...', msecs=0 )

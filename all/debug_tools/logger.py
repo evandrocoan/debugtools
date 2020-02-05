@@ -1626,6 +1626,11 @@ def _getLogger(debug_level=127, logger_name=None, **kwargs):
 
 def _get_debug_level(debug_level, logger_name):
 
+    if isinstance( debug_level, str ):
+
+        if len( debug_level ) == 0:
+            debug_level = 1;
+
     if logger_name:
 
         if isinstance( logger_name, int ):
@@ -1651,7 +1656,7 @@ def _get_debug_level(debug_level, logger_name):
 
         else:
             logger_name = debug_level
-            debug_level = 127
+            debug_level = 1
 
     return debug_level, logger_name
 
