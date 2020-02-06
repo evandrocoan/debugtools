@@ -6,22 +6,26 @@ try:
 
 except ImportError:
     #
-    # Release process setup see:
-    # https://github.com/pypa/twine
+    # Release process setup:
+    #     https://github.com/pypa/twine
     #
-    # To setup password cache:
-    # sudo apt-get install python3-dbus
-    # pip3 install --user keyring
-    # python3 -m keyring set https://test.pypi.org/legacy/ your-username
+    # For linux:
+    #     sudo apt-get install python3-dbus
+    #     python3 -m pip install --user keyring
+    #     python3 -m keyring set https://upload.pypi.org/legacy/ your-username
+    #     rm -rf ./dist && python3 setup.py sdist && twine upload dist/*
+    #
+    # For Windows, setup the password cache using `python.exe` from Anaconda:
+    #     python -m pip install webencodings
+    #     python -m pip install --user keyring
+    #     python -m keyring set https://upload.pypi.org/legacy/ your-username
+    #     rm -rf ./dist && python setup.py sdist && twine upload dist/*
     #
     # Run this to build the `dist/PACKAGE_NAME-xxx.tar.gz` file
     #     rm -rf ./dist && python3 setup.py sdist
     #
     # Run this to build & upload it to `pypi`, type your account name when prompted.
     #     twine upload dist/*
-    #
-    # All in one command:
-    #     rm -rf ./dist && python3 setup.py sdist && twine upload dist/*
     #
     import re
     import sys
@@ -57,6 +61,20 @@ except ImportError:
 
     # https://setuptools.readthedocs.io/en/latest/history.html
     required_setup_tools = '20.5'
+    setuptools_matches = re.search( r"(\d+)(?:\.(\d+))?(?:\.(\d+))?", setuptools_version )
+
+    def matchgroup(index):
+        groupmatch = setuptools_matches.group(index)
+
+        if groupmatch:
+            return groupmatch
+        else:
+            return "0"
+
+    # https://github.com/anthony-tuininga/cx_Freeze/issues/340
+    if setuptools_matches:
+        setuptools_version = "%s.%s.%s" % ( matchgroup(1), matchgroup(2), matchgroup(3) )
+        sys.stderr.write( "Fixing setuptools_version from '%s' to '%s'\n" % ( setuptools_matches.string, setuptools_version ) )
 
     # https://stackoverflow.com/questions/48048745/setup-py-require-a-recent-version-of-setuptools-before-trying-to-install
     if StrictVersion( setuptools_version ) < StrictVersion( required_setup_tools ):
