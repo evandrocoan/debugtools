@@ -107,7 +107,8 @@ def get_section_option(section, option, configSettings):
     """
 
     if configSettings.has_option( section, option ):
-        return configSettings.get( section, option )
+        # https://stackoverflow.com/questions/1311367/python-configparser-values-between-quotes
+        return configSettings.get( section, option ).strip('"')
 
     return ""
 
