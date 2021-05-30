@@ -71,6 +71,15 @@ except( ImportError, ValueError ):
 
 
 try:
+    from .commentjson import load as jsonload
+    from .commentjson import loads as jsonloads
+
+except Exception:
+    from json import load as jsonload
+    from json import loads as jsonloads
+
+
+try:
     from .logger import getLogger
 
 except( ImportError, ValueError ):
@@ -165,7 +174,7 @@ def load_data_file(file_path, wait_on_error=True, log_level=1, exceptions=False)
 
             try:
                 with open( file_path, 'r', encoding='utf-8' ) as data_file:
-                    return json.load( data_file, object_pairs_hook=OrderedDict )
+                    return jsonload( data_file, object_pairs_hook=OrderedDict )
 
             except ValueError as error:
                 log( 1, "Error: maximum_attempts %d, %s (%s)" % ( maximum_attempts, error, file_path ) )
@@ -189,7 +198,7 @@ def load_data_file(file_path, wait_on_error=True, log_level=1, exceptions=False)
 
             try:
                 resource_bytes = load_package_file_as_binary( file_path, log_level )
-                return json.loads( resource_bytes.decode('utf-8'), object_pairs_hook=OrderedDict )
+                return jsonloads( resource_bytes.decode('utf-8'), object_pairs_hook=OrderedDict )
 
             except IOError as error:
                 log.exception( "Error: The file '%s' does not exists! %s" % ( file_path, error ) )
