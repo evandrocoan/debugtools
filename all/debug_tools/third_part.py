@@ -74,9 +74,14 @@ try:
     from .commentjson import load as jsonload
     from .commentjson import loads as jsonloads
 
-except Exception:
-    from json import load as jsonload
-    from json import loads as jsonloads
+except( ImportError, ValueError ):
+    try:
+        from commentjson import load as jsonload
+        from commentjson import loads as jsonloads
+
+    except( ImportError, ValueError ):
+        from json import load as jsonload
+        from json import loads as jsonloads
 
 
 try:
