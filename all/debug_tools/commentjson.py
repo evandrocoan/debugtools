@@ -34,12 +34,12 @@ except ImportError:
     import simplejson as json
 
 
-import lark
+import pushdown
 
-from lark import Lark
-from lark.lexer import Token
-from lark.reconstruct import Reconstructor
-from lark.tree import Tree
+from pushdown import Lark
+from pushdown.lexer import Token
+from pushdown.reconstruct import Reconstructor
+from pushdown.tree import Tree
 
 
 parser = Lark('''
