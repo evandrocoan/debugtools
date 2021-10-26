@@ -35,20 +35,20 @@ except ImportError:
 
 
 try:
-    from . import pushdown as lark
-    from .pushdown import pushdown
-    from .pushdown import Lark
-    from .pushdown.lexer import Token
-    from .pushdown.reconstruct import Reconstructor
-    from .pushdown.tree import Tree
+    from . import lark as lark
+    from .lark import lark
+    from .lark import Lark
+    from .lark.lexer import Token
+    from .lark.reconstruct import Reconstructor
+    from .lark.tree import Tree
 
 except( ImportError, ValueError ):
-    import pushdown as lark
-    from pushdown import pushdown
-    from pushdown import Lark
-    from pushdown.lexer import Token
-    from pushdown.reconstruct import Reconstructor
-    from pushdown.tree import Tree
+    import lark as lark
+    from lark import lark
+    from lark import Lark
+    from lark.lexer import Token
+    from lark.reconstruct import Reconstructor
+    from lark.tree import Tree
 
 
 parser = Lark('''
