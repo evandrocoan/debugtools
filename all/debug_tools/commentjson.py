@@ -33,22 +33,12 @@ except ImportError:
     # If python version is 2.5 or less, use simplejson
     import simplejson as json
 
-
-try:
-    from . import lark as lark
-    from .lark import lark
-    from .lark import Lark
-    from .lark.lexer import Token
-    from .lark.reconstruct import Reconstructor
-    from .lark.tree import Tree
-
-except( ImportError, ValueError ):
-    import lark as lark
-    from lark import lark
-    from lark import Lark
-    from lark.lexer import Token
-    from lark.reconstruct import Reconstructor
-    from lark.tree import Tree
+import lark
+from lark import lark
+from lark import Lark
+from lark.lexer import Token
+from lark.reconstruct import Reconstructor
+from lark.tree import Tree
 
 
 parser = Lark('''
