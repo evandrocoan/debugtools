@@ -64,8 +64,6 @@ from logging import WARNING
 from logging import ERROR
 
 from logging import _srcfile
-from logging import _acquireLock
-from logging import _releaseLock
 
 
 try:
@@ -380,14 +378,10 @@ class Debugger(Logger):
             other = self.active or self
 
             old_formatters = {}
-            _acquireLock()
-            try:
+            with logging._lock:
                 for handler in other.handlers:
                     old_formatters[handler] = handler.formatter
                     handler.formatter = self.clean_formatter
-
-            finally:
-                _releaseLock()
 
             kwargs['debug_level'] = debug_level
             self._log_clean( msg, args, kwargs )
@@ -411,14 +405,11 @@ class Debugger(Logger):
                     other = self.active or self
 
                     old_formatters = {}
-                    _acquireLock()
-                    try:
+                    with logging._lock:
                         for handler in other.handlers:
                             old_formatters[handler] = handler.formatter
                             handler.formatter = self.clean_formatter
 
-                    finally:
-                        _releaseLock()
 
                     kwargs['debug_level'] = 1
                     self._log_clean( debug_level, args, kwargs )
@@ -430,14 +421,10 @@ class Debugger(Logger):
                 other = self.active or self
 
                 old_formatters = {}
-                _acquireLock()
-                try:
+                with logging._lock:
                     for handler in other.handlers:
                         old_formatters[handler] = handler.formatter
                         handler.formatter = self.clean_formatter
-
-                finally:
-                    _releaseLock()
 
                 kwargs['debug_level'] = debug_level
                 self._log_clean( msg, args, kwargs )
@@ -453,14 +440,10 @@ class Debugger(Logger):
                     other = self.active or self
 
                     old_formatters = {}
-                    _acquireLock()
-                    try:
+                    with logging._lock:
                         for handler in other.handlers:
                             old_formatters[handler] = handler.formatter
                             handler.formatter = self.clean_formatter
-
-                    finally:
-                        _releaseLock()
 
                     kwargs['debug_level'] = 1
                     self._log_clean( debug_level, args, kwargs )
@@ -472,14 +455,10 @@ class Debugger(Logger):
                     other = self.active or self
 
                     old_formatters = {}
-                    _acquireLock()
-                    try:
+                    with logging._lock:
                         for handler in other.handlers:
                             old_formatters[handler] = handler.formatter
-                            handler.formatter = self.clean_formatter
-
-                    finally:
-                        _releaseLock()
+                            handler.formatter = self.basic_formatter
 
                     kwargs['debug_level'] = 1
                     self._log_clean( debug_level, (msg,) + args, kwargs )
@@ -493,14 +472,10 @@ class Debugger(Logger):
             other = self.active or self
 
             old_formatters = {}
-            _acquireLock()
-            try:
+            with logging._lock:
                 for handler in other.handlers:
                     old_formatters[handler] = handler.formatter
                     handler.formatter = self.basic_formatter
-
-            finally:
-                _releaseLock()
 
             kwargs['debug_level'] = debug_level
             self._log( DEBUG, msg, args, **kwargs )
@@ -526,14 +501,10 @@ class Debugger(Logger):
                     other = self.active or self
 
                     old_formatters = {}
-                    _acquireLock()
-                    try:
+                    with logging._lock:
                         for handler in other.handlers:
                             old_formatters[handler] = handler.formatter
                             handler.formatter = self.basic_formatter
-
-                    finally:
-                        _releaseLock()
 
                     kwargs['debug_level'] = 1
                     self._log( DEBUG, debug_level, args, **kwargs )
@@ -545,14 +516,10 @@ class Debugger(Logger):
                 other = self.active or self
 
                 old_formatters = {}
-                _acquireLock()
-                try:
+                with logging._lock:
                     for handler in other.handlers:
                         old_formatters[handler] = handler.formatter
                         handler.formatter = self.basic_formatter
-
-                finally:
-                    _releaseLock()
 
                 kwargs['debug_level'] = debug_level
                 self._log( DEBUG, msg, args, **kwargs )
@@ -568,14 +535,10 @@ class Debugger(Logger):
                     other = self.active or self
 
                     old_formatters = {}
-                    _acquireLock()
-                    try:
+                    with logging._lock:
                         for handler in other.handlers:
                             old_formatters[handler] = handler.formatter
                             handler.formatter = self.basic_formatter
-
-                    finally:
-                        _releaseLock()
 
                     kwargs['debug_level'] = 1
                     self._log( DEBUG, debug_level, args, **kwargs )
@@ -587,14 +550,10 @@ class Debugger(Logger):
                     other = self.active or self
 
                     old_formatters = {}
-                    _acquireLock()
-                    try:
+                    with logging._lock:
                         for handler in other.handlers:
                             old_formatters[handler] = handler.formatter
                             handler.formatter = self.basic_formatter
-
-                    finally:
-                        _releaseLock()
 
                     kwargs['debug_level'] = 1
                     self._log( DEBUG, debug_level, (msg,) + args, **kwargs )
@@ -634,29 +593,25 @@ class Debugger(Logger):
             @param `stderr` if True, it will enable the logging hook on the sys.stderr.
             @param `stdout` if True, it will enable the logging hook on the sys.stdout.
         """
-        _acquireLock()
+        with logging._lock:
+            try:
+                if self._debugme:
+                    sys.stderr.write( "stderr: %s, stdout: %s" % ( stderr, stdout ) )
+                    sys.stderr.write( "sys.stderr: %s, sys.stdout: %s" % ( sys.stderr, sys.stdout ) )
+                    sys.stderr.write( "name: %s, hasStreamHandlers: %s" % ( self.name, self.hasStreamHandlers() ) )
 
-        try:
-            if self._debugme:
-                sys.stderr.write( "stderr: %s, stdout: %s" % ( stderr, stdout ) )
-                sys.stderr.write( "sys.stderr: %s, sys.stdout: %s" % ( sys.stderr, sys.stdout ) )
-                sys.stderr.write( "name: %s, hasStreamHandlers: %s" % ( self.name, self.hasStreamHandlers() ) )
+                if stderr:
+                    stderr_replacement.lock( self )
+                else:
+                    stderr_replacement.unlock()
 
-            if stderr:
-                stderr_replacement.lock( self )
-            else:
-                stderr_replacement.unlock()
+                if stdout:
+                    stdout_replacement.lock( self )
+                else:
+                    stdout_replacement.unlock()
 
-            if stdout:
-                stdout_replacement.lock( self )
-            else:
-                stdout_replacement.unlock()
-
-        except Exception:
-            self.exception( "Could not register the sys.stderr stream handler" )
-
-        finally:
-            _releaseLock()
+            except Exception:
+                self.exception( "Could not register the sys.stderr stream handler" )
 
     def _disable(self, stream=False, file=False):
         """
@@ -854,17 +809,13 @@ class Debugger(Logger):
 
         else:
             self._disable( stream=True )
-            _acquireLock()
+            with logging._lock:
+                try:
+                    self._stream = logging.StreamHandler( arguments['stream'] )
+                    self._stream.formatter = self.full_formatter
 
-            try:
-                self._stream = logging.StreamHandler( arguments['stream'] )
-                self._stream.formatter = self.full_formatter
-
-            except Exception:
-                self.exception( "Could not create the stream handler" )
-
-            finally:
-                _releaseLock()
+                except Exception:
+                    self.exception( "Could not create the stream handler" )
 
             self.addHandler( self._stream )
             self._disable( file=arguments['delete'] )
@@ -946,14 +897,10 @@ class Debugger(Logger):
                 new_formatter = self._create_formatter( new_arguments )
 
                 old_formatters = {}
-                _acquireLock()
-                try:
+                with logging._lock:
                     for handler in other.handlers:
                         old_formatters[handler] = handler.formatter
-                        handler.formatter = new_formatter
-
-                finally:
-                    _releaseLock()
+                        handler.formatter = self.basic_formatter
 
                 super( Debugger, self )._log( level, msg, args, exc_info, extra )
                 self._last_tick = self._current_tick
@@ -984,14 +931,10 @@ class Debugger(Logger):
                 new_formatter = self._create_formatter( new_arguments )
 
                 old_formatters = {}
-                _acquireLock()
-                try:
+                with logging._lock:
                     for handler in other.handlers:
                         old_formatters[handler] = handler.formatter
-                        handler.formatter = new_formatter
-
-                finally:
-                    _releaseLock()
+                        handler.formatter = self.basic_formatter
 
                 super()._log( level, msg, args, exc_info, extra, stack_info, **kwargs )
                 self._last_tick = self._current_tick
@@ -1086,14 +1029,9 @@ class Debugger(Logger):
                 handler.addFilter( self._file_context_filter )
 
                 self._has_file_context_filter = True
-                _acquireLock()
-
-                try:
+                with logging._lock:
                     for other_handler in self.handlers:
                         other_handler.addFilter( self._file_context_filter )
-
-                finally:
-                    _releaseLock()
 
                 self.handle_stderr( self._stderr, self._stdout )
 
@@ -1115,14 +1053,9 @@ class Debugger(Logger):
                 handler.removeFilter( self._file_context_filter )
 
                 self._has_file_context_filter = False
-                _acquireLock()
-
-                try:
+                with logging._lock:
                     for other_handler in self.handlers:
                         other_handler.removeFilter( self._file_context_filter )
-
-                finally:
-                    _releaseLock()
 
                 self.handle_stderr( self._stderr, self._stdout )
 
@@ -1135,29 +1068,21 @@ class Debugger(Logger):
         """
             Delete all loggers created by `getLogger()` calls.
         """
-        _acquireLock()
+        with logging._lock:
+            try:
+                cls.manager.loggerDict.clear()
 
-        try:
-            cls.manager.loggerDict.clear()
-
-        except Exception:
-            cls.exception("Could not delete all registered loggers!")
-
-        finally:
-            _releaseLock()
+            except Exception:
+                cls.exception("Could not delete all registered loggers!")
 
     def delete(self):
         self.removeHandlers()
-        _acquireLock()
+        with logging._lock:
+            try:
+                del self.manager.loggerDict[self.name]
 
-        try:
-            del self.manager.loggerDict[self.name]
-
-        except Exception:
-            self.exception("Could not delete the logger %s!", self.name)
-
-        finally:
-            _releaseLock()
+            except Exception:
+                self.exception("Could not delete the logger %s!", self.name)
 
 
     def removeHandlers(self):
