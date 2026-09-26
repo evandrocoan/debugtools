@@ -64,8 +64,10 @@ from logging import WARNING
 from logging import ERROR
 
 from logging import _srcfile
-from logging import _acquireLock
-from logging import _releaseLock
+from logging import _lock
+
+_acquireLock = _lock.acquire
+_releaseLock = _lock.release
 
 
 try:
